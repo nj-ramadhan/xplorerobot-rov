@@ -3,11 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import { MenuCard } from '../components/MenuCard';
 
 const menus = [
-  { path: '/simulation', title: 'Autopilot Firmware',  desc: 'Update flight controller firmware.', icon: '🚀' },
-  { path: '/params',   title: 'Autopilot Parameters',desc: 'Modify vehicle parameters in real-time.', icon: '📑' },
-  { path: '/live',     title: 'Live Telemetry',      desc: 'Real-time sensor data and video stream.', icon: '📊' },
-  { path: '/video',    title: 'Video Streams',       desc: 'Configure all video input devices.',      icon: '📹' },
-  { path: '/setup',    title: 'Vehicle Setup',       desc: 'Sensor calibrations and motor tests.',    icon: '⚙️' },
+  { 
+    path: '/simulation', 
+    title: 'Manual Simulation', 
+    desc: 'Override and control vehicle movements within the Gazebo SITL environment manually.', 
+    icon: '🎮'
+  },
+  { 
+    path: '/params',   
+    title: 'Autopilot Parameters',
+    desc: 'Modify vehicle parameters in real-time.', 
+    icon: '📑' },
+  { 
+    path: '/live',     
+    title: 'Live Telemetry',      
+    desc: 'Real-time sensor data and video stream.', 
+    icon: '📊' },
+  { 
+    path: '/video',    
+    title: 'Video Streams',       
+    desc: 'Configure all video input devices.',      
+    icon: '📹' },
+  { 
+    path: '/setup',    
+    title: 'Vehicle Setup',       
+    desc: 'Sensor calibrations and motor tests.',    
+    icon: '⚙️' },
 ];
 
 export const Home: React.FC = () => {
