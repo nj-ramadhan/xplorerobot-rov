@@ -4,10 +4,16 @@ import { MenuCard } from '../components/MenuCard';
 
 const menus = [
   { 
-    path: '/simulation', 
+    path: '/manual', 
     title: 'Manual Simulation', 
     desc: 'Override and control vehicle movements within the Gazebo SITL environment manually.', 
     icon: '🎮'
+  },
+  { 
+    path: '/autonomous', 
+    title: 'Autonomous Simulation', 
+    desc: 'Goal planning and autonomous navigation system.', 
+    icon: '🤖'
   },
   { 
     path: '/params',   

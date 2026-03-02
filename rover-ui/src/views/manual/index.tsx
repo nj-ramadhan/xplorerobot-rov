@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export const Simulation: React.FC = () => {
+export const Manual: React.FC = () => {
   // 1. State Kendali 6-DOF
   const [controls, setControls] = useState({
     surge: 0, sway: 0, heave: 0, roll: 0, pitch: 0, yaw: 0
@@ -57,7 +57,7 @@ export const Simulation: React.FC = () => {
         <div>
           <h2 className="font-display font-black text-xl text-white uppercase tracking-wider flex items-center gap-3">
             <span className="bg-blue-600 p-2 rounded-lg">🕹️</span>
-            Manual Simulation (6-DOF)
+            Manual Manual (6-DOF)
           </h2>
           <p className="text-[11px] font-mono text-slate-400 mt-2 uppercase tracking-widest">
             SITL Environment · ROS 2 Jazzy Jalisco
@@ -183,4 +183,4 @@ export const Simulation: React.FC = () => {
   );
 };
 
-export default Simulation;
+export default Manual;
