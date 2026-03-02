@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MenuCard } from '../components/MenuCard';
 
 const menus = [
-  { path: '/firmware', title: 'Autopilot Firmware',  desc: 'Update flight controller firmware.', icon: '🚀' },
+  { path: '/simulation', title: 'Autopilot Firmware',  desc: 'Update flight controller firmware.', icon: '🚀' },
   { path: '/params',   title: 'Autopilot Parameters',desc: 'Modify vehicle parameters in real-time.', icon: '📑' },
   { path: '/live',     title: 'Live Telemetry',      desc: 'Real-time sensor data and video stream.', icon: '📊' },
   { path: '/video',    title: 'Video Streams',       desc: 'Configure all video input devices.',      icon: '📹' },

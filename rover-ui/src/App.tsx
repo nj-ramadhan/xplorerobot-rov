@@ -12,6 +12,9 @@ import { Dashboard } from './views/Dashboard';
 // Import Types
 import { TelemetryData } from './types/telemetry';
 
+// Import Views Simulation
+import Simulation from './views/simulation';
+
 function App() {
   // State untuk Mode Siang/Malam
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -86,7 +89,7 @@ function App() {
                 <Route path="/live" element={<Dashboard telemetry={telemetry} />} />
 
                 {/* Placeholder untuk menu lainnya agar tidak kosong */}
-                <Route path="/firmware" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5">🚀 Modul Autopilot Firmware - ROV Polman</div>} />
+                <Route path="/simulation" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5">{<Simulation />}</div>} />
                 <Route path="/params" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5">📑 Konfigurasi Parameter Sistem</div>} />
                 <Route path="/video" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5">📹 Pengaturan Video Stream</div>} />
                 <Route path="/setup" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5">⚙️ Kalibrasi Sensor & Motor</div>} />
