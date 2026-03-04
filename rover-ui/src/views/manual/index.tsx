@@ -1,41 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import { TelemetryData } from '../../types/telemetry'; // Pastikan path ini benar
 
-export const Manual: React.FC = () => {
-  // 1. State Telemetri & WebSocket
-  const [telemetry, setTelemetry] = useState({ roll: 0, pitch: 0, yaw: 0 });
-  const [connStatus, setConnStatus] = useState("Terputus 🔴");
-  const ws = useRef<WebSocket | null>(null);
+// Definisikan Props yang diterima dari App.tsx
+interface ManualProps {
+  telemetry: TelemetryData;
+  isArmed: boolean;
+  toggleArm: () => void;
+  sendRC: (channels: Record<number, number>) => void;
+}
 
-  // 2. State Kendali 6-DOF (MAVLink PWM Standard: 1100 - 1900, Netral: 1500)
+export const Manual: React.FC<ManualProps> = ({ telemetry, isArmed, toggleArm, sendRC }) => {
   const [controls, setControls] = useState({
     forward: 1500, lateral: 1500, vertical: 1500, roll: 1500, pitch: 1500, yaw: 1500
   });
 
-  // 3. State Fitur Pendukung
-  const [isArmed, setIsArmed] = useState(false);
   const [missionTime, setMissionTime] = useState(0);
   const [lights, setLights] = useState(false);
   const [gripper, setGripper] = useState(0); 
-
-  // --- WEBSOCKET CONNECTION ---
-  useEffect(() => {
-    ws.current = new WebSocket("ws://127.0.0.1:8000/ws/telemetry");
-    
-    ws.current.onopen = () => setConnStatus("Terhubung 🟢");
-    ws.current.onclose = () => {
-      setConnStatus("Terputus 🔴");
-      setIsArmed(false);
-    };
-    
-    ws.current.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      if (data.type === "ATTITUDE") {
-        setTelemetry({ roll: data.roll, pitch: data.pitch, yaw: data.yaw });
-      }
-    };
-
-    return () => { if (ws.current) ws.current.close(); };
-  }, []);
 
   // --- MISSION TIMER ---
   useEffect(() => {
@@ -54,24 +35,7 @@ export const Manual: React.FC = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // --- PENGIRIMAN DATA MAVLINK ---
-  const sendRC = (newControls: typeof controls) => {
-    const channelMap = { pitch: 1, roll: 2, vertical: 3, yaw: 4, forward: 5, lateral: 6 };
-    if (ws.current?.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({
-        action: "rc",
-        channels: {
-          [channelMap.pitch]: newControls.pitch,
-          [channelMap.roll]: newControls.roll,
-          [channelMap.vertical]: newControls.vertical,
-          [channelMap.yaw]: newControls.yaw,
-          [channelMap.forward]: newControls.forward,
-          [channelMap.lateral]: newControls.lateral
-        }
-      }));
-    }
-  };
-
+  // --- HANDLER KONTROL ---
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const numericValue = parseInt(value);
@@ -80,30 +44,34 @@ export const Manual: React.FC = () => {
       const constrainedValue = Math.max(1100, Math.min(1900, numericValue));
       const updated = { ...controls, [name]: constrainedValue };
       setControls(updated);
-      sendRC(updated);
+      
+      // Format data RC untuk dikirim ke App.tsx -> Backend
+      const channelMap = { pitch: 1, roll: 2, vertical: 3, yaw: 4, forward: 5, lateral: 6 };
+      sendRC({
+        [channelMap.pitch]: updated.pitch,
+        [channelMap.roll]: updated.roll,
+        [channelMap.vertical]: updated.vertical,
+        [channelMap.yaw]: updated.yaw,
+        [channelMap.forward]: updated.forward,
+        [channelMap.lateral]: updated.lateral
+      });
     }
   };
 
-  // --- FUNGSI RESET MASTER (Semua 1500) ---
   const resetControls = () => {
     const neutral = { forward: 1500, lateral: 1500, vertical: 1500, roll: 1500, pitch: 1500, yaw: 1500 };
     setControls(neutral);
-    sendRC(neutral);
+    // Kirim nilai netral ke semua channel
+    sendRC({ 1: 1500, 2: 1500, 3: 1500, 4: 1500, 5: 1500, 6: 1500 });
   };
 
-  // --- FUNGSI RESET INDIVIDU (Per Slider) ---
   const resetSingleAxis = (axis: keyof typeof controls) => {
     const updated = { ...controls, [axis]: 1500 };
     setControls(updated);
-    sendRC(updated);
-  };
-
-  const toggleArm = () => {
-    if (ws.current?.readyState === WebSocket.OPEN) {
-      const action = isArmed ? "disarm" : "arm";
-      ws.current.send(JSON.stringify({ action }));
-      setIsArmed(!isArmed);
-    }
+    
+    // Hanya perbarui channel yang direset
+    const channelMap: Record<string, number> = { pitch: 1, roll: 2, vertical: 3, yaw: 4, forward: 5, lateral: 6 };
+    sendRC({ [channelMap[axis]]: 1500 });
   };
 
   return (
@@ -117,7 +85,7 @@ export const Manual: React.FC = () => {
             Manual Override (6-DOF)
           </h2>
           <p className="text-[11px] font-mono mt-2 uppercase tracking-widest text-blue-400">
-            {connStatus} · ArduSub SITL Backend
+            {telemetry.status === 'CONNECTED' ? "Terhubung 🟢" : "Terputus 🔴"} · ArduSub SITL Backend
           </p>
         </div>
 
@@ -164,7 +132,6 @@ export const Manual: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <label className="text-[10px] font-mono text-slate-400 uppercase">{axis}</label>
-                        {/* TOMBOL RESET INDIVIDU */}
                         <button 
                           onClick={() => resetSingleAxis(axis as keyof typeof controls)}
                           className="bg-slate-800 hover:bg-blue-600 text-slate-400 hover:text-white rounded px-1.5 py-0.5 text-[10px] transition-colors"
@@ -178,14 +145,12 @@ export const Manual: React.FC = () => {
                         className="w-16 bg-black/60 border border-white/10 rounded px-2 py-1 text-xs font-mono text-center text-blue-400 focus:outline-none focus:border-blue-500"
                       />
                     </div>
-                    {/* Event onDoubleClick untuk reset cepat dari bar slider */}
                     <input 
                       type="range" name={axis} min="1100" max="1900" 
                       value={controls[axis as keyof typeof controls]} 
                       onChange={handleInputChange} 
                       onDoubleClick={() => resetSingleAxis(axis as keyof typeof controls)}
                       className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500" 
-                      title="Geser, atau klik ganda (double-click) untuk mereset"
                     />
                   </div>
                 ))}
@@ -199,11 +164,9 @@ export const Manual: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <label className="text-[10px] font-mono text-slate-400 uppercase">{axis}</label>
-                        {/* TOMBOL RESET INDIVIDU */}
                         <button 
                           onClick={() => resetSingleAxis(axis as keyof typeof controls)}
                           className="bg-slate-800 hover:bg-purple-600 text-slate-400 hover:text-white rounded px-1.5 py-0.5 text-[10px] transition-colors"
-                          title="Reset ke Netral (1500)"
                         >
                           ↺
                         </button>
@@ -213,14 +176,12 @@ export const Manual: React.FC = () => {
                         className="w-16 bg-black/60 border border-white/10 rounded px-2 py-1 text-xs font-mono text-center text-purple-400 focus:outline-none focus:border-purple-500"
                       />
                     </div>
-                    {/* Event onDoubleClick untuk reset cepat dari bar slider */}
                     <input 
                       type="range" name={axis} min="1100" max="1900" 
                       value={controls[axis as keyof typeof controls]} 
                       onChange={handleInputChange} 
                       onDoubleClick={() => resetSingleAxis(axis as keyof typeof controls)}
                       className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500" 
-                      title="Geser, atau klik ganda (double-click) untuk mereset"
                     />
                   </div>
                 ))}
@@ -251,8 +212,7 @@ export const Manual: React.FC = () => {
                <div className="text-blue-500/70 border-b border-white/10 pb-1 mb-3">TELEMETRY_DATA</div>
                <div className="flex justify-between text-slate-500"><span>ROLL:</span> <span className="text-white">{telemetry.roll}°</span></div>
                <div className="flex justify-between text-slate-500"><span>PITCH:</span> <span className="text-white">{telemetry.pitch}°</span></div>
-               <div className="flex justify-between text-slate-500"><span>YAW:</span> <span className="text-white">{telemetry.yaw}°</span></div>
-               
+               <div className="flex justify-between text-slate-500"><span>HEADING:</span> <span className="text-white">{telemetry.heading}°</span></div>
                <div className="text-blue-500/70 border-b border-white/10 pb-1 mt-6 mb-3">ACTIVE_CHANNELS (PWM)</div>
                <div className="text-slate-400">CH1 (Pitch): {controls.pitch}</div>
                <div className="text-slate-400">CH2 (Roll) : {controls.roll}</div>
