@@ -11,8 +11,6 @@ import { Dashboard } from './views/Dashboard';
 import ParamsView from './views/params'; 
 import MissionControl from './views/Mission';
 import PingSonarView from './views/ping'; 
-
-// Import Views Baru untuk Log & Video
 import LogBrowser from './views/browser'; // Sesuaikan dengan nama file kamu
 import VideoStream from './views/video'; // Sesuaikan dengan nama file kamu
 
