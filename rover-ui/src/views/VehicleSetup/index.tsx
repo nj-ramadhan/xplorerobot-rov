@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import Overview from './Overview';
+import PwmOutputs from './PwmOutputs'; // 1. Tambahkan import ini
+import Configure from './Configure';
 
 export default function VehicleSetup() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -34,8 +36,8 @@ export default function VehicleSetup() {
       {/* Dynamic Content */}
       <div className="mt-4">
         {activeTab === 'overview' && <Overview />}
-        {activeTab === 'pwm' && <div className="p-8 bg-slate-900/50 rounded-lg">PWM Settings Content</div>}
-        {activeTab === 'configure' && <div className="p-8 bg-slate-900/50 rounded-lg">Configuration Content</div>}
+        {activeTab === 'pwm' && <PwmOutputs />}
+        {activeTab === 'configure' && <Configure />}
       </div>
     </div>
   );
