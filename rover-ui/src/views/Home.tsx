@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MenuCard } from '../components/MenuCard';
 
+// Gabungan menu dari kedua branch, diurutkan secara logis
 const menus = [
   { 
     path: '/manual', 
@@ -12,8 +13,8 @@ const menus = [
   { 
     path: '/manualros2', 
     title: 'Manual Simulation ROS2', 
-    desc: 'Override and control vehicle movements within the Gazebo SITL environment manually.', 
-    icon: '🎮'
+    desc: 'Manual control specifically optimized for ROS2 environments.', 
+    icon: '🕹️'
   },
   { 
     path: '/autonomous', 
@@ -22,25 +23,53 @@ const menus = [
     icon: '🤖'
   },
   { 
+    path: '/Mission', 
+    title: 'Mission Control', 
+    desc: 'Create, manage, and execute navigation missions with real-time updates.', 
+    icon: '🎯' 
+  },
+  { 
+    path: '/simulation', 
+    title: 'Autopilot Firmware',  
+    desc: 'Update and manage flight controller firmware.', 
+    icon: '🚀' 
+  },
+  { 
     path: '/params',   
     title: 'Autopilot Parameters',
     desc: 'Modify vehicle parameters in real-time.', 
-    icon: '📑' },
+    icon: '📑' 
+  },
   { 
     path: '/live',     
     title: 'Live Telemetry',      
     desc: 'Real-time sensor data and video stream.', 
-    icon: '📊' },
+    icon: '📊' 
+  },
   { 
     path: '/video',    
     title: 'Video Streams',       
-    desc: 'Configure all video input devices.',      
-    icon: '📹' },
+    desc: 'Configure and manage all video input devices.',      
+    icon: '📹' 
+  },
   { 
     path: '/setup',    
     title: 'Vehicle Setup',       
     desc: 'Sensor calibrations and motor tests.',    
-    icon: '⚙️' },
+    icon: '⚙️' 
+  },
+  { 
+    path: '/browser',    
+    title: 'Log Browser',          
+    desc: 'Browse Telemetry (.tlog) and Binary (.bin) logs.', 
+    icon: '📁' 
+  },
+  { 
+    path: '/ping',       
+    title: 'Ping Sonar Devices',   
+    desc: 'Manage detected Ping family sonar devices.', 
+    icon: '📡' 
+  },
 ];
 
 export const Home: React.FC = () => {
@@ -49,9 +78,14 @@ export const Home: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="mb-8">
-        <h2 className="font-display font-black text-xl text-white uppercase tracking-wider">ROV Ground Station</h2>
-        <p className="text-[11px] font-mono text-slate-400 mt-1 uppercase tracking-widest">Main Control Menu</p>
+        <h2 className="font-display font-black text-xl text-white uppercase tracking-wider">
+          ROV Ground Station
+        </h2>
+        <p className="text-[11px] font-mono text-slate-400 mt-1 uppercase tracking-widest">
+          Main Control Menu
+        </p>
       </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {menus.map((m) => (
           <MenuCard 
@@ -59,7 +93,7 @@ export const Home: React.FC = () => {
             icon={m.icon} 
             title={m.title} 
             description={m.desc} 
-            onClick={() => navigate(m.path)} // Pindah ke alamat path
+            onClick={() => navigate(m.path)} 
           />
         ))}
       </div>
