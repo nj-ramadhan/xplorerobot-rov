@@ -9,6 +9,7 @@ const menus = [
   { path: '/video',      title: 'Video Streams',        desc: 'Configure all video input devices.', icon: '📹' },
   { path: '/setup',      title: 'Vehicle Setup',        desc: 'Sensor calibrations and motor tests.', icon: '⚙️' },
   { path: '/system-info', title: 'System Information', desc: 'Monitor system, processes, and kernel.', icon: '🖥️' },
+  { path: '/blueos',      title: 'BlueOS Version',      desc: 'Manage system firmware and updates.', icon: '📦' },
 ];
 
 export const Home: React.FC = () => {

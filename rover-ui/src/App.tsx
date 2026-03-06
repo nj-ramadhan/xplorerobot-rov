@@ -18,6 +18,8 @@ import Simulation from './views/simulation';
 import VehicleSetup from './views/VehicleSetup/index';
 
 import { SystemInformation } from './views/SystemInformation';
+
+import  BlueOSVersion  from './views/BlueOSVersion'; // Import halaman baru
 function App() {
   // State untuk Mode Siang/Malam
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -99,6 +101,7 @@ function App() {
                 {/* Fallback: Jika user mengetik alamat asal, lempar kembali ke Home */}
                 <Route path="*" element={<Navigate to="/" />} />
                 <Route path="/system-info" element={<SystemInformation />} />
+                <Route path="/blueos" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><BlueOSVersion /></div>} />
               </Routes>
             </div>
           </main>
