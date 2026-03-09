@@ -37,7 +37,7 @@ For easy re-deployment, use the `ros2-apt-source` package to automatically confi
 *   **Install Core Packages:**
     ```bash
     sudo apt update && sudo apt upgrade
-    sudo apt install ros-jazzy-desktop ros-dev-tools -y
+    sudo apt install ros-${ROS_DISTRO}-desktop ros-dev-tools -y
     ```
     *The **Desktop Install** includes RViz, demos, and tutorials essential for AMR development.*
 
@@ -52,7 +52,7 @@ To avoid manually running setup scripts every time you open a terminal, automate
 
 *   **Configure Bash Session:**
     ```bash
-    echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+    echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
     echo "source ~/xr_rov_ws/install/setup.bash" >> ~/.bashrc
     source ~/.bashrc
     ```
@@ -130,17 +130,17 @@ sudo apt-get install ros-${ROS_DISTRO}-slider-publisher
 
 ## install rtab_map
 ```bash
-sudo apt-get install ros-jazzy-rtabmap ros-jazzy-rtabmap-odom ros-jazzy-rtabmap-viz ros-jazzy-rtabmap-slam -y
+sudo apt-get install ros-${ROS_DISTRO}-rtabmap ros-${ROS_DISTRO}-rtabmap-odom ros-${ROS_DISTRO}-rtabmap-viz ros-${ROS_DISTRO}-rtabmap-slam -y
 ```
 
 ## install Nav2
 ```bash
-sudo apt-get install ros-jazzy-nav2-bringup -y
+sudo apt-get install ros-${ROS_DISTRO}-nav2-bringup -y
 ```
 
 ## install Resbridge Server and NPM for GUI server
 ```bash
-sudo apt install ros-jazzy-rosbridge-server -y
+sudo apt install ros-${ROS_DISTRO}-rosbridge-server -y
 ```
 
 ### Install NPM, makes sure it's latest version to support vite.js
