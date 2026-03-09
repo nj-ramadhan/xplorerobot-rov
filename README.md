@@ -2,7 +2,7 @@
 Autonomous Mobile Robot (AMR) using ROS2 framework developed in Bandung Polytechnic for Manufacturing (Polman Bandung)
 
 
-### **Polebot AMR: System Setup & Deployment Guide**
+### **XR ROV: System Setup & Deployment Guide**
 
 #### **1. Initial System Preparation**
 To ensure the AMR software runs correctly, the system must support **UTF-8** and have the necessary repositories enabled.
@@ -53,7 +53,7 @@ To avoid manually running setup scripts every time you open a terminal, automate
 *   **Configure Bash Session:**
     ```bash
     echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
-    echo "source ~/polebot_amr_ws/install/setup.bash" >> ~/.bashrc
+    echo "source ~/xr_rov_ws/install/setup.bash" >> ~/.bashrc
     source ~/.bashrc
     ```
     *This command tells your computer how to find ROS 2 commands automatically in every new terminal window.*
@@ -63,10 +63,10 @@ To avoid manually running setup scripts every time you open a terminal, automate
     sudo rosdep init
     rosdep update
     ```
-    *`rosdep` helps manage and install dependencies for your specific Polebot AMR packages.*
+    *`rosdep` helps manage and install dependencies for your specific XR ROV packages.*
 
 #### **4. Simulation & Support Tools**
-Polebot AMR relies on **Gazebo** for simulation and **NumPy** for scientific computing.
+XR ROV relies on **Gazebo** for simulation and **NumPy** for scientific computing.
 
 *   **Install Gazebo and Python Tools:**
     ```bash
@@ -95,12 +95,12 @@ sudo apt-get install terminator -y
 ---
 
 ### **Core Concepts for Developers**
-When documenting new code for Polebot AMR, remember these three vital ROS 2 terms:
+When documenting new code for XR ROV, remember these three vital ROS 2 terms:
 1.  **Nodes:** Programs that perform tasks.
 2.  **Publishers:** Programs (like sensors) that send data (e.g., a depth camera).
 3.  **Subscribers:** Programs (like wheel controllers) that receive data to act upon it (e.g., stopping if an obstacle is detected).
 
-The Polebot AMR code is distributed under the **GPL-3.0 license**. For easier workspace management, you may use the provided `.code-workspace` file in the repository.
+The XR ROV code is distributed under the **GPL-3.0 license**. For easier workspace management, you may use the provided `.code-workspace` file in the repository.
 
 
 # Install all missing dependencies automatically
@@ -111,86 +111,10 @@ rosdep install --from-paths src --ignore-src -r -y
 # Enter the src folder to clone depedencies
 ```bash
 cd src
-git clone https://github.com/nj-ramadhan/ros2_serial.git
-git clone https://github.com/nj-ramadhan/ros2_lsc.git
-git clone https://github.com/nj-ramadhan/ros2_roboteq.git
-git clone https://github.com/nj-ramadhan/ros2_orbbec.git
+git clone https://github.com/nj-ramadhan/ros2_pose_to_tf.git
+git clone https://github.com/nj-ramadhan/ros2_auv_control.git
+git clone https://github.com/nj-ramadhan/ros2_thruster_manager.git
 ```
-
-## ORBBEC Installation Instructions
-### Install ROS 2
-
-Please refer to the official ROS 2 installation guide guidance
-If your ROS 2 command does not auto-complete, put the following two lines into your .bashrc or .zshrc
-```bash
-eval "$(register-python-argcomplete3 ros2)"
-eval "$(register-python-argcomplete3 colcon)"
-```
-
-### Install deb dependencies
-# assume you have sourced ROS environment, same blow
-```bash
-sudo apt install libgflags-dev nlohmann-json3-dev  \
-ros-$ROS_DISTRO-image-transport  ros-${ROS_DISTRO}-image-transport-plugins ros-${ROS_DISTRO}-compressed-image-transport \
-ros-$ROS_DISTRO-image-publisher ros-$ROS_DISTRO-camera-info-manager \
-ros-$ROS_DISTRO-diagnostic-updater ros-$ROS_DISTRO-diagnostic-msgs ros-$ROS_DISTRO-statistics-msgs \
-ros-$ROS_DISTRO-backward-ros libdw-dev
-```
-
-### Install udev rules.
-```bash
-cd  ~/polebot_amr_ws/src/ros2_orbbec/orbbec_camera/scripts
-sudo bash install_udev_rules.sh
-sudo udevadm control --reload-rules && sudo udevadm trigger
-```
-
-Getting start
-```bash
-cd ~/polebot_amr_ws/
-```
-
-# build release, Default is Debug
-```bash
-colcon build --event-handlers  console_direct+  --cmake-args  -DCMAKE_BUILD_TYPE=Release
-```
-
-Launch camera node
-
-On terminal 1
-. ./install/setup.bash
-ros2 launch orbbec_camera astra.launch.py
-On terminal 2
-. ./install/setup.bash
-rviz2
-Select the topic you want to display
-
-List topics / services/ parameters ( on terminal 3)
-ros2 topic list
-ros2 service list
-ros2 param list
-Get device info
-ros2 service call /camera/get_device_info orbbec_camera_msgs/srv/GetDeviceInfo '{}'
-Get SDK version
-ros2 service call /camera/get_sdk_version orbbec_camera_msgs/srv/GetString '{}'
-Get exposure
-ros2 service call /camera/get_color_exposure orbbec_camera_msgs/srv/GetInt32 '{}'
-If your check ir or depth, please change /camera/get_color_exposure to /camera/get_ir_exposure or /camera/get_depth_exposure, Same below.
-
-Get gain
-ros2 service call /camera/get_color_gain orbbec_camera_msgs/srv/GetInt32 '{}'
-Get white balance
-ros2 service call /camera/get_white_balance orbbec_camera_msgs/srv/GetInt32 '{}'
-Set auto exposure
-ros2 service call /camera/set_color_auto_exposure std_srvs/srv/SetBool '{data: false}'
-Set white balance
-ros2 service call /camera/set_white_balance orbbec_camera_msgs/srv/SetInt32 '{data: 4600}'
-Set laser enable
-ros2 service call  /camera/set_laser_enable std_srvs/srv/SetBool "{data: true}"
-toggle sensor
-ros2 service call /camera/toggle_ir std_srvs/srv/SetBool "{data : true}"
-save point cloud
-ros2 service call /camera/save_point_cloud std_srvs/srv/Empty "{}"
-
 
 ## Check for Roboteq Driver
 Note on Permissions (Outside Source Information): If you find the correct port but still get an error, it might be a permission issue. You may need to grant access to the dialout group using 
@@ -199,9 +123,9 @@ sudo usermod -a -G dialout $USER
 ```
 and then restart your session.
 
-## install joint_state_publisher
+## install slider_publisher
 ```bash
-sudo apt-get install ros-jazzy-joint-state-publisher
+sudo apt-get install ros-${ROS_DISTRO}-slider-publisher
 ```
 
 ## install rtab_map
@@ -227,7 +151,7 @@ nvm install node
 
 ### Run GUI Front-end
 ```bash
-cd ~/polebot_amr_ws/src/polebot_amr/polebot_amr_webserver
+cd ~/xr_rov_ws/src/xr_rov/xr_rov_webserver
 npm install
 npm run dev
 ```
@@ -265,7 +189,24 @@ sudo mysql -u amr -p polebot < polebot.sql
 
 ### Run GUI Back-end
 ```bash
-cd ~/polebot_amr_ws/src/polebot_amr/polebot_amr_webserver_backend
+cd ~/xr_rov_ws/src/xr_rov/xr_rov_webserver_backend
 npm install
 node index.js
 ```
+
+
+### Running
+To run a demonstration with the vehicle, you can run a Gazebo scenario, such as an empty world with buoyancy and sensors setup:
+
+    ros2 launch xr_rov_description world_launch.py
+
+and then spawn the robot with a GUI to control the thrusters:
+
+    ros2 launch xr_rov_description upload_xr_rov_launch.py sliders:=true
+
+### High-level control
+Basic control is available in the auv_control package
+In this case spawn the robot without manual sliders and run e.g. a cascaded PID controller:
+
+    ros2 launch xr_rov_description upload_xr_rov_launch.py
+    ros2 launch xr_rov_control cascaded_pids_launch.py sliders:=true

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>xr_rov_description</name>
+  <version>0.1.0</version>
+  <description>The xr_rov_description package</description>
+
+  <maintainer email="nj.ramadhan.mechatronics@gmail.com">NJ Ramadhan</maintainer>
+
+  <license>MIT</license>
+  
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
