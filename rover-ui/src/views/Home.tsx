@@ -1,26 +1,33 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+// Pastikan path ke MenuCard ini sesuai dengan folder kamu
 import { MenuCard } from '../components/MenuCard';
 
 // Gabungan menu dari kedua branch, diurutkan secara logis
 const menus = [
   { 
     path: '/manual', 
-    title: 'Manual Simulation', 
-    desc: 'Override and control vehicle movements within the Gazebo SITL environment manually.', 
+    title: 'Manual Simulation (MAVLink)', 
+    desc: 'Override and control vehicle movements via ArduSub SITL.', 
     icon: '🎮'
   },
   { 
     path: '/manualros2', 
+<<<<<<< HEAD
     title: 'Manual Simulation ROS2', 
     desc: 'Manual control specifically optimized for ROS2 environments.', 
     icon: '🕹️'
+=======
+    title: 'Manual Simulation (ROS 2)', 
+    desc: 'Direct Thruster Control Matrix within Gazebo ROS 2 environment.', 
+    icon: '⚙️'
+>>>>>>> mahen
   },
   { 
     path: '/autonomous', 
-    title: 'Autonomous Simulation', 
-    desc: 'Goal planning and autonomous navigation system.', 
-    icon: '🤖'
+    title: 'Autonomous Simulation (ROS 2)', 
+    desc: 'Point & Go tactical navigation map via ROS 2 Bridge.', 
+    icon: '🛰️'
   },
   { 
     path: '/Mission', 
@@ -49,13 +56,18 @@ const menus = [
   { 
     path: '/video',    
     title: 'Video Streams',       
+<<<<<<< HEAD
     desc: 'Configure and manage all video input devices.',      
+=======
+    desc: 'Configure all video input devices.',       
+>>>>>>> mahen
     icon: '📹' 
   },
   { 
     path: '/setup',    
     title: 'Vehicle Setup',       
     desc: 'Sensor calibrations and motor tests.',    
+<<<<<<< HEAD
     icon: '⚙️' 
   },
   { 
@@ -69,6 +81,9 @@ const menus = [
     title: 'Ping Sonar Devices',   
     desc: 'Manage detected Ping family sonar devices.', 
     icon: '📡' 
+=======
+    icon: '🔧' 
+>>>>>>> mahen
   },
 ];
 
@@ -93,10 +108,16 @@ export const Home: React.FC = () => {
             icon={m.icon} 
             title={m.title} 
             description={m.desc} 
+<<<<<<< HEAD
             onClick={() => navigate(m.path)} 
+=======
+            onClick={() => navigate(m.path)}
+>>>>>>> mahen
           />
         ))}
       </div>
     </div>
   );
 };
+
+export default Home;

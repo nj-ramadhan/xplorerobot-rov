@@ -5,19 +5,21 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Sidebar } from './layouts/Sidebar';
 import { Navbar } from './layouts/Navbar';
 
-// Import Views
+// Import Views & Pages
 import { Home } from './views/Home';
 import { Dashboard } from './views/Dashboard';
 import { Manual } from './views/manual';
-import ManualROS2 from './views/manualros2';
-import Autonomous from './views/autonomous';
+
+// ✅ IMPORT HASIL KERJA MAHEN (Versi Terbaru)
+import ManualROS2 from './pages/manualros2'; 
+import AutonomousROS2 from './pages/AutonomousROS2'; 
+
+// ✅ IMPORT HASIL KERJA TIM LAIN (Jangan dihapus biar ga diamuk tim)
 import ParamsView from './views/params'; 
 import MissionControl from './views/Mission';
 import PingSonarView from './views/ping'; 
 import LogBrowser from './views/browser'; 
 import VideoStream from './views/video'; 
-
-// Import Views Tambahan (Hasil Merge)
 import VehicleSetup from './views/VehicleSetup/index';
 
 // Import Types
@@ -33,8 +35,7 @@ function App() {
   });
   const [isArmed, setIsArmed] = useState(false);
 
-  // KONEKSI WEBSOCKET TERPUSAT (Untuk MAVLink/FastAPI lama)
-  // Biarkan saja ini jalan, tidak akan mengganggu ROS2. Nanti statusnya hanya 'DISCONNECTED'
+  // KONEKSI WEBSOCKET MAVLINK (Port 8000)
   useEffect(() => {
     const socket = new WebSocket('ws://127.0.0.1:8000/ws/telemetry');
     ws.current = socket;
@@ -45,18 +46,21 @@ function App() {
     };
 
     socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'ATTITUDE') {
-        setTelemetry(prev => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'ATTITUDE') {
           let headingDegrees = data.yaw * (180 / Math.PI);
           if (headingDegrees < 0) headingDegrees += 360;
-          return {
+          
+          setTelemetry(prev => ({
             ...prev,
             pitch: data.pitch,
             roll: data.roll,
             heading: Math.round(headingDegrees)
-          };
-        });
+          }));
+        }
+      } catch (err) {
+        // Abaikan error
       }
     };
 
@@ -102,7 +106,7 @@ function App() {
           isDarkMode ? 'bg-[#1e4e8c]' : 'bg-blue-500'
         }`}>
           
-          {/* Background dots aksen untuk Ground Station */}
+          {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:30px_30px] z-0"></div>
 
           {/* Navbar Global */}
@@ -116,6 +120,7 @@ function App() {
           <main className="flex-1 overflow-y-auto p-6 md:p-8 z-10">
             <div className="max-w-7xl mx-auto">
               <Routes>
+                {/* Rute Halaman Utama */}
                 <Route path="/" element={<Home />} />
                 <Route path="/live" element={<Dashboard telemetry={telemetry} />} />
                 
@@ -131,19 +136,21 @@ function App() {
                   </div>
                 } />
 
-                {/* Manual ROS2 Gazebo */}
+                {/* Manual ROS2 Gazebo (Mahen's Update) */}
                 <Route path="/manualros2" element={
                   <div className="p-1 text-white">
                     <ManualROS2 />
                   </div>
                 } />
                 
+                {/* Autonomous ROS2 (Mahen's Update) */}
                 <Route path="/autonomous" element={
-                  <div className="p-10 text-white bg-black/20 rounded-xl border border-white/5">
-                    <Autonomous />
+                  <div className="p-1 text-white">
+                    <AutonomousROS2 />
                   </div>
                 } />
 
+                {/* 🛡️ Rute Tambahan dari Tim Lain */}
                 <Route path="/params" element={<ParamsView />} /> 
                 <Route path="/mission" element={<MissionControl />} /> 
                 <Route path="/ping" element={<PingSonarView />} /> 
