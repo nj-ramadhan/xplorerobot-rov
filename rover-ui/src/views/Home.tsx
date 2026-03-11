@@ -13,15 +13,9 @@ const menus = [
   },
   { 
     path: '/manualros2', 
-<<<<<<< HEAD
-    title: 'Manual Simulation ROS2', 
-    desc: 'Manual control specifically optimized for ROS2 environments.', 
-    icon: '🕹️'
-=======
     title: 'Manual Simulation (ROS 2)', 
     desc: 'Direct Thruster Control Matrix within Gazebo ROS 2 environment.', 
     icon: '⚙️'
->>>>>>> mahen
   },
   { 
     path: '/autonomous', 
@@ -56,18 +50,13 @@ const menus = [
   { 
     path: '/video',    
     title: 'Video Streams',       
-<<<<<<< HEAD
-    desc: 'Configure and manage all video input devices.',      
-=======
     desc: 'Configure all video input devices.',       
->>>>>>> mahen
     icon: '📹' 
   },
   { 
     path: '/setup',    
     title: 'Vehicle Setup',       
     desc: 'Sensor calibrations and motor tests.',    
-<<<<<<< HEAD
     icon: '⚙️' 
   },
   { 
@@ -81,9 +70,6 @@ const menus = [
     title: 'Ping Sonar Devices',   
     desc: 'Manage detected Ping family sonar devices.', 
     icon: '📡' 
-=======
-    icon: '🔧' 
->>>>>>> mahen
   },
 ];
 
@@ -108,11 +94,7 @@ export const Home: React.FC = () => {
             icon={m.icon} 
             title={m.title} 
             description={m.desc} 
-<<<<<<< HEAD
             onClick={() => navigate(m.path)} 
-=======
-            onClick={() => navigate(m.path)}
->>>>>>> mahen
           />
         ))}
       </div>
