@@ -12,8 +12,23 @@ const menus = [
   { path: '/blueos',      title: 'BlueOS Version',      desc: 'Manage system firmware and updates.', icon: '📦' },
 ];
 
-export const Home: React.FC = () => {
+// Tambahkan Interface untuk Props
+interface HomeProps {
+  onCardClick?: () => void;
+}
+
+export const Home: React.FC<HomeProps> = ({ onCardClick }) => {
   const navigate = useNavigate();
+
+  const handleMenuClick = (path: string) => {
+    // 1. Jalankan navigasi ke halaman yang dituju
+    navigate(path);
+    
+    // 2. Jalankan fungsi untuk mengubah sidebar ke mode detail (panjang)
+    if (onCardClick) {
+      onCardClick();
+    }
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -29,7 +44,8 @@ export const Home: React.FC = () => {
             icon={m.icon} 
             title={m.title} 
             description={m.desc} 
-            onClick={() => navigate(m.path)} // Ini yang akan memindahkan user ke path yang benar
+            // Gunakan handleMenuClick yang baru dibuat
+            onClick={() => handleMenuClick(m.path)} 
           />
         ))}
       </div>
