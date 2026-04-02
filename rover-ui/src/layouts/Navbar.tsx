@@ -20,7 +20,6 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
         </h1>
         <p className="text-[9px] font-bold opacity-50 uppercase tracking-widest mt-0.5">Industrial Informatics - TRIN</p>
       </div>
-
       {/* Area Kanan (Koneksi & Kontrol) */}
       <div className="flex items-center gap-6">
         

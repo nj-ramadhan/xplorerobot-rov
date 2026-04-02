@@ -41,13 +41,13 @@ const menus = [
   { 
     path: '/video',    
     title: 'Video Streams',       
-    desc: 'Manage your video devices and video streams.', // Deskripsi dari Hamiya 
-    icon: '🎥' // Ikon dari Hamiya
+    desc: 'Manage your video devices and video streams.', 
+    icon: '🎥' 
   },
   { 
     path: '/ping',       
     title: 'Ping Sonar Devices',   
-    desc: 'Manage detected Ping family sonar devices connected to the network.', // Gabungan deskripsi
+    desc: 'Manage detected Ping family sonar devices connected to the network.', 
     icon: '📡' 
   },
 
@@ -67,7 +67,7 @@ const menus = [
   { 
     path: '/browser',    
     title: 'Log Browser',          
-    desc: 'Allow browsing the Telemetry (.tlog) and Binary (.bin) logs.', // Deskripsi dari Hamiya
+    desc: 'Allow browsing the Telemetry (.tlog) and Binary (.bin) logs.', 
     icon: '📁' 
   },
   { 
@@ -83,17 +83,32 @@ const menus = [
     icon: '📦' 
   },
 
-  // 👥 KELOMPOK INFORMASI TIM (Tambahan dari Hamiya)
+  // 👥 KELOMPOK INFORMASI TIM
   { 
     path: '/kami',      
     title: 'Dokumentasi Team',      
     desc: 'Informasi dan dokumentasi tentang tim pengembang.', 
-    icon: '👥' // Saya ganti ikonnya jadi gambar orang agar lebih pas dari sebelumnya (🎥)
+    icon: '👥' 
   },
 ];
 
-export const Home: React.FC = () => {
+// Tambahkan Interface untuk Props
+interface HomeProps {
+  onCardClick?: () => void;
+}
+
+export const Home: React.FC<HomeProps> = ({ onCardClick }) => {
   const navigate = useNavigate();
+
+  const handleMenuClick = (path: string) => {
+    // 1. Jalankan navigasi ke halaman yang dituju
+    navigate(path);
+    
+    // 2. Jalankan fungsi untuk mengubah sidebar ke mode detail (panjang)
+    if (onCardClick) {
+      onCardClick();
+    }
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -114,7 +129,8 @@ export const Home: React.FC = () => {
             icon={m.icon} 
             title={m.title} 
             description={m.desc} 
-            onClick={() => navigate(m.path)} 
+            // Menggunakan handleMenuClick gabungan
+            onClick={() => handleMenuClick(m.path)} 
           />
         ))}
       </div>

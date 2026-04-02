@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // Import Layouts
-import { Sidebar } from './layouts/Sidebar';
+import Sidebar from './layouts/Sidebar';
 import { Navbar } from './layouts/Navbar';
 
 // Import Views & Pages
@@ -10,11 +10,11 @@ import { Home } from './views/Home';
 import { Dashboard } from './views/Dashboard';
 import { Manual } from './views/manual';
 
-// ✅ IMPORT HASIL KERJA MAHEN (Versi Terbaru)
+// ✅ IMPORT HASIL KERJA MAHEN
 import ManualROS2 from './pages/manualros2'; 
 import AutonomousROS2 from './pages/AutonomousROS2'; 
 
-// ✅ IMPORT HASIL KERJA TIM (Params, Mission, Ping, dll)
+// ✅ IMPORT HASIL KERJA TIM
 import ParamsView from './views/params'; 
 import MissionControl from './views/Mission';
 import PingSonarView from './views/ping'; 
@@ -22,7 +22,7 @@ import LogBrowser from './views/browser';
 import VideoStream from './views/video'; 
 import VehicleSetup from './views/VehicleSetup/index';
 
-// ✅ IMPORT HASIL KERJA NAUU (Simulation, SysInfo, BlueOS)
+// ✅ IMPORT HASIL KERJA NAUU
 import { SystemInformation } from './views/SystemInformation';
 import BlueOSVersion from './views/BlueOSVersion';
 import { Team }  from './views/kami'; 
@@ -30,6 +30,7 @@ import { TelemetryData } from './types/telemetry';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDetailMode, setIsDetailMode] = useState(false); // State baru dari Nauu untuk layout Sidebar
   const ws = useRef<WebSocket | null>(null);
 
   // State Terpusat (Global) untuk MAVLink
@@ -38,7 +39,7 @@ function App() {
   });
   const [isArmed, setIsArmed] = useState(false);
 
-  // KONEKSI WEBSOCKET MAVLINK (Port 8000)
+  // KONEKSI WEBSOCKET MAVLINK (Dipertahankan menggunakan versi Mahen yang Asli)
   useEffect(() => {
     const socket = new WebSocket('ws://127.0.0.1:8000/ws/telemetry');
     ws.current = socket;
@@ -98,22 +99,26 @@ function App() {
 
   return (
     <Router>
-      <div className={`flex h-screen w-full overflow-hidden transition-colors duration-500 font-sans antialiased ${
+      {/* WRAPPER UTAMA: Menggabungkan styling dark mode Mahen dengan base layer Nauu */}
+      <div className={`relative h-screen w-full overflow-hidden font-sans antialiased transition-colors duration-500 ${
         isDarkMode ? 'bg-[#0b111a] text-slate-200' : 'bg-slate-50 text-slate-900'
       }`}>
+
+        {/* SIDEBAR: Akan melayang (fixed) di atas konten biru (Update dari Nauu) */}
+        <Sidebar 
+          isDarkMode={isDarkMode} 
+          isDetailMode={isDetailMode} 
+          setIsDetailMode={setIsDetailMode} 
+        />
         
-        {/* Sidebar Navigasi */}
-        <Sidebar isDarkMode={isDarkMode} />
-
-        <div className={`flex-1 flex flex-col h-full relative transition-colors duration-300 ${
+        {/* KONTEN AREA: Transisi padding kiri (pl) hanya aktif jika isDetailMode OFF */}
+        <div className={`absolute inset-0 flex flex-col min-w-0 h-full transition-all duration-500 ${
           isDarkMode ? 'bg-[#1e4e8c]' : 'bg-blue-500'
-        }`}>
-
-          {/* Background Pattern */}
-          {/* Background Aksen Ground Station */}
+        } ${!isDetailMode ? 'pl-20' : 'pl-0'}`}>
+          
+          {/* Background Grid Pattern */}
           <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:30px_30px] z-0"></div>
 
-          {/* Navbar Global */}
           <Navbar 
             telemetry={telemetry} 
             isDarkMode={isDarkMode} 
@@ -121,15 +126,14 @@ function App() {
           />
 
           {/* Area Konten Utama */}
-          <main className="flex-1 overflow-y-auto p-6 md:p-8 z-10">
-            <div className="max-w-7xl mx-auto">
+          <main className="flex-1 overflow-y-auto p-6 md:p-8 z-10 relative">
+            <div className="w-full h-full max-w-7xl mx-auto">
               <Routes>
                 {/* Rute Halaman Utama & Dashboard */}
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Home onCardClick={() => setIsDetailMode(true)} />} />
                 <Route path="/live" element={<Dashboard telemetry={telemetry} />} />
                 
                 {/* 🎮 RUTE SIMULASI & KONTROL */}
-                {/* Manual MAVLink Lama */}
                 <Route path="/manual" element={
                   <div className="p-10 text-white bg-black/20 rounded-xl border border-white/5">
                     <Manual 
@@ -140,20 +144,8 @@ function App() {
                     />
                   </div>
                 } />
-
-                {/* Manual ROS2 Gazebo */}
-                <Route path="/manualros2" element={
-                  <div className="p-1 text-white">
-                    <ManualROS2 />
-                  </div>
-                } />
-                
-                {/* Autonomous ROS2 */}
-                <Route path="/autonomous" element={
-                  <div className="p-1 text-white">
-                    <AutonomousROS2 />
-                  </div>
-                } />
+                <Route path="/manualros2" element={<div className="p-1 text-white"><ManualROS2 /></div>} />
+                <Route path="/autonomous" element={<div className="p-1 text-white"><AutonomousROS2 /></div>} />
 
                 {/* 🔧 RUTE PENGATURAN & SISTEM */}
                 <Route path="/setup" element={<VehicleSetup />} />
@@ -169,10 +161,9 @@ function App() {
                     <BlueOSVersion />
                   </div>
                 } />
+                
                 {/* ROUTE DOKUMENTASI TIM */}
                 <Route path="/kami" element={<Team />} /> 
-
-                <Route path="/setup" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5">⚙️ Kalibrasi Sensor & Motor</div>} />
 
                 {/* Redirect jika route tidak ditemukan */}
                 <Route path="*" element={<Navigate to="/" />} />
@@ -181,7 +172,7 @@ function App() {
           </main>
 
           {/* Footer Identitas Kampus */}
-          <footer className={`h-6 px-6 flex items-center justify-between text-[9px] font-mono border-t z-10 ${
+          <footer className={`h-6 px-6 flex items-center justify-between text-[9px] font-mono border-t z-20 ${
             isDarkMode ? 'bg-[#111827]/90 border-white/10 text-slate-500' : 'bg-white/80 border-black/5 text-slate-600'
           }`}>
             <span className="tracking-widest uppercase">Politeknik Manufaktur Bandung - TRIN</span>
