@@ -30,7 +30,7 @@ import { TelemetryData } from './types/telemetry';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [isDetailMode, setIsDetailMode] = useState(false); // State baru dari Nauu untuk layout Sidebar
+  const [isDetailMode, setIsDetailMode] = useState(false); // Dinamis, BUKAN dipaksa true
   const ws = useRef<WebSocket | null>(null);
 
   // State Terpusat (Global) untuk MAVLink
@@ -39,7 +39,7 @@ function App() {
   });
   const [isArmed, setIsArmed] = useState(false);
 
-  // KONEKSI WEBSOCKET MAVLINK (Dipertahankan menggunakan versi Mahen yang Asli)
+  // KONEKSI WEBSOCKET MAVLINK
   useEffect(() => {
     const socket = new WebSocket('ws://127.0.0.1:8000/ws/telemetry');
     ws.current = socket;
@@ -82,7 +82,7 @@ function App() {
     };
   }, []);
 
-  // FUNGSI KONTROL TERPUSAT (Untuk MAVLink)
+  // FUNGSI KONTROL TERPUSAT
   const toggleArm = () => {
     if (ws.current?.readyState === WebSocket.OPEN) {
       const action = isArmed ? "disarm" : "arm";
@@ -99,19 +99,19 @@ function App() {
 
   return (
     <Router>
-      {/* WRAPPER UTAMA: Menggabungkan styling dark mode Mahen dengan base layer Nauu */}
+      {/* WRAPPER UTAMA */}
       <div className={`relative h-screen w-full overflow-hidden font-sans antialiased transition-colors duration-500 ${
         isDarkMode ? 'bg-[#0b111a] text-slate-200' : 'bg-slate-50 text-slate-900'
       }`}>
 
-        {/* SIDEBAR: Akan melayang (fixed) di atas konten biru (Update dari Nauu) */}
+        {/* SIDEBAR: Tetap dinamis bisa hover/muncul */}
         <Sidebar 
           isDarkMode={isDarkMode} 
           isDetailMode={isDetailMode} 
           setIsDetailMode={setIsDetailMode} 
         />
         
-        {/* KONTEN AREA: Transisi padding kiri (pl) hanya aktif jika isDetailMode OFF */}
+        {/* KONTEN AREA: Padding menyesuaikan mode sidebar */}
         <div className={`absolute inset-0 flex flex-col min-w-0 h-full transition-all duration-500 ${
           isDarkMode ? 'bg-[#1e4e8c]' : 'bg-blue-500'
         } ${!isDetailMode ? 'pl-20' : 'pl-0'}`}>
