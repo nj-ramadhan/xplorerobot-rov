@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { menuGroups } from '../types/menu';
-import { Power, Settings as SettingsIcon, Bug, Home, LayoutGrid } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { menuGroups } from '../types/menu'; 
+// 🔥 IMPORT IKON BARU: Navigation (Buat gantiin kotak biru R/B)
+import { Power, Settings as SettingsIcon, Bug, Navigation } from 'lucide-react';
 
 interface SidebarProps {
   isDarkMode: boolean;
@@ -10,106 +11,98 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) => {
-  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleBackToHome = () => {
-    setIsDetailMode(false);
-    navigate('/');
-  };
-
-  // Logika sembunyi total
   const isHidden = isDetailMode && !isHovered;
+  const isWide = isHovered;
 
   return (
     <>
-      {/* 1. TRIGGER AREA: Sensor tipis di kiri layar agar bisa di-hover */}
+      {/* SENSOR HOVER KIRI */}
       {isDetailMode && (
-        <div 
-          className="fixed inset-y-0 left-0 w-2 z-[100]"
+        <div
+          className="fixed inset-y-0 left-0 w-3 z-[100]"
           onMouseEnter={() => setIsHovered(true)}
         />
       )}
 
-      {/* 2. SIDEBAR UTAMA */}
-      <aside 
+      <aside
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          fixed left-0 top-0 h-screen z-[90] 
-          flex flex-col border-r border-gray-800
-          transition-all duration-300 ease-in-out transform
+          fixed left-0 top-0 h-screen z-[90] flex flex-col border-r border-gray-800
+          transition-all duration-300 ease-in-out
           ${isDarkMode ? 'bg-[#1a1c1e]' : 'bg-white'}
-          ${isDetailMode ? 'w-64' : 'w-20'}
+          ${isWide ? 'w-64' : 'w-24'} 
           ${isHidden ? '-translate-x-full shadow-none' : 'translate-x-0 shadow-2xl'}
         `}
       >
         {/* HEADER */}
-        <div 
-          className={`p-4 flex items-center gap-3 bg-[#16181a] border-b border-gray-800 ${isDetailMode ? 'cursor-pointer' : ''}`}
-          onClick={isDetailMode ? handleBackToHome : undefined}
+        <div
+          className="p-4 flex items-center bg-[#16181a] border-b border-gray-800 cursor-pointer hover:bg-gray-800/50 transition-colors h-[72px]"
+          onClick={() => setIsDetailMode(!isDetailMode)}
         >
-          <div className="bg-blue-600 p-2 rounded shadow-lg shrink-0 flex items-center justify-center w-10 h-10">
-            <span className="font-bold text-white text-xl font-mono">
-              {isDetailMode ? 'B' : 'R'}
-            </span>
+          {/* 🔥 LOGO SAKTI BARU: Pakai ikon Navigation + Efek Glow Hologram */}
+          <div className={`flex items-center justify-center shrink-0 w-8 h-8 transition-all ${!isWide ? 'mx-auto' : ''}`}>
+             <div className="relative">
+                {/* Bayangan Glow Biru di Belakang (Efek Hologram) */}
+                <Navigation size={20} className="absolute inset-0 text-blue-500/50 blur-[2px]" />
+                {/* Ikon Utama Putih Serong */}
+                <Navigation size={20} className="text-white drop-shadow-[0_0_8px_#3b82f6]" />
+             </div>
           </div>
-          {isDetailMode && (
-            <div className="overflow-hidden whitespace-nowrap">
-              <h1 className="font-bold text-white text-lg leading-none uppercase">BlueOS</h1>
-              <span className="text-[10px] text-blue-400 font-bold uppercase tracking-tighter">Polman Edition</span>
-            </div>
-          )}
+          <div className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isWide ? 'opacity-100 w-full ml-3' : 'opacity-0 w-0 ml-0'}`}>
+            <h1 className="font-bold text-white text-lg leading-none uppercase tracking-wide">BlueOS</h1>
+            <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Polman Edition</span>
+          </div>
         </div>
 
-        {/* MENU */}
-        <div className="flex-1 overflow-y-auto py-4 custom-scrollbar overflow-x-hidden">
-          {!isDetailMode ? (
-            <div className="flex flex-col items-center gap-6 py-4">
-              <NavLink to="/" className={({isActive}) => `${isActive ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-400`}>
-                <Home size={20} />
-              </NavLink>
-              <NavLink to="/live" className={({isActive}) => `${isActive ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-400`}>
-                <LayoutGrid size={20} />
-              </NavLink>
-            </div>
-          ) : (
-            menuGroups.map((group, idx) => (
-              <div key={idx} className="mb-4">
-                <p className="px-6 text-[9px] font-black text-gray-500 mb-3 uppercase">{group.title}</p>
+        {/* MENU KOMPLIT */}
+        <div className="flex-1 overflow-y-auto py-4 overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {menuGroups.map((group, idx) => (
+            <div key={idx} className="mb-6">
+              
+              <p className={`px-6 text-[9px] font-black text-gray-500 mb-3 uppercase tracking-wider transition-all duration-300 ${isWide ? 'opacity-100' : 'opacity-0 h-0 mb-0 overflow-hidden'}`}>
+                {group.title}
+              </p>
+
+              <div className="flex flex-col w-full px-2">
                 {group.items.map((item, itemIdx) => {
                   const Icon = item.icon;
                   return (
                     <NavLink
                       key={itemIdx}
                       to={item.path}
+                      title={!isWide ? item.title : undefined}
                       className={({ isActive }) => `
-                        flex items-center gap-3 px-6 py-2 transition-all
-                        ${isActive ? 'bg-blue-600/10 text-blue-500 border-r-4 border-blue-600' : 'hover:bg-gray-800/50 text-gray-400 hover:text-white'}
+                        flex items-center transition-all duration-200 my-1 rounded-xl
+                        ${isWide ? 'px-4 py-2.5' : 'justify-center py-3 mx-1'}
+                        ${isActive
+                          ? 'bg-blue-600/10 text-blue-400 border-r-4 border-blue-600' 
+                          : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                       `}
                     >
-                      <Icon size={16} />
-                      <span className="text-[13px] font-medium">{item.title}</span>
+                      <Icon size={isWide ? 18 : 22} className="shrink-0" />
+                      <span className={`text-[13px] font-medium whitespace-nowrap transition-all duration-300 ${isWide ? 'opacity-100 w-full ml-3' : 'opacity-0 w-0 hidden ml-0'}`}>
+                        {item.title}
+                      </span>
                     </NavLink>
                   );
                 })}
               </div>
-            ))
-          )}
+            </div>
+          ))}
         </div>
 
         {/* FOOTER */}
-        <div className="bg-[#141517] border-t border-gray-800 p-2">
-          <div className="flex justify-around">
-            <Power size={18} className="cursor-pointer hover:text-red-500" />
-            <SettingsIcon size={18} className="cursor-pointer hover:text-blue-500" />
-            <Bug size={18} className="cursor-pointer hover:text-yellow-500" />
+        <div className="bg-[#141517] border-t border-gray-800 p-4">
+          <div className="flex flex-row justify-center items-center gap-4">
+            <Power size={18} className="cursor-pointer text-gray-500 hover:text-red-500 transition-colors shrink-0" />
+            <SettingsIcon size={18} className="cursor-pointer text-gray-500 hover:text-blue-500 transition-colors shrink-0" />
+            <Bug size={18} className="cursor-pointer text-gray-500 hover:text-yellow-500 transition-colors shrink-0" />
           </div>
         </div>
       </aside>
-
-      {/* 3. PENGGANTI RUANG (Agar konten bergeser otomatis) */}
-      {!isDetailMode && <div className="w-20 shrink-0" />}
     </>
   );
 };
