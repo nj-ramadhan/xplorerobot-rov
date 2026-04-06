@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { menuGroups } from '../types/menu'; 
-// 🔥 IMPORT IKON BARU: Navigation (Buat gantiin kotak biru R/B)
-import { Power, Settings as SettingsIcon, Bug, Navigation } from 'lucide-react';
+import { Power, Settings as SettingsIcon, Bug } from 'lucide-react';
+
+// 🔥 Import KEDUA Logo
+import LogoXploreSimple from '../assets/logo_xplore_robot_simple.png';
+import LogoXploreFull from '../assets/logo_xplore_robot_full.png';
 
 interface SidebarProps {
   isDarkMode: boolean;
@@ -39,21 +42,19 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
       >
         {/* HEADER */}
         <div
-          className="p-4 flex items-center bg-[#16181a] border-b border-gray-800 cursor-pointer hover:bg-gray-800/50 transition-colors h-[72px]"
+          className="p-4 flex items-center justify-center bg-[#16181a] border-b border-gray-800 cursor-pointer hover:bg-gray-800/50 transition-colors h-[72px]"
           onClick={() => setIsDetailMode(!isDetailMode)}
         >
-          {/* 🔥 LOGO SAKTI BARU: Pakai ikon Navigation + Efek Glow Hologram */}
-          <div className={`flex items-center justify-center shrink-0 w-8 h-8 transition-all ${!isWide ? 'mx-auto' : ''}`}>
-             <div className="relative">
-                {/* Bayangan Glow Biru di Belakang (Efek Hologram) */}
-                <Navigation size={20} className="absolute inset-0 text-blue-500/50 blur-[2px]" />
-                {/* Ikon Utama Putih Serong */}
-                <Navigation size={20} className="text-white drop-shadow-[0_0_8px_#3b82f6]" />
-             </div>
-          </div>
-          <div className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isWide ? 'opacity-100 w-full ml-3' : 'opacity-0 w-0 ml-0'}`}>
-            <h1 className="font-bold text-white text-lg leading-none uppercase tracking-wide">BlueOS</h1>
-            <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Polman Edition</span>
+          {/* 🔥 Logika Ganti Logo Dinamis */}
+          <div className="flex justify-center items-center h-full w-full">
+             <img 
+               // Kalau isWide true pakai logo full, kalau false pakai logo simple
+               src={isWide ? LogoXploreFull : LogoXploreSimple} 
+               alt="Xplore Robot Logo" 
+               className={`object-contain transition-all duration-300 invert opacity-90 ${
+                 isWide ? 'h-10 w-48' : 'h-8 w-8'
+               }`} 
+             />
           </div>
         </div>
 
