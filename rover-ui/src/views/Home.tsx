@@ -65,6 +65,12 @@ const menus = [
     icon: '📑' 
   },
   { 
+    path: '/simulation', 
+    title: 'Autopilot Firmware', 
+    desc: 'Update flight controller firmware.', 
+    icon: '🚀' 
+  },
+  { 
     path: '/browser',    
     title: 'Log Browser',          
     desc: 'Allow browsing the Telemetry (.tlog) and Binary (.bin) logs.', 
