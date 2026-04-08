@@ -156,11 +156,11 @@ export const MapPanel: React.FC<MapPanelProps> = ({
         style={{
           left: rovUI.x,
           top: rovUI.y,
-          // Emoji 🛩️ default menghadap kanan (East = 90°)
-          // ROS yaw 0° = North (atas layar), positif = CCW
-          // CSS rotate positif = CW, sumbu Y layar ke bawah
-          // Rumus: 90 - yaw  → saat yaw=0 (North) icon hadap atas, yaw=90 (West) hadap kiri
-          transform: `translate(-50%, -50%) rotate(${-45 + rovPos.yaw}deg)`,
+          // Emoji 🛩️ default menghadap kanan-atas (offset -45°)
+          // ROS yaw: 0°=North, positif=CCW (berlawanan jarum jam)
+          // CSS rotate: positif=CW → harus negasi yaw
+          // Rumus: -yaw - 45  → yaw=0 → icon hadap North, yaw=90(W) → icon hadap West
+          transform: `translate(-50%, -50%) rotate(${-rovPos.yaw - 45}deg)`,
           filter: 'drop-shadow(0 0 8px rgba(59,130,246,0.8))',
         }}
       >

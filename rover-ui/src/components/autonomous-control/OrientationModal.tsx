@@ -21,16 +21,29 @@ export const ORIENTATIONS: OrientationOption[] = [
   { dir: 'NW', label: 'Maju-Kiri (NW)',    yawDeg:   45, symbol: '↖' },
 ];
 
+// Warna badge: 'yellow' untuk orientasi awal, 'orange' untuk orientasi akhir
+type BadgeColor = 'yellow' | 'orange';
+
 interface OrientationModalProps {
-  waypointIndex: number;    // nomor waypoint (1-based)
+  // ── [BARU] Props tambahan untuk membedakan modal awal vs akhir ──────────
+  title?: string;          // judul modal (default: "Waypoint N — Pilih Arah Hadap")
+  subtitle?: string;       // teks penjelasan di bawah judul
+  badgeLabel?: string;     // label badge atas (default: "Menunggu Orientasi")
+  badgeColor?: BadgeColor; // warna badge & accent (default: 'yellow')
+
+  waypointIndex: number;   // nomor waypoint (1-based)
   waypointX: number;
   waypointY: number;
   onConfirm: (opt: OrientationOption) => void;
-  onSkip: () => void;       // lanjut tanpa rotate
-  onStop: () => void;       // emergency stop misi
+  onSkip: () => void;      // lanjut tanpa rotate
+  onStop: () => void;      // emergency stop misi
 }
 
 export const OrientationModal: React.FC<OrientationModalProps> = ({
+  title,
+  subtitle,
+  badgeLabel  = 'Menunggu Orientasi',
+  badgeColor  = 'yellow',
   waypointIndex,
   waypointX,
   waypointY,
@@ -39,6 +52,15 @@ export const OrientationModal: React.FC<OrientationModalProps> = ({
   onStop,
 }) => {
   const [selected, setSelected] = useState<OrientationOption | null>(null);
+
+  // Default judul & subtitle tergantung konteks
+  const resolvedTitle    = title    ?? `Waypoint ${waypointIndex} — Pilih Arah Hadap`;
+  const resolvedSubtitle = subtitle ?? 'ROV berhenti di titik ini. Pilih orientasi sebelum lanjut ke waypoint berikutnya.';
+
+  // Warna Tailwind berdasarkan badgeColor
+  const badgeTextClass  = badgeColor === 'orange' ? 'text-orange-400'                     : 'text-yellow-400';
+  const badgeDotClass   = badgeColor === 'orange' ? 'bg-orange-400'                       : 'bg-yellow-400';
+  const confirmLabel    = badgeColor === 'orange' ? '✓ Konfirmasi & Rotate (Orientasi Akhir)' : '✓ Konfirmasi & Rotate ROV';
 
   // Layout kompas 3x3
   const compassLayout: (OrientationOption | null)[][] = [
@@ -62,24 +84,24 @@ export const OrientationModal: React.FC<OrientationModalProps> = ({
   return (
     // Overlay fullscreen
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#0d1520] border border-blue-500/30 rounded-2xl p-6 w-[380px] shadow-2xl shadow-blue-500/10">
+      <div className="bg-[#0d1520] border border-blue-500/30 rounded-2xl p-6 w-[400px] shadow-2xl shadow-blue-500/10">
 
         {/* Header */}
         <div className="mb-5">
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"/>
-            <span className="text-[10px] font-bold uppercase text-yellow-400 tracking-widest">
-              Menunggu Orientasi
+            <span className={`w-2 h-2 rounded-full animate-pulse ${badgeDotClass}`}/>
+            <span className={`text-[10px] font-bold uppercase tracking-widest ${badgeTextClass}`}>
+              {badgeLabel}
             </span>
           </div>
           <h2 className="text-base font-black text-white">
-            Waypoint {waypointIndex} — Pilih Arah Hadap
+            {resolvedTitle}
           </h2>
           <p className="text-[10px] font-mono text-slate-500 mt-1">
             X: {waypointX.toFixed(2)} | Y: {waypointY.toFixed(2)}
           </p>
           <p className="text-[10px] text-slate-500 mt-2">
-            ROV berhenti di titik ini. Pilih orientasi sebelum lanjut ke waypoint berikutnya.
+            {resolvedSubtitle}
           </p>
         </div>
 
@@ -95,7 +117,7 @@ export const OrientationModal: React.FC<OrientationModalProps> = ({
                       key={`center-${ri}-${ci}`}
                       className="w-16 h-16 flex items-center justify-center rounded-xl bg-blue-600/10 border border-blue-500/20"
                     >
-                      <span className="text-2xl" style={{ fontSize: 24 }}>🛩️</span>
+                      <span style={{ fontSize: 24 }}>🛩️</span>
                     </div>
                   );
                 }
@@ -139,7 +161,7 @@ export const OrientationModal: React.FC<OrientationModalProps> = ({
             disabled={!selected}
             className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed text-white text-[11px] font-black uppercase tracking-widest rounded-lg transition-all"
           >
-            ✓ Konfirmasi & Rotate ROV
+            {confirmLabel}
           </button>
           <div className="flex gap-2">
             <button

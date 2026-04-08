@@ -10,13 +10,14 @@ interface Goal {
   rosY: number;
 }
 
-type WaypointStatus = 'pending' | 'active' | 'rotating' | 'waiting_orientation' | 'done';
+type WaypointStatus = 'pending' | 'active' | 'rotating' | 'waiting_orientation' | 'arrival_orientation' | 'done';
 
 // Phase kontrol ROV
-// 'waiting'  → diam, tunggu user pilih orientasi
-// 'rotate'   → sedang putar ke yaw target
-// 'travel'   → sedang jalan ke waypoint
-type ControlPhase = 'waiting' | 'rotate' | 'travel';
+// 'waiting'       → diam, tunggu user pilih orientasi
+// 'rotate'        → sedang putar ke yaw target
+// 'travel'        → sedang jalan ke waypoint
+// 'arrival_rotate'→ rotate ke orientasi akhir setelah tiba
+type ControlPhase = 'waiting' | 'rotate' | 'travel' | 'arrival_rotate';
 
 interface RovPos {
   rosX: number;
@@ -61,11 +62,20 @@ const AutonomousROS2: React.FC = () => {
   const [isMissionRunning, setIsMissionRunning] = useState(false);
   const [wpStatus, setWpStatus]                 = useState<Record<number, WaypointStatus>>({});
 
-  // Modal state
+  // Modal orientasi AWAL (sebelum travel ke waypoint)
   const [orientModal, setOrientModal] = useState<{
     visible: boolean;
-    forGoalId: number | null;   // waypoint yang akan DITUJU setelah rotate
-    waypointIndex: number;      // nomor urut (1-based) untuk ditampilkan
+    forGoalId: number | null;
+    waypointIndex: number;
+    rosX: number;
+    rosY: number;
+  }>({ visible: false, forGoalId: null, waypointIndex: 1, rosX: 0, rosY: 0 });
+
+  // ── [BARU] Modal orientasi AKHIR (setelah tiba di waypoint) ───────────────
+  const [arrivalModal, setArrivalModal] = useState<{
+    visible: boolean;
+    forGoalId: number | null;
+    waypointIndex: number;
     rosX: number;
     rosY: number;
   }>({ visible: false, forGoalId: null, waypointIndex: 1, rosX: 0, rosY: 0 });
@@ -78,14 +88,18 @@ const AutonomousROS2: React.FC = () => {
   const seqIndexRef     = useRef(-1);
   const isMissionRef    = useRef(false);
 
-  // Refs untuk phase & target — dibaca langsung di timer tanpa stale closure
   const phaseRef        = useRef<ControlPhase>('travel');
-  const travelGoalRef   = useRef<number | null>(null);  // id goal yang sedang dituju saat travel
-  const targetYawRef    = useRef<number | null>(null);  // yaw target saat rotate
+  const travelGoalRef   = useRef<number | null>(null);
+  const targetYawRef    = useRef<number | null>(null);
 
-  useEffect(() => { goalsRef.current   = goals;            }, [goals]);
-  useEffect(() => { rovPosRef.current  = rovPos;           }, [rovPos]);
-  useEffect(() => { depthRef.current   = targetDepth;      }, [targetDepth]);
+  // ── [BARU] Ref untuk yaw hold saat travel ─────────────────────────────────
+  // Menyimpan yaw yang dipilih user saat orientasi awal,
+  // digunakan untuk menjaga heading selama fase TRAVEL
+  const holdYawRef      = useRef<number | null>(null);
+
+  useEffect(() => { goalsRef.current    = goals;            }, [goals]);
+  useEffect(() => { rovPosRef.current   = rovPos;           }, [rovPos]);
+  useEffect(() => { depthRef.current    = targetDepth;      }, [targetDepth]);
   useEffect(() => { isMissionRef.current = isMissionRunning; }, [isMissionRunning]);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -112,52 +126,75 @@ const AutonomousROS2: React.FC = () => {
     }));
   }, []);
 
-  // ── Tampilkan modal orientasi sebelum menuju goalId ───────────────────────
-  // FIX #2: dipanggil SEBELUM mulai travel, termasuk waypoint pertama
+  // ── Tampilkan modal orientasi AWAL sebelum menuju goalId ─────────────────
   const showOrientModalFor = useCallback((goalId: number, wpDisplayIndex: number, rosX: number, rosY: number) => {
     sendVel(0, 0, 0, 0);
     phaseRef.current      = 'waiting';
     travelGoalRef.current = null;
     targetYawRef.current  = null;
+    holdYawRef.current    = null;  // reset yaw hold
 
     setActiveGoalId(goalId);
     setWpStatus(prev => ({ ...prev, [goalId]: 'waiting_orientation' }));
     setOrientModal({ visible: true, forGoalId: goalId, waypointIndex: wpDisplayIndex, rosX, rosY });
-    log(`⏸️ Pilih orientasi untuk WP ${wpDisplayIndex}...`);
+    log(`⏸️ Pilih orientasi AWAL untuk WP ${wpDisplayIndex}...`);
+  }, [sendVel, log]);
+
+  // ── [BARU] Tampilkan modal orientasi AKHIR setelah tiba di goalId ─────────
+  const showArrivalModalFor = useCallback((goalId: number, wpDisplayIndex: number, rosX: number, rosY: number) => {
+    sendVel(0, 0, 0, 0);
+    phaseRef.current      = 'waiting';
+    travelGoalRef.current = null;
+    targetYawRef.current  = null;
+
+    setWpStatus(prev => ({ ...prev, [goalId]: 'arrival_orientation' }));
+    setArrivalModal({ visible: true, forGoalId: goalId, waypointIndex: wpDisplayIndex, rosX, rosY });
+    log(`🎯 Tiba di WP ${wpDisplayIndex}! Pilih orientasi akhir...`);
   }, [sendVel, log]);
 
   // ── Mulai rotate ke yaw target, lalu setelah selesai travel ke goalId ─────
-  // FIX #1: travelGoalRef tetap berisi goalId selama rotate,
-  //         sehingga timer bisa ambil target dengan benar
   const startRotateThenTravel = useCallback((goalId: number, yawDeg: number) => {
     targetYawRef.current  = yawDeg;
-    travelGoalRef.current = goalId;           // ← kunci fix: simpan goalId di ref
+    holdYawRef.current    = yawDeg;  // simpan untuk yaw hold saat travel
+    travelGoalRef.current = goalId;
     phaseRef.current      = 'rotate';
 
     setWpStatus(prev => ({ ...prev, [goalId]: 'rotating' }));
     log(`🔄 Rotate ke ${yawDeg}° (${yawToCompass(yawDeg)})`);
   }, [log]);
 
+  // ── [BARU] Rotate ke orientasi akhir setelah tiba, kemudian advance ───────
+  const startArrivalRotate = useCallback((goalId: number, yawDeg: number) => {
+    targetYawRef.current  = yawDeg;
+    holdYawRef.current    = yawDeg;
+    travelGoalRef.current = goalId;
+    phaseRef.current      = 'arrival_rotate';
+
+    setWpStatus(prev => ({ ...prev, [goalId]: 'rotating' }));
+    log(`🔄 Rotate orientasi akhir ke ${yawDeg}° (${yawToCompass(yawDeg)})`);
+  }, [log]);
+
   // ── Mulai travel langsung ke goalId (tanpa rotate) ────────────────────────
   const startTravelTo = useCallback((goalId: number) => {
     travelGoalRef.current = goalId;
+    holdYawRef.current    = null;  // tidak ada yaw hold jika skip orientasi
     phaseRef.current      = 'travel';
     setActiveGoalId(goalId);
     setWpStatus(prev => ({ ...prev, [goalId]: 'active' }));
-    log(`🚀 Menuju WP...`);
+    log(`🚀 Menuju WP... (tanpa yaw hold)`);
   }, [log]);
 
-  // ── Advance sequential: tampilkan modal dulu sebelum jalan ───────────────
+  // ── Advance sequential: tampilkan modal orientasi AWAL dulu ──────────────
   const advanceSequential = useCallback(() => {
     const currentGoals = goalsRef.current;
     const nextIdx      = seqIndexRef.current + 1;
 
     if (nextIdx >= currentGoals.length) {
-      // Semua waypoint selesai
       sendVel(0, 0, 0, 0);
       phaseRef.current      = 'travel';
       travelGoalRef.current = null;
       targetYawRef.current  = null;
+      holdYawRef.current    = null;
       seqIndexRef.current   = -1;
       isMissionRef.current  = false;
       setActiveGoalId(null);
@@ -168,11 +205,10 @@ const AutonomousROS2: React.FC = () => {
 
     seqIndexRef.current = nextIdx;
     const nextGoal = currentGoals[nextIdx];
-    // Selalu tampilkan modal orientasi sebelum jalan ke waypoint manapun
     showOrientModalFor(nextGoal.id, nextIdx + 1, nextGoal.rosX, nextGoal.rosY);
   }, [sendVel, showOrientModalFor, log]);
 
-  // ── Handler: user konfirmasi orientasi ────────────────────────────────────
+  // ── Handler: user konfirmasi orientasi AWAL ───────────────────────────────
   const handleOrientConfirm = useCallback((opt: OrientationOption) => {
     const goalId = orientModal.forGoalId;
     setOrientModal(prev => ({ ...prev, visible: false }));
@@ -180,14 +216,34 @@ const AutonomousROS2: React.FC = () => {
     startRotateThenTravel(goalId, opt.yawDeg);
   }, [orientModal.forGoalId, startRotateThenTravel]);
 
-  // ── Handler: user skip orientasi ─────────────────────────────────────────
+  // ── Handler: user skip orientasi AWAL ────────────────────────────────────
   const handleOrientSkip = useCallback(() => {
     const goalId = orientModal.forGoalId;
     setOrientModal(prev => ({ ...prev, visible: false }));
     if (goalId === null) return;
-    log('⏩ Orientasi dilewati');
+    log('⏩ Orientasi awal dilewati (tanpa yaw hold)');
     startTravelTo(goalId);
   }, [orientModal.forGoalId, startTravelTo, log]);
+
+  // ── [BARU] Handler: user konfirmasi orientasi AKHIR ───────────────────────
+  const handleArrivalConfirm = useCallback((opt: OrientationOption) => {
+    const goalId = arrivalModal.forGoalId;
+    setArrivalModal(prev => ({ ...prev, visible: false }));
+    if (goalId === null) return;
+    // Rotate ke orientasi akhir yang dipilih
+    startArrivalRotate(goalId, opt.yawDeg);
+    log(`🔄 Rotate ke orientasi akhir ${opt.yawDeg}° (${opt.dir}) sebelum lanjut...`);
+  }, [arrivalModal.forGoalId, startArrivalRotate, log]);
+
+  // ── [BARU] Handler: user skip orientasi AKHIR ────────────────────────────
+  const handleArrivalSkip = useCallback(() => {
+    const goalId = arrivalModal.forGoalId;
+    setArrivalModal(prev => ({ ...prev, visible: false }));
+    if (goalId === null) return;
+    setWpStatus(prev => ({ ...prev, [goalId]: 'done' }));
+    log('⏩ Orientasi akhir dilewati — lanjut ke WP berikutnya');
+    setTimeout(() => advanceSequential(), 300);
+  }, [arrivalModal.forGoalId, advanceSequential, log]);
 
   // ── Setup WebSocket + control loop ────────────────────────────────────────
   useEffect(() => {
@@ -239,7 +295,7 @@ const AutonomousROS2: React.FC = () => {
 
       const cur = rovPosRef.current;
 
-      // ── ROTATE: putar ke yaw target ────────────────────────────────────
+      // ── ROTATE (awal): putar ke yaw target sebelum travel ─────────────
       if (phase === 'rotate') {
         const tYaw = targetYawRef.current;
         if (tYaw === null) { phaseRef.current = 'travel'; return; }
@@ -247,18 +303,38 @@ const AutonomousROS2: React.FC = () => {
         const diff = angleDiff(tYaw, cur.yaw);
 
         if (Math.abs(diff) < YAW_THRESHOLD) {
-          // Rotate selesai → mulai travel
           sendVel(0, 0, 0, 0);
-          log(`✅ Rotate selesai (${yawToCompass(tYaw)}) → mulai jalan`);
+          log(`✅ Rotate awal selesai (${yawToCompass(tYaw)}) → mulai travel dengan yaw hold`);
           targetYawRef.current = null;
-          // Langsung switch ke travel phase
           phaseRef.current = 'travel';
           setActiveGoalId(goalId);
           setWpStatus(prev => ({ ...prev, [goalId]: 'active' }));
           return;
         }
 
-        // Kirim angular velocity
+        const wz = clamp(diff * KP_YAW, MAX_YAW_VEL);
+        sendVel(0, 0, 0, wz);
+        return;
+      }
+
+      // ── [BARU] ARRIVAL_ROTATE: putar ke orientasi akhir setelah tiba ──
+      if (phase === 'arrival_rotate') {
+        const tYaw = targetYawRef.current;
+        if (tYaw === null) return;
+
+        const diff = angleDiff(tYaw, cur.yaw);
+
+        if (Math.abs(diff) < YAW_THRESHOLD) {
+          sendVel(0, 0, 0, 0);
+          targetYawRef.current  = null;
+          travelGoalRef.current = null;
+          phaseRef.current      = 'waiting';
+          log(`✅ Orientasi akhir selesai (${yawToCompass(tYaw)}) → lanjut WP berikutnya`);
+          setWpStatus(prev => ({ ...prev, [goalId]: 'done' }));
+          setTimeout(() => advanceSequential(), 300);
+          return;
+        }
+
         const wz = clamp(diff * KP_YAW, MAX_YAW_VEL);
         sendVel(0, 0, 0, wz);
         return;
@@ -271,34 +347,49 @@ const AutonomousROS2: React.FC = () => {
       const distXY = Math.hypot(dx, dy);
 
       if (distXY < ARRIVAL_THRESHOLD && Math.abs(dz) < ARRIVAL_THRESHOLD) {
-        // Sampai!
+        // Sampai di waypoint!
         sendVel(0, 0, 0, 0);
-        setWpStatus(prev => ({ ...prev, [goalId]: 'done' }));
         travelGoalRef.current = null;
         setActiveGoalId(null);
         log(`✅ Sampai WP! (${distXY.toFixed(2)}m)`);
 
         if (isMissionRef.current) {
-          // Advance ke waypoint berikutnya (akan tampilkan modal orientasi lagi)
-          setTimeout(() => advanceSequential(), 500);
+          // ── [BARU] Tampilkan modal orientasi AKHIR sebelum advance ──
+          const currentIdx = seqIndexRef.current;
+          setTimeout(() => {
+            showArrivalModalFor(goalId, currentIdx + 1, target.rosX, target.rosY);
+          }, 300);
+        } else {
+          // Mode single: langsung tandai done
+          setWpStatus(prev => ({ ...prev, [goalId]: 'done' }));
         }
         return;
       }
+
+      // ── [BARU] YAW HOLD saat travel ────────────────────────────────────
+      // Jika user memilih orientasi awal, holdYawRef berisi yaw target.
+      // Kita koreksi heading aktif setiap loop agar ROV tidak drift.
+      // Jika user skip orientasi (holdYawRef = null), wz = 0 (bebas berputar).
+      const holdYaw = holdYawRef.current;
+      const yawErr  = holdYaw !== null ? angleDiff(holdYaw, cur.yaw) : 0;
+      const wz      = holdYaw !== null ? clamp(yawErr * KP_YAW, MAX_YAW_VEL) : 0;
 
       // Holonomic travel
       const yawRad = cur.yaw * (Math.PI / 180);
       const localX =  dx * Math.cos(yawRad) + dy * Math.sin(yawRad);
       const localY = -dx * Math.sin(yawRad) + dy * Math.cos(yawRad);
+
       sendVel(
         clamp(localX * KP_XY, MAX_VEL),
         clamp(localY * KP_XY, MAX_VEL),
         clamp(dz * KP_Z, MAX_VEL),
-        0
+        wz,  // ← [BARU] koreksi heading aktif selama travel
       );
     }, LOOP_HZ);
 
     return () => { clearInterval(timer); socket.close(); };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Mission controls ───────────────────────────────────────────────────────
   const stopAll = useCallback(() => {
@@ -306,11 +397,13 @@ const AutonomousROS2: React.FC = () => {
     phaseRef.current      = 'travel';
     travelGoalRef.current = null;
     targetYawRef.current  = null;
+    holdYawRef.current    = null;
     seqIndexRef.current   = -1;
     isMissionRef.current  = false;
     setActiveGoalId(null);
     setIsMissionRunning(false);
     setOrientModal(prev => ({ ...prev, visible: false }));
+    setArrivalModal(prev => ({ ...prev, visible: false }));
     setWpStatus(prev => {
       const r: Record<number, WaypointStatus> = {};
       Object.keys(prev).forEach(k => { r[Number(k)] = 'pending'; });
@@ -328,8 +421,7 @@ const AutonomousROS2: React.FC = () => {
     seqIndexRef.current  = -1;
     isMissionRef.current = true;
     setIsMissionRunning(true);
-    log(`🗺️ Sequential mission — ${goals.length} waypoint`);
-    // FIX #2: langsung tampilkan modal orientasi untuk WP1
+    log(`🗺️ Sequential mission — ${goals.length} waypoint (orientasi awal & akhir aktif)`);
     setTimeout(() => advanceSequential(), 0);
   };
 
@@ -365,6 +457,7 @@ const AutonomousROS2: React.FC = () => {
     if (s === 'active')              return 'bg-blue-600/20 border-blue-500/50';
     if (s === 'rotating')            return 'bg-purple-600/20 border-purple-500/50';
     if (s === 'waiting_orientation') return 'bg-yellow-600/20 border-yellow-500/50';
+    if (s === 'arrival_orientation') return 'bg-orange-600/20 border-orange-500/50';
     if (s === 'done')                return 'bg-green-600/10 border-green-500/30';
     return 'bg-white/5 border-white/5';
   };
@@ -373,7 +466,8 @@ const AutonomousROS2: React.FC = () => {
     const s = wpStatus[id];
     if (s === 'active')              return <span className="text-[9px] text-blue-400 animate-pulse font-bold">● MENUJU</span>;
     if (s === 'rotating')            return <span className="text-[9px] text-purple-400 font-bold">↻ ROTATE</span>;
-    if (s === 'waiting_orientation') return <span className="text-[9px] text-yellow-400 animate-pulse font-bold">⏸ ORIENTASI</span>;
+    if (s === 'waiting_orientation') return <span className="text-[9px] text-yellow-400 animate-pulse font-bold">⏸ ORIENTASI AWAL</span>;
+    if (s === 'arrival_orientation') return <span className="text-[9px] text-orange-400 animate-pulse font-bold">🎯 ORIENTASI AKHIR</span>;
     if (s === 'done')                return <span className="text-[9px] text-green-400 font-bold">✓ SELESAI</span>;
     return null;
   };
@@ -384,14 +478,34 @@ const AutonomousROS2: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 p-6 min-h-screen bg-[#0b111a] text-white">
 
-      {/* Orientation modal */}
+      {/* Modal orientasi AWAL */}
       {orientModal.visible && (
         <OrientationModal
+          title={`Waypoint ${orientModal.waypointIndex} — Orientasi Awal`}
+          subtitle="Pilih arah hadap ROV sebelum bergerak ke waypoint ini."
+          badgeLabel="Orientasi Awal"
+          badgeColor="yellow"
           waypointIndex={orientModal.waypointIndex}
           waypointX={orientModal.rosX}
           waypointY={orientModal.rosY}
           onConfirm={handleOrientConfirm}
           onSkip={handleOrientSkip}
+          onStop={stopAll}
+        />
+      )}
+
+      {/* [BARU] Modal orientasi AKHIR */}
+      {arrivalModal.visible && (
+        <OrientationModal
+          title={`Waypoint ${arrivalModal.waypointIndex} — Orientasi Akhir`}
+          subtitle="ROV telah tiba. Pilih arah hadap setelah berhenti di titik ini."
+          badgeLabel="Orientasi Akhir"
+          badgeColor="orange"
+          waypointIndex={arrivalModal.waypointIndex}
+          waypointX={arrivalModal.rosX}
+          waypointY={arrivalModal.rosY}
+          onConfirm={handleArrivalConfirm}
+          onSkip={handleArrivalSkip}
           onStop={stopAll}
         />
       )}
@@ -455,6 +569,23 @@ const AutonomousROS2: React.FC = () => {
             </div>
           </div>
 
+          {/* [BARU] Yaw hold indicator */}
+          {isMissionRunning && (
+            <div className="bg-slate-900/50 rounded-xl border border-purple-500/20 p-3">
+              <p className="text-[9px] font-bold uppercase text-purple-400 mb-1">Yaw Hold Status</p>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                  holdYawRef.current !== null ? 'bg-purple-400 animate-pulse' : 'bg-slate-600'
+                }`}/>
+                <span className="text-[10px] font-mono text-slate-300">
+                  {holdYawRef.current !== null
+                    ? `Aktif: ${holdYawRef.current.toFixed(0)}° (${yawToCompass(holdYawRef.current)})`
+                    : 'Tidak aktif (orientasi dilewati)'}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Progress bar */}
           {isMissionRunning && goals.length > 0 && (
             <div className="bg-slate-900/50 rounded-xl border border-blue-500/20 p-3">
@@ -493,6 +624,7 @@ const AutonomousROS2: React.FC = () => {
                       wpStatus[g.id] === 'active'              ? 'bg-blue-500/20 border-blue-500/40 text-blue-400 animate-pulse' :
                       wpStatus[g.id] === 'rotating'            ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' :
                       wpStatus[g.id] === 'waiting_orientation' ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 animate-pulse' :
+                      wpStatus[g.id] === 'arrival_orientation' ? 'bg-orange-500/20 border-orange-500/40 text-orange-400 animate-pulse' :
                       'bg-white/5 border-white/10 text-slate-500'
                     }`}>
                       {wpStatus[g.id] === 'done' ? '✓' : index + 1}
@@ -535,7 +667,7 @@ const AutonomousROS2: React.FC = () => {
                     ⏹ Emergency Stop
                   </button>
                   <p className="text-center text-[9px] text-slate-600">
-                    ROV rotate dulu sebelum menuju tiap waypoint
+                    Orientasi awal & akhir + yaw hold aktif di setiap waypoint
                   </p>
                 </>
               )}
