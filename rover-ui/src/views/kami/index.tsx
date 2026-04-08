@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // Pastikan gambar rov-bg.jpg sudah kamu simpan di dalam folder src/assets/
 // @ts-ignore
 import rovBgImage from '../../assets/rov-bg.jpg';
 
-// 1. Tentukan Struktur Data (Type Interface)
+// 1. Tentukan Struktur Data
 interface Member {
   id: number;
   initials: string;
@@ -17,7 +19,11 @@ interface Member {
   tags: string[];
 }
 
-// 2. Terapkan Tipe Data ke variabel MEMBERS
+interface TeamProps {
+  isDarkMode?: boolean;
+}
+
+// 2. Data Anggota Tim
 const MEMBERS: Member[] = [
   {
     id: 1, initials: 'NS',
@@ -72,108 +78,76 @@ const MEMBERS: Member[] = [
 ];
 
 /* ─── Avatar Component ─── */
-interface AvatarProps {
-  initials: string;
-  src?: string;
-}
-
-const Avatar = ({ initials, src }: AvatarProps) => (
-  <div style={{
-    width: 64, height: 64, borderRadius: 16,
-    background: 'linear-gradient(135deg, rgba(30,58,138,0.8), rgba(42,110,192,0.8))',
-    border: '2px solid rgba(74,184,240,0.4)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 20, fontWeight: 800, color: '#fff',
-    fontFamily: "'JetBrains Mono', monospace",
-    overflow: 'hidden', flexShrink: 0,
-    boxShadow: '0 4px 12px rgba(74,184,240,0.2)'
-  }}>
-    {src ? <img src={src} alt={initials} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
+const Avatar = ({ initials }: { initials: string }) => (
+  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-800/80 to-blue-500/80 border-2 border-blue-400/40 flex items-center justify-center text-xl font-extrabold text-white font-mono shadow-[0_4px_12px_rgba(74,184,240,0.2)] flex-shrink-0">
+    {initials}
   </div>
 );
 
-/* ─── Modern MemberCard Component ─── */
-interface MemberCardProps {
-  member: Member;
-}
-
-const MemberCard = ({ member }: MemberCardProps) => {
-  const [hovered, setHovered] = useState(false);
+/* ─── MemberCard Component (BUNGLON) ─── */
+const MemberCard = ({ member, isDarkMode }: { member: Member, isDarkMode: boolean }) => {
+  // Logika Warna Bunglon
+  const cardBg = isDarkMode 
+    ? 'bg-[#0f172a]/65 border-blue-500/20 hover:bg-[#162848]/90 hover:border-blue-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),_0_0_0_1px_rgba(74,184,240,0.2)]' 
+    : 'bg-white/70 border-slate-300 hover:bg-white/95 hover:border-blue-500 shadow-sm hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)]';
   
+  const titleColor = isDarkMode ? 'text-white' : 'text-slate-800';
+  const labelColor = isDarkMode ? 'text-slate-500' : 'text-slate-400';
+  const valueColor = isDarkMode ? 'text-slate-300' : 'text-slate-700';
+  const boxBg = isDarkMode ? 'bg-black/25 border-white/5' : 'bg-slate-100/50 border-slate-200';
+  const tagBg = isDarkMode ? 'bg-blue-400/10 border-blue-400/20 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-600';
+
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        width: '340px', // Lebar seragam
-        flexGrow: 1, 
-        maxWidth: '380px',
-        background: hovered ? 'rgba(22, 40, 72, 0.9)' : 'rgba(15, 23, 42, 0.65)',
-        backdropFilter: 'blur(12px)',
-        border: `1px solid ${hovered ? 'rgba(74,184,240,0.5)' : 'rgba(100,160,255,0.15)'}`,
-        borderRadius: 20,
-        padding: '24px',
-        display: 'flex', flexDirection: 'column', gap: '16px',
-        transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
-        boxShadow: hovered ? '0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(74,184,240,0.2)' : '0 4px 20px rgba(0,0,0,0.2)',
-        transition: 'all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
-        cursor: 'pointer',
-        position: 'relative',
-        overflow: 'hidden'
-      }}
-    >
+    <div className={`relative w-full md:w-[340px] flex-grow max-w-[380px] backdrop-blur-md rounded-2xl p-6 flex flex-col gap-4 transition-all duration-400 ease-out hover:-translate-y-1.5 cursor-pointer overflow-hidden border ${cardBg} group`}>
+      
       {/* Background Glow Effect */}
-      <div style={{
-        position: 'absolute', top: '-50px', right: '-50px', width: '100px', height: '100px',
-        background: hovered ? 'radial-gradient(circle, rgba(74,184,240,0.15) 0%, transparent 70%)' : 'transparent',
-        transition: 'background 0.4s ease', borderRadius: '50%'
-      }} />
+      <div className={`absolute -top-12 -right-12 w-24 h-24 rounded-full transition-colors duration-400 ${isDarkMode ? 'group-hover:bg-blue-400/15' : 'group-hover:bg-blue-500/10'}`} />
 
       {/* Header: Avatar + Info */}
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-        <div style={{ position: 'relative' }}>
+      <div className="flex gap-4 items-center relative z-10">
+        <div className="relative">
           <Avatar initials={member.initials} />
           {/* Status Indicator */}
-          <div style={{ position: 'absolute', bottom: -2, right: -2, width: 14, height: 14, borderRadius: '50%', background: '#3dd68c', border: '3px solid #0f172a', animation: 'blink 2.5s infinite' }} />
+          <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-[3px] animate-pulse ${isDarkMode ? 'border-[#0f172a]' : 'border-white'}`} />
         </div>
         
-        <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '10px', color: '#6ea8fe', letterSpacing: '1px', marginBottom: '4px' }}>
+        <div className="flex-1">
+          <div className="font-mono text-[10px] text-blue-400 tracking-wider mb-1">
             {member.uid}
           </div>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff', lineHeight: 1.2, marginBottom: '4px' }}>
+          <div className={`text-lg font-extrabold leading-tight mb-1 ${titleColor}`}>
             {member.name}
           </div>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: '#4ab8f0', display: 'inline-block', background: 'rgba(74,184,240,0.1)', padding: '2px 8px', borderRadius: '6px' }}>
+          <div className={`text-xs font-semibold inline-block px-2 py-0.5 rounded-md ${isDarkMode ? 'bg-blue-400/10 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
             {member.role}
           </div>
         </div>
       </div>
 
-      <div style={{ height: '1px', background: 'linear-gradient(90deg, rgba(255,255,255,0.1), transparent)' }} />
+      <div className={`h-[1px] w-full ${isDarkMode ? 'bg-gradient-to-r from-white/10 to-transparent' : 'bg-gradient-to-r from-slate-200 to-transparent'}`} />
 
-      {/* Program Studi & Divisi (Grid Ringkas) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+      {/* Program Studi & Divisi */}
+      <div className="grid grid-cols-2 gap-3 relative z-10">
         <div>
-          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '9px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Divisi</div>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: '#cbd5e1' }}>{member.divisi}</div>
+          <div className={`font-mono text-[9px] uppercase tracking-wider mb-0.5 ${labelColor}`}>Divisi</div>
+          <div className={`text-[13px] font-semibold ${valueColor}`}>{member.divisi}</div>
         </div>
         <div>
-          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '9px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Program Studi</div>
-          <div style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', lineHeight: 1.3 }}>{member.prodi}</div>
+          <div className={`font-mono text-[9px] uppercase tracking-wider mb-0.5 ${labelColor}`}>Program Studi</div>
+          <div className={`text-xs font-medium leading-snug ${valueColor}`}>{member.prodi}</div>
         </div>
       </div>
 
       {/* Tanggung Jawab Box */}
-      <div style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px' }}>
-        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '9px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Tanggung Jawab</div>
-        <div style={{ fontSize: '12.5px', color: '#e2e8f0', lineHeight: 1.4 }}>{member.tanggung_jawab}</div>
+      <div className={`rounded-xl p-3 border relative z-10 ${boxBg}`}>
+        <div className={`font-mono text-[9px] uppercase tracking-wider mb-1 ${labelColor}`}>Tanggung Jawab</div>
+        <div className={`text-[12.5px] leading-relaxed ${titleColor}`}>{member.tanggung_jawab}</div>
       </div>
 
-      {/* Tags (Selalu di bawah) */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: 'auto' }}>
-        {member.tags.map((tag: string) => (
-          <span key={tag} style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '9.5px', padding: '4px 10px', borderRadius: '6px', background: 'rgba(110,168,254,0.05)', border: '1px solid rgba(110,168,254,0.2)', color: '#6ea8fe' }}>
+      {/* Tags */}
+      <div className="flex flex-wrap gap-1.5 mt-auto relative z-10">
+        {member.tags.map((tag) => (
+          <span key={tag} className={`font-mono text-[9.5px] px-2.5 py-1 rounded-md border ${tagBg}`}>
             {tag}
           </span>
         ))}
@@ -183,79 +157,86 @@ const MemberCard = ({ member }: MemberCardProps) => {
 };
 
 /* ─── Main Page Export ─── */
-export const Team = () => {
+export const Team: React.FC<TeamProps> = ({ isDarkMode = true }) => {
+  const navigate = useNavigate();
+
   return (
-    <div style={{ fontFamily: "'Exo 2', sans-serif", color: '#ddeeff' }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800&family=JetBrains+Mono:wght@400;500;700&display=swap');
-        @keyframes slideUp { from { opacity:0; transform:translateY(28px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes fadeIn  { from { opacity:0 } to { opacity:1 } }
-        @keyframes blink   { 0%,100% { opacity:1; box-shadow: 0 0 8px rgba(61,214,140,0.6); } 50% { opacity:.5; box-shadow: none; } }
-      `}</style>
+    <div className="animate-in fade-in duration-500 pb-10">
+      
+      {/* ── TOMBOL KEMBALI ── */}
+      <div className="mb-4 mt-2">
+        <button 
+          onClick={() => navigate('/home')}
+          className={`flex items-center gap-2 transition-colors group ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800'}`}
+        >
+          <div className={`p-1.5 rounded-lg transition-all border ${isDarkMode ? 'bg-white/5 border-white/5 group-hover:bg-blue-500/20' : 'bg-white/50 border-slate-200 group-hover:bg-blue-100'}`}>
+            <ChevronLeft size={16} />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-widest drop-shadow-sm">Back to Dashboard</span>
+        </button>
+      </div>
 
-      {/* ── HERO DENGAN IMAGE SANDWICH (Tetap Sama) ── */}
-      <div style={{ position: 'relative', overflow: 'hidden', minHeight: '88vh', display: 'flex', alignItems: 'center', borderRadius: '20px', marginBottom: '20px' }}>
-        <img src={rovBgImage} alt="ROV Underwater" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', zIndex: 1 }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(10, 20, 45, 1) 0%, rgba(10, 20, 45, 0.8) 40%, transparent 100%)', zIndex: 1 }} />
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '28px 28px', maskImage: 'linear-gradient(to right, black 40%, transparent 100%)', zIndex: 1 }} />
+      {/* ── HERO SECTION ── */}
+      <div className="relative overflow-hidden min-h-[60vh] md:min-h-[70vh] flex items-center rounded-3xl mb-8 border border-white/5 shadow-xl">
+        <img src={rovBgImage} alt="ROV Underwater" className="absolute inset-0 w-full h-full object-cover object-center z-0" />
+        
+        {/* Gradient Overlay (Bunglon) */}
+        <div className={`absolute inset-0 z-10 ${
+          isDarkMode 
+            ? 'bg-gradient-to-r from-[#060b19] via-[#060b19]/80 to-transparent' 
+            : 'bg-gradient-to-r from-blue-50 via-blue-50/90 to-transparent'
+        }`} />
+        
+        {/* Dot Pattern Overlay */}
+        <div className="absolute inset-0 z-10 [background-image:radial-gradient(circle,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:linear-gradient(to_right,black_40%,transparent_100%)]" />
 
-        <div style={{ position: 'relative', zIndex: 2, padding: '80px 72px', maxWidth: 620 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: "'JetBrains Mono',monospace", fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: '#4ab8f0', marginBottom: 20, animation: 'fadeIn .5s ease both .2s' }}>
-            <span style={{ width: 28, height: 1.5, background: '#4ab8f0', borderRadius: 2, display: 'inline-block' }} />
+        <div className="relative z-20 p-8 md:p-16 max-w-2xl">
+          <div className="flex items-center gap-2.5 font-mono text-[10px] tracking-widest uppercase text-blue-500 mb-5">
+            <span className="w-7 h-0.5 bg-blue-500 rounded-full" />
             Industrial Informatics · TRIN
           </div>
 
-          <h1 style={{ fontSize: 'clamp(38px, 4.8vw, 62px)', fontWeight: 900, lineHeight: 1.06, letterSpacing: -1, color: '#fff', marginBottom: 20, animation: 'slideUp .65s cubic-bezier(.22,.68,0,1) both .25s' }}>
-            Tim di Balik<br /><em style={{ fontStyle: 'italic', color: '#4ab8f0' }}>ROV</em> Kami
+          <h1 className={`text-4xl md:text-6xl font-black leading-tight tracking-tight mb-5 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+            Tim di Balik<br />
+            <em className="not-italic text-blue-500">ROV</em> Kami
           </h1>
 
-          <p style={{ fontSize: 14, color: '#7aaacf', lineHeight: 1.75, maxWidth: 430, marginBottom: 36, animation: 'fadeIn .6s ease both .4s' }}>
+          <p className={`text-sm md:text-base leading-relaxed max-w-md mb-8 ${isDarkMode ? 'text-blue-100/70' : 'text-slate-600'}`}>
             Sebuah tim yang terdiri dari individu berdedikasi dengan keahlian di bidang software, hardware, dan sistem navigasi bawah air — bersama membangun dan mengoperasikan ROV Polman Bandung.
           </p>
 
-          <div style={{ display: 'flex', gap: 0, marginBottom: 40, animation: 'fadeIn .6s ease both .5s' }}>
+          <div className="flex gap-6 md:gap-10">
             {[['5', '+', 'Anggota'], ['3', '+', 'Bidang Keahlian'], ['1', '', 'Unit ROV']].map(([num, plus, lbl], i) => (
-              <div key={lbl} style={{ paddingRight: i < 2 ? 28 : 0, marginRight: i < 2 ? 28 : 0, borderRight: i < 2 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
-                <div style={{ fontSize: 34, fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: -1 }}>
-                  {num}<span style={{ color: '#4ab8f0' }}>{plus}</span>
+              <div key={lbl} className={i < 2 ? `border-r pr-6 md:pr-10 ${isDarkMode ? 'border-white/10' : 'border-slate-300'}` : ''}>
+                <div className={`text-3xl md:text-4xl font-extrabold leading-none tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  {num}<span className="text-blue-500">{plus}</span>
                 </div>
-                <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#3d6a90', marginTop: 5 }}>{lbl}</div>
+                <div className={`font-mono text-[9px] tracking-widest uppercase mt-2 ${isDarkMode ? 'text-blue-200/50' : 'text-slate-500'}`}>{lbl}</div>
               </div>
             ))}
           </div>
-
-          <button onClick={() => document.getElementById('team-section')?.scrollIntoView({ behavior: 'smooth' })} style={{ display: 'inline-flex', alignItems: 'center', gap: 12, fontFamily: "'JetBrains Mono',monospace", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#3d6a90', cursor: 'pointer', border: 'none', background: 'none', animation: 'fadeIn .6s ease both .6s', padding: 0 }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(100,160,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>↓</div>
-            Lihat Anggota Tim
-          </button>
         </div>
       </div>
 
       {/* ── SECTION HEADER ── */}
-      <div id="team-section" style={{ padding: '40px 72px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(100,160,255,0.18)', marginBottom: 40 }}>
-        <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: 2.5, textTransform: 'uppercase' }}>
-          ANGGOTA <span style={{ color: '#4ab8f0' }}>TIM</span>
+      <div className={`flex items-center justify-between pb-4 border-b mb-8 ${isDarkMode ? 'border-white/10' : 'border-slate-300'}`}>
+        <div className={`text-lg font-extrabold tracking-widest uppercase ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+          ANGGOTA <span className="text-blue-500">TIM</span>
         </div>
-        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#3d6a90' }}>
+        <div className={`font-mono text-[9px] tracking-widest uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
           ROV · POLMAN BANDUNG · 05 MEMBERS
         </div>
       </div>
 
       {/* ── NEW BALANCED GRID LAYOUT ── */}
-      <div style={{ padding: '0 72px 80px' }}>
-        <div style={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          justifyContent: 'center', 
-          gap: '24px', 
-          maxWidth: '1200px', 
-          margin: '0 auto' 
-        }}>
-          {MEMBERS.map((m) => (
-            <MemberCard key={m.id} member={m} />
-          ))}
-        </div>
+      <div className="flex flex-wrap justify-center gap-6 max-w-6xl mx-auto">
+        {MEMBERS.map((m) => (
+          <MemberCard key={m.id} member={m} isDarkMode={isDarkMode} />
+        ))}
       </div>
+      
     </div>
   );
 };
+
+export default Team;

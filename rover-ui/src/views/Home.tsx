@@ -1,16 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Import semua aset kamu di sini
-// Pastikan ekstensi filenya sesuai ya (png, jpg, atau gif)
+// Import aset
 // @ts-ignore
 import rovModel from '../assets/rov-model.png';
 // @ts-ignore
-import exploreGif from '../assets/Logo XploreRobot.gif'; 
-// @ts-ignore
-import bgBanner from '../assets/rov-latar.png';
-// @ts-ignore
 import bgTeam from '../assets/rov-bg.jpg'; 
+// @ts-ignore
+import exploreGif from '../assets/Logo XploreRobot.gif'; 
+
+interface HomeProps {
+  isDarkMode?: boolean;
+}
 
 const menus = [
   { path: '/simulation', title: 'Firmware Autopilot',  desc: 'Update flight controller firmware.', icon: '🚀' },
@@ -24,99 +25,102 @@ const menus = [
   { path: '/kami',       title: 'Dokumentasi Team',    desc: 'Informasi tim kami.', icon: '👥' },
 ];
 
-export const Home: React.FC = () => {
+export const Home: React.FC<HomeProps> = ({ isDarkMode = true }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 w-full">
+    <div className="relative w-full flex flex-col space-y-10 animate-in fade-in duration-500">
       
-      {/* =========================================
-          1. HERO BANNER SECTION (rov-latar.png)
-          ========================================= */}
-      <div className="group relative flex flex-col md:flex-row bg-[#111c38] rounded-2xl overflow-hidden shadow-lg border border-slate-700/50 h-[220px]">
-        {/* Background Banner */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-50 mix-blend-overlay"
-          style={{ backgroundImage: `url(${bgBanner})` }}
-        ></div>
-
-        {/* Bagian Teks (Kiri) */}
-        <div className="relative w-full md:w-1/2 p-8 flex flex-col justify-center z-10">
-          <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-2 tracking-wide">
+      {/* 1. HERO SECTION */}
+      <div className="group flex flex-col md:flex-row h-auto md:h-[220px] items-center pt-2">
+        <div className="w-full md:w-1/2 flex flex-col justify-center drop-shadow-xl z-10">
+          <h1 className={`text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-2 tracking-wide ${
+            isDarkMode ? 'text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]' : 'text-slate-800 drop-shadow-sm'
+          }`}>
             EXPLOR ROBOT <br /> GROUND STATION
           </h1>
-          <h2 className="text-sm md:text-base font-semibold text-blue-200 tracking-widest uppercase">
+          <h2 className={`text-sm md:text-base font-bold tracking-widest uppercase ${
+            isDarkMode ? 'text-blue-300 drop-shadow-md' : 'text-blue-700'
+          }`}>
             Initialize System & Telemetry Control
           </h2>
         </div>
 
-        {/* Bagian Interaktif (Kanan) */}
-        <div className="relative w-full md:w-1/2 flex items-center justify-center overflow-hidden z-10 hidden md:flex">
-          
-          {/* 1. GIF Tim di belakang */}
+        <div className="w-full md:w-1/2 flex items-center justify-center relative mt-10 md:mt-0 z-10 hidden md:flex">
           <img 
             src={exploreGif} 
             alt="Explore Team" 
-            // 👇 Ubah w-40 menjadi w-56 (atau w-60 kalau masih kurang gede)
-            className="absolute w-56 h-auto z-10 invisible group-hover:visible group-hover:opacity-100 transition-opacity duration-500 delay-150 invert drop-shadow-lg"
+            className={`absolute w-56 h-auto z-10 invisible group-hover:visible group-hover:opacity-100 transition-opacity duration-500 delay-150 ${
+              isDarkMode ? 'invert drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]' : 'drop-shadow-md'
+            }`}
           />
-          
-          {/* 2. Gambar ROV yang geser */}
           <img 
             src={rovModel} 
             alt="ROV" 
-            className="absolute w-64 h-auto z-20 transform transition-transform duration-700 ease-in-out group-hover:translate-x-40"
+            className={`absolute w-64 h-auto z-20 transform transition-transform duration-700 ease-in-out group-hover:translate-x-40 ${
+              isDarkMode ? 'drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]' : 'drop-shadow-[0_10px_20px_rgba(0,0,0,0.2)]'
+            }`}
           />
-          
         </div>
       </div>
 
-      {/* =========================================
-          2. GRID CARDS SECTION
-          ========================================= */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {/* 2. GRID CARDS SECTION */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 pb-6">
         {menus.map((m) => {
           const isTeamCard = m.path === '/kami';
+
+          const standardCardClasses = isDarkMode 
+            ? 'bg-[#1e293b]/50 backdrop-blur-md hover:bg-[#253347]/70 border-slate-700/50 hover:border-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.25)]' 
+            : 'bg-white/70 backdrop-blur-md hover:bg-white/90 border-slate-300 hover:border-blue-500 hover:shadow-[0_8px_20px_rgba(59,130,246,0.15)] shadow-sm';
+
+          const teamCardClasses = isDarkMode 
+            ? 'bg-transparent border-slate-700/50 hover:border-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.25)]' 
+            : 'bg-transparent border-slate-300 hover:border-blue-500 hover:shadow-[0_8px_20px_rgba(59,130,246,0.15)] shadow-sm';
+
+          const cardClasses = isTeamCard ? teamCardClasses : standardCardClasses;
+
+          const teamCardGradient = isDarkMode 
+            ? 'from-[#060b19] via-[#060b19]/80' 
+            : 'from-[#060b19]/60 via-[#060b19]/50';
+
+          const titleColor = isTeamCard ? 'text-white' : (isDarkMode ? 'text-white' : 'text-slate-800');
+          const descColor = isTeamCard ? 'text-slate-200' : (isDarkMode ? 'text-slate-400' : 'text-slate-600');
+          const subtitleColor = isTeamCard ? 'text-slate-300' : (isDarkMode ? 'text-slate-400' : 'text-slate-500');
 
           return (
             <div 
               key={m.path} 
               onClick={() => navigate(m.path)}
-              className={`relative rounded-xl p-4 flex flex-col justify-between border border-slate-700/50 hover:border-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all cursor-pointer min-h-[140px] overflow-hidden group ${
-                isTeamCard ? 'bg-transparent' : 'bg-[#1e293b]/90 backdrop-blur-sm hover:bg-[#253347]'
-              }`}
+              className={`relative rounded-xl p-4 flex flex-col justify-between border transition-all cursor-pointer min-h-[140px] overflow-hidden group ${cardClasses}`}
             >
-              {/* Latar Belakang Khusus untuk Dokumentasi Team */}
               {isTeamCard && (
                 <>
                   <div 
                     className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity group-hover:mix-blend-normal transition-all duration-500"
                     style={{ backgroundImage: `url(${bgTeam})` }}
                   ></div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/80 to-transparent"></div>
+                  <div className={`absolute inset-0 bg-gradient-to-t ${teamCardGradient} to-transparent`}></div>
                 </>
               )}
 
-              {/* Konten Card Atas */}
               <div className="relative z-10">
-                <span className={`text-[10px] uppercase tracking-wider ${isTeamCard ? 'text-slate-300 drop-shadow-md' : 'text-slate-400'}`}>
+                <span className={`text-[10px] uppercase tracking-wider drop-shadow-sm ${subtitleColor}`}>
                   Pratinjau Koneksi
                 </span>
                 <div className="flex items-center gap-2 mt-1 mb-2">
-                  <span className="text-blue-400">{m.icon}</span> 
-                  <h3 className={`font-bold text-sm ${isTeamCard ? 'text-white drop-shadow-md' : 'text-white'}`}>
+                  <span className="text-blue-500 text-lg drop-shadow-sm">{m.icon}</span> 
+                  <h3 className={`font-bold text-sm drop-shadow-sm ${titleColor}`}>
                     {m.title}
                   </h3>
                 </div>
-                <p className={`text-[11px] leading-tight ${isTeamCard ? 'text-slate-200 drop-shadow-md' : 'text-slate-400'}`}>
+                <p className={`text-[11px] leading-relaxed drop-shadow-sm ${descColor}`}>
                   {m.desc}
                 </p>
               </div>
 
-              {/* Konten Card Bawah (Status) */}
               <div className="relative z-10 flex items-center gap-2 mt-4">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></div>
-                <span className="text-[11px] font-medium text-slate-300">
+                <span className={`text-[11px] font-medium tracking-wide ${isDarkMode || isTeamCard ? 'text-emerald-400/90' : 'text-emerald-600'}`}>
                   Ready to Connect
                 </span>
               </div>

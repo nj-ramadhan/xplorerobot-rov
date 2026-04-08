@@ -94,29 +94,55 @@ const Landing: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 space-y-6 text-slate-300 font-light leading-relaxed text-base">
-            <div className="mb-6 border-l-2 border-cyan-500 pl-4">
-              <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
-                Discover <br/> <span className="text-cyan-400">The System</span>
+          {/* ================= BAGIAN TEKS KANAN ================= */}
+          <div className="flex flex-col gap-6 max-w-xl">
+            
+            {/* Judul */}
+            <div className="border-l-2 border-cyan-400 pl-5">
+              <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight leading-none">
+                Discover<br />
+                <span className="text-cyan-400">The System</span>
               </h2>
-              <p className="font-mono text-[9px] mt-2 text-slate-500 tracking-widest uppercase">
+              <p className="text-[10px] md:text-xs font-mono text-slate-500 tracking-widest mt-3 uppercase">
                 // Web-Based Ground Control Station
               </p>
             </div>
-            <p>
-              <strong className="text-white font-semibold">Explore Robot</strong> adalah pusat komando Ground Control Station (GCS) canggih berbasis web yang dirancang khusus untuk memonitor dan mengendalikan Remotely Operated Vehicle (ROV) Anda.
+
+            {/* Paragraf 1 (Pembuka) */}
+            <p className="text-slate-300 leading-relaxed mt-2 text-sm md:text-base">
+              <strong className="text-white">Explore Robot</strong> adalah pusat komando Ground Control Station (GCS) canggih berbasis web yang dirancang khusus untuk memonitor dan mengendalikan Remotely Operated Vehicle (ROV) Anda.
             </p>
-            <p>
-              Rasakan pengalaman kendali total misi bawah air dengan data telemetri <span className="italic text-cyan-200/80">real-time</span>, streaming video interaktif berlatensi rendah, dan penyesuaian parameter autopilot yang mulus.
+
+            {/* Paragraf 2 (Highlight Fitur Tim Kamu) */}
+            <p className="text-slate-400 leading-relaxed text-sm md:text-base">
+              Membawa standar sistem sekelas BlueOS ke level berikutnya dengan pembaruan eksklusif dari tim kami. Rasakan kendali tanpa batas melalui integrasi protokol <strong className="text-cyan-400">MAVLink</strong>, fleksibilitas <strong className="text-cyan-400">Manual Controlling</strong> yang presisi, hingga kemampuan eksekusi misi <strong className="text-cyan-400">Autonomous</strong> yang cerdas—semuanya didukung oleh telemetri <em>real-time</em> berlatensi rendah.
             </p>
-            <ul className="space-y-2 font-mono text-[11px] pt-4 border-t border-white/5">
-              <li className="flex gap-3 items-center"><span className="text-cyan-400">●</span> Architecture: Web-Based React UI</li>
-              <li className="flex gap-3 items-center"><span className="text-cyan-400">●</span> Telemetry: Low-Latency WebSocket</li>
-              <li className="flex gap-3 items-center"><span className="text-cyan-400">●</span> Developer: Polman Bandung - TRIN</li>
+
+            {/* List Fitur (Diperbarui) */}
+            <ul className="space-y-3 mt-4 text-xs md:text-sm font-mono text-slate-400">
+              <li className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
+                <span>Architecture: Web-Based React UI</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
+                <span>Protocol: MAVLink Communication</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
+                <span>Capabilities: Manual & Autonomous Modes</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
+                <span>Developer: Polman Bandung - TRIN</span>
+              </li>
             </ul>
+            
           </div>
         </div>
       </div>
+
+        
 
       {/* =========================================
           3. SYSTEM CAPABILITIES (UPDATE: CONTROL FEATURES)
@@ -170,6 +196,36 @@ const Landing: React.FC = () => {
         </div>
       </div>
 
+        {/* =========================================
+          2.5. EXTRA INFORMATION (NEW)
+          ========================================= */}
+      <div className="relative z-20 px-10 py-20 bg-[#080d14] border-t border-white/5 relative overflow-hidden">
+        {/* Ornamen Background biar nggak sepi */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-900/10 rounded-full blur-[80px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-900/10 rounded-full blur-[80px] pointer-events-none"></div>
+
+        <div className="container mx-auto max-w-4xl relative z-10 text-center">
+          <div className="inline-flex items-center justify-center gap-2 mb-4 border border-cyan-500/30 bg-cyan-500/10 px-4 py-1.5 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">
+              Mission Objective
+            </span>
+          </div>
+          
+          <h3 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-6">
+            Bridging the <span className="text-cyan-400">Surface</span> and the Deep
+          </h3>
+          
+          <p className="text-slate-400 leading-relaxed text-sm md:text-base mb-6">
+            [Ini teks paragraf random yang bisa kamu ganti nanti] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+          </p>
+          
+          <p className="text-slate-500 leading-relaxed text-sm md:text-base italic">
+            "Sistem ini dibangun untuk memfasilitasi kebutuhan eksplorasi laut dalam dengan tingkat presisi yang tak tertandingi, memberikan akses data visual dan sensorik secara real-time ke stasiun permukaan."
+          </p>
+        </div>
+      </div>
+
       {/* =========================================
           4. EXTENDED DESCRIPTION 
           ========================================= */}
@@ -210,6 +266,7 @@ const Landing: React.FC = () => {
           </div>
         </div>
       </div>
+        
 
       {/* =========================================
           6. FOOTER
