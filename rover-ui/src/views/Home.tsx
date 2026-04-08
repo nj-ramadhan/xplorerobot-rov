@@ -31,7 +31,9 @@ export const Home: React.FC<HomeProps> = ({ isDarkMode = true }) => {
   return (
     <div className="relative w-full flex flex-col space-y-10 animate-in fade-in duration-500">
       
-      {/* 1. HERO SECTION */}
+      {/* =========================================
+          1. HERO SECTION
+          ========================================= */}
       <div className="group flex flex-col md:flex-row h-auto md:h-[220px] items-center pt-2">
         <div className="w-full md:w-1/2 flex flex-col justify-center drop-shadow-xl z-10">
           <h1 className={`text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-2 tracking-wide ${
@@ -64,66 +66,71 @@ export const Home: React.FC<HomeProps> = ({ isDarkMode = true }) => {
         </div>
       </div>
 
-      {/* 2. GRID CARDS SECTION */}
+      {/* =========================================
+          2. GRID CARDS SECTION (SEMUA BISA REVEAL GAMBAR)
+          ========================================= */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 pb-6">
         {menus.map((m) => {
-          const isTeamCard = m.path === '/kami';
+          
+          // 1. Warna Border Kartu
+          const cardBorderClasses = isDarkMode 
+            ? 'border-slate-700/50 hover:border-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.25)]' 
+            : 'border-slate-300 hover:border-blue-500 hover:shadow-[0_8px_20px_rgba(59,130,246,0.15)] shadow-sm';
 
-          const standardCardClasses = isDarkMode 
-            ? 'bg-[#1e293b]/50 backdrop-blur-md hover:bg-[#253347]/70 border-slate-700/50 hover:border-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.25)]' 
-            : 'bg-white/70 backdrop-blur-md hover:bg-white/90 border-slate-300 hover:border-blue-500 hover:shadow-[0_8px_20px_rgba(59,130,246,0.15)] shadow-sm';
-
-          const teamCardClasses = isDarkMode 
-            ? 'bg-transparent border-slate-700/50 hover:border-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.25)]' 
-            : 'bg-transparent border-slate-300 hover:border-blue-500 hover:shadow-[0_8px_20px_rgba(59,130,246,0.15)] shadow-sm';
-
-          const cardClasses = isTeamCard ? teamCardClasses : standardCardClasses;
-
-          const teamCardGradient = isDarkMode 
-            ? 'from-[#060b19] via-[#060b19]/80' 
-            : 'from-[#060b19]/60 via-[#060b19]/50';
-
-          const titleColor = isTeamCard ? 'text-white' : (isDarkMode ? 'text-white' : 'text-slate-800');
-          const descColor = isTeamCard ? 'text-slate-200' : (isDarkMode ? 'text-slate-400' : 'text-slate-600');
-          const subtitleColor = isTeamCard ? 'text-slate-300' : (isDarkMode ? 'text-slate-400' : 'text-slate-500');
+          // 2. Transisi Warna Teks (Wajib group-hover:text-white karena saat di-hover, latar belakang jadi gambar gelap)
+          const titleColor = isDarkMode ? 'text-white' : 'text-slate-800 group-hover:text-white';
+          const descColor = isDarkMode ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-200';
+          const subtitleColor = isDarkMode ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-300';
+          const readyColor = isDarkMode ? 'text-emerald-400/90' : 'text-emerald-600 group-hover:text-emerald-400/90';
 
           return (
             <div 
               key={m.path} 
               onClick={() => navigate(m.path)}
-              className={`relative rounded-xl p-4 flex flex-col justify-between border transition-all cursor-pointer min-h-[140px] overflow-hidden group ${cardClasses}`}
+              className={`relative rounded-xl p-4 flex flex-col justify-between border transition-all duration-500 cursor-pointer min-h-[140px] overflow-hidden group ${cardBorderClasses}`}
             >
-              {isTeamCard && (
-                <>
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity group-hover:mix-blend-normal transition-all duration-500"
-                    style={{ backgroundImage: `url(${bgTeam})` }}
-                  ></div>
-                  <div className={`absolute inset-0 bg-gradient-to-t ${teamCardGradient} to-transparent`}></div>
-                </>
-              )}
+              {/* LAYER 1: Latar Kaca Default. 
+                  Ini akan hilang (opacity-0) secara halus saat kartu di-hover */}
+              <div className={`absolute inset-0 transition-opacity duration-500 ${
+                isDarkMode ? 'bg-[#1e293b]/50 backdrop-blur-md group-hover:opacity-0' : 'bg-white/70 backdrop-blur-md group-hover:opacity-0'
+              }`}></div>
 
+              {/* LAYER 2: Gambar Background Tersembunyi. 
+                  Awalnya opacity-0 (nggak keliatan), kalau di-hover muncul ke opacity-40 */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center opacity-0 group-hover:opacity-40 mix-blend-luminosity group-hover:mix-blend-normal transition-all duration-500 scale-105 group-hover:scale-100"
+                style={{ backgroundImage: `url(${bgTeam})` }}
+              ></div>
+
+              {/* LAYER 3: Gradien Penyelamat Teks. 
+                  Muncul barengan sama gambar supaya teksnya tetep gampang dibaca */}
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t ${
+                isDarkMode ? 'from-[#060b19] via-[#060b19]/80 to-transparent' : 'from-[#060b19]/70 via-[#060b19]/40 to-transparent'
+              }`}></div>
+
+              {/* KONTEN TEKS (Posisi harus di atas lapisan gambar/kaca) */}
               <div className="relative z-10">
-                <span className={`text-[10px] uppercase tracking-wider drop-shadow-sm ${subtitleColor}`}>
+                <span className={`text-[10px] uppercase tracking-wider drop-shadow-sm transition-colors duration-300 ${subtitleColor}`}>
                   Pratinjau Koneksi
                 </span>
                 <div className="flex items-center gap-2 mt-1 mb-2">
                   <span className="text-blue-500 text-lg drop-shadow-sm">{m.icon}</span> 
-                  <h3 className={`font-bold text-sm drop-shadow-sm ${titleColor}`}>
+                  <h3 className={`font-bold text-sm drop-shadow-sm transition-colors duration-300 ${titleColor}`}>
                     {m.title}
                   </h3>
                 </div>
-                <p className={`text-[11px] leading-relaxed drop-shadow-sm ${descColor}`}>
+                <p className={`text-[11px] leading-relaxed drop-shadow-sm transition-colors duration-300 ${descColor}`}>
                   {m.desc}
                 </p>
               </div>
 
               <div className="relative z-10 flex items-center gap-2 mt-4">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></div>
-                <span className={`text-[11px] font-medium tracking-wide ${isDarkMode || isTeamCard ? 'text-emerald-400/90' : 'text-emerald-600'}`}>
+                <span className={`text-[11px] font-medium tracking-wide transition-colors duration-300 ${readyColor}`}>
                   Ready to Connect
                 </span>
               </div>
+
             </div>
           );
         })}
