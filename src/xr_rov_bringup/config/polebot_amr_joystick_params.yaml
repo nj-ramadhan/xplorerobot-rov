@@ -1,0 +1,28 @@
+joy_node:
+  ros__parameters:
+    device_id: 0
+    autorepeat_rate: 20.0
+
+teleop_node:
+  ros__parameters:
+    # Use left stick vertical (axes[1]) for forward/back
+    axis_linear:
+      x: 1
+    scale_linear:
+      x: 0.2
+    scale_linear_turbo:
+      x: 0.5
+
+    # Use left stick horizontal (axes[0]) for yaw
+    axis_angular:
+      yaw: 0
+    scale_angular:
+      yaw: 0.2
+    scale_angular_turbo:
+      yaw: 0.5
+
+    # Bumpers as enable/turbo
+    enable_button: 4         # set to the index observed for L1
+    enable_turbo_button: 5   # set to the index observed for R1
+
+    require_enable_button: true

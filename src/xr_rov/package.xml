@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>xr_rov</name>
+  <version>0.0.0</version>
+  <description>Main package for XR_ROV robots by NJ-Ramadhan</description>
+  <maintainer email="nj.ramadhan.mechatronics@gmail.com">NJ-Ramadhan</maintainer>  
+  <license>Apache-2.0</license>
+ 
+  <buildtool_depend>ament_cmake</buildtool_depend>
+ 
+  <exec_depend>xr_rov_bringup</exec_depend>
+  <exec_depend>xr_rov_controller</exec_depend>
+  <exec_depend>xr_rov_description</exec_depend>
+  <exec_depend>xr_rov_docking</exec_depend>
+  <exec_depend>xr_rov_gazebo</exec_depend>
+  <exec_depend>xr_rov_localization</exec_depend>
+  <exec_depend>xr_rov_msgs</exec_depend>
+  <exec_depend>xr_rov_navigation</exec_depend>
+  <exec_depend>xr_rov_simulation</exec_depend>
+  <exec_depend>xr_rov_slam</exec_depend>
+  <exec_depend>xr_rov_system_tests</exec_depend>
+ 
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+ 
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
