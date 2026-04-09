@@ -35,20 +35,6 @@ export const MapPanel: React.FC<MapPanelProps> = ({
 
   /**
    * Konversi koordinat ROS → pixel UI
-   *
-   * Konvensi ROS2 (REP-103):
-   *   X+ = maju (north / atas layar)
-   *   Y+ = kiri (west)  ← penting! bukan kanan
-   *
-   * Layar:
-   *   pixel-x bertambah ke kanan
-   *   pixel-y bertambah ke bawah
-   *
-   * Mapping:
-   *   pixel_x = center_x - rosY / RESOLUTION   (Y+ ROS = kiri = pixel_x berkurang)
-   *   pixel_y = center_y - rosX / RESOLUTION   (X+ ROS = maju = pixel_y berkurang)
-   *
-   * FIX: Sebelumnya +rosY, sekarang -rosY agar konsisten dengan REP-103
    */
   const toUI = (rosX: number, rosY: number) => {
     if (size.w === 0) return { x: 0, y: 0 };
@@ -60,9 +46,6 @@ export const MapPanel: React.FC<MapPanelProps> = ({
 
   /**
    * Klik pixel → koordinat ROS
-   * Inverse dari toUI():
-   *   rosX = -(pixel_y - center_y) * RESOLUTION
-   *   rosY = -(pixel_x - center_x) * RESOLUTION
    */
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!mapRef.current) return;
@@ -76,7 +59,6 @@ export const MapPanel: React.FC<MapPanelProps> = ({
     onMapClick(rosX, rosY);
   };
 
-  // Path polyline string
   const pathPoints = rovPath
     .map(p => {
       const ui = toUI(p.rosX, p.rosY);
@@ -145,26 +127,43 @@ export const MapPanel: React.FC<MapPanelProps> = ({
         );
       })}
 
-      {/* ROV icon — rotate sesuai yaw */}
-      {/* 
-        Yaw di ROS: 0° = menghadap +X (North = atas layar)
-        CSS rotate: 0° = atas
-        Jadi: CSS rotate = -yaw (karena layar Y ke bawah, tapi ROS Y ke kiri)
-      */}
+      {/* ROV SVG Graphic — rotate sesuai yaw */}
       <div
-        className="absolute z-50 text-2xl leading-none pointer-events-none transition-all duration-200"
+        className="absolute z-50 pointer-events-none transition-all duration-200"
         style={{
           left: rovUI.x,
           top: rovUI.y,
-          // Emoji 🛩️ default menghadap kanan-atas (offset -45°)
-          // ROS yaw: 0°=North, positif=CCW (berlawanan jarum jam)
-          // CSS rotate: positif=CW → harus negasi yaw
-          // Rumus: -yaw - 45  → yaw=0 → icon hadap North, yaw=90(W) → icon hadap West
-          transform: `translate(-50%, -50%) rotate(${-rovPos.yaw - 45}deg)`,
-          filter: 'drop-shadow(0 0 8px rgba(59,130,246,0.8))',
+          // SVG sudah didesain menghadap Utara (North), jadi tidak perlu -45 derajat lagi
+          transform: `translate(-50%, -50%) rotate(${-rovPos.yaw}deg)`,
+          filter: 'drop-shadow(0 0 10px rgba(59,130,246,0.6))',
         }}
       >
-        🛩️
+        <svg 
+          viewBox="0 0 40 40" 
+          width="36" 
+          height="36" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Thrusters (Baling-baling luar) */}
+          <rect x="2" y="10" width="6" height="6" rx="1" fill="#1e293b"/>
+          <rect x="32" y="10" width="6" height="6" rx="1" fill="#1e293b"/>
+          <rect x="2" y="24" width="6" height="6" rx="1" fill="#1e293b"/>
+          <rect x="32" y="24" width="6" height="6" rx="1" fill="#1e293b"/>
+          
+          {/* Buoyancy Foams (Pelampung Kuning Kiri-Kanan) */}
+          <rect x="6" y="6" width="8" height="28" rx="3" fill="#38bdf8"/>
+          <rect x="26" y="6" width="8" height="28" rx="3" fill="#38bdf8"/>
+          
+          {/* Main Enclosure (Bodi Utama Hitam/Abu-abu) */}
+          <rect x="12" y="9" width="16" height="22" rx="4" fill="#334155"/>
+          
+          {/* Front Camera Dome (Kaca Kamera Depan) */}
+          <path d="M14 9 Q20 2 26 9 Z" fill="#eab308" opacity="0.9"/>
+          
+          {/* Center detail (Kabel/Tether port) */}
+          <circle cx="20" cy="20" r="3" fill="#0f172a"/>
+          <circle cx="20" cy="20" r="1.5" fill="#f8fafc"/>
+        </svg>
       </div>
     </div>
   );
