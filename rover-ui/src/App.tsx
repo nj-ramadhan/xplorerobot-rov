@@ -1,10 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
+// Import Aset Gambar untuk Background Global
+// @ts-ignore
+import bgBannerDark from './assets/rov-latar-light.png';
+// @ts-ignore
+import bgBannerLight from './assets/rov-latar-light.png'; 
+
 import Sidebar from './layouts/Sidebar';
 import { Navbar } from './layouts/Navbar';
 
-// Import Views (Gabungan semua modul dari kedua branch)
+// Import Views (Gabungan semua modul)
 import Landing from './views/landing/Landing'; 
 import { Home } from './views/Home';
 import { Dashboard } from './views/Dashboard';
@@ -23,14 +29,12 @@ import { Team } from './views/kami';
 
 import { TelemetryData } from './types/telemetry';
 
-// Komponen Pembantu untuk mendeteksi lokasi URL saat ini
 function AppContent() {
   const location = useLocation();
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isDetailMode, setIsDetailMode] = useState(false);
   const ws = useRef<WebSocket | null>(null);
 
-  // Deteksi apakah user sedang berada di halaman utama (Landing Page)
   const isLandingPage = location.pathname === '/';
 
   const [telemetry, setTelemetry] = useState<TelemetryData>({
@@ -38,7 +42,7 @@ function AppContent() {
   });
   const [isArmed, setIsArmed] = useState(false);
 
-  // Integrasi WebSocket MAVLink & Simulasi Sensor
+  // Integrasi WebSocket MAVLink & Simulasi Sensor (Dipertahankan karena ini data aslinya)
   useEffect(() => {
     const socket = new WebSocket('ws://127.0.0.1:8000/ws/telemetry');
     ws.current = socket;
@@ -88,16 +92,14 @@ function AppContent() {
     return (
       <Routes>
         <Route path="/" element={<Landing />} />
-        {/* Jika ada yang nyasar di mode landing, kembalikan ke / */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     );
   }
 
-  // RENDER LAYOUT DASHBOARD/GCS (Dengan Sidebar & Navbar)
   return (
     <div className={`flex h-screen w-full overflow-hidden font-sans antialiased transition-colors duration-500 ${
-      isDarkMode ? 'bg-[#0b111a] text-slate-200' : 'bg-slate-50 text-slate-900'
+      isDarkMode ? 'bg-[#060b19] text-slate-200' : 'bg-slate-50 text-slate-900'
     }`}>
 
       {/* SIDEBAR LACI MELAYANG */}
@@ -109,13 +111,25 @@ function AppContent() {
       
       {/* AREA KONTEN UTAMA - Animasi dorong dari sidebar (ml-24 / ml-0) */}
       <div className={`flex-1 flex flex-col min-w-0 h-full relative transition-all duration-300 ${
-        isDarkMode ? 'bg-[#1e4e8c]' : 'bg-blue-500'
+        isDarkMode ? 'bg-[#060b19]' : 'bg-blue-50'
       } ${!isDetailMode ? 'ml-24' : 'ml-0'}`}>
         
-        {/* Background Aksen Ground Station */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:30px_30px] z-0"></div>
+        {/* ==============================================
+            BACKGROUND LAUT GLOBAL (Support Dark & Light)
+            ============================================== */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-700 pointer-events-none z-0"
+          style={{ 
+            backgroundImage: `url(${isDarkMode ? bgBannerDark : bgBannerLight})`,
+            opacity: isDarkMode ? 0.4 : 0.6
+          }}
+        ></div>
 
-        {/* Navbar Global */}
+        {/* Overlay Gradient */}
+        <div className={`absolute inset-0 z-0 pointer-events-none transition-all duration-700 bg-gradient-to-b ${
+          isDarkMode ? 'from-transparent via-[#060b19]/80 to-[#060b19]' : 'from-white/30 via-white/70 to-[#f8fafc]'
+        }`}></div>
+
         <Navbar 
           telemetry={telemetry} 
           isDarkMode={isDarkMode} 
@@ -125,8 +139,8 @@ function AppContent() {
         <main className="flex-1 overflow-y-auto p-6 md:p-8 z-10 relative">
           <div className="w-full h-full max-w-7xl mx-auto">
             <Routes>
-              {/* Route Utama dashboard dipindah ke /home karena / dipakai Landing */}
-              <Route path="/home" element={<Home onCardClick={() => setIsDetailMode(true)} />} />
+              {/* Route Utama dashboard. Meneruskan isDarkMode dan onCardClick ke Home */}
+              <Route path="/home" element={<Home isDarkMode={isDarkMode} onCardClick={() => setIsDetailMode(true)} />} />
               <Route path="/live" element={<Dashboard telemetry={telemetry} />} />
               
               <Route path="/manual" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><Manual telemetry={telemetry} isArmed={isArmed} toggleArm={toggleArm} sendRC={sendRC} /></div>} />
@@ -142,7 +156,7 @@ function AppContent() {
               <Route path="/blueos" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><BlueOSVersion /></div>} />
               <Route path="/kami" element={<Team />} /> 
               
-              {/* Redirect jika route tidak ditemukan di dalam area dashboard */}
+              {/* Redirect jika route tidak ditemukan */}
               <Route path="*" element={<Navigate to="/home" />} />
             </Routes>
           </div>
@@ -150,7 +164,7 @@ function AppContent() {
 
         {/* Footer Identitas Kampus */}
         <footer className={`h-6 px-6 flex items-center justify-between text-[9px] font-mono border-t z-20 ${
-          isDarkMode ? 'bg-[#111827]/90 border-white/10 text-slate-500' : 'bg-white/80 border-black/5 text-slate-600'
+          isDarkMode ? 'bg-[#060b19]/90 border-white/10 text-slate-500' : 'bg-white/80 border-black/5 text-slate-600'
         }`}>
           <span className="tracking-widest uppercase">Politeknik Manufaktur Bandung - TRIN</span>
           <span className="font-bold">SYSTEM_STABLE_v1.0.4</span>
@@ -160,7 +174,6 @@ function AppContent() {
   );
 }
 
-// Komponen Utama
 function App() {
   return (
     <Router>
