@@ -54,7 +54,7 @@ export const Home: React.FC<HomeProps> = ({ isDarkMode = true, onCardClick }) =>
               ? 'text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]' 
               : 'text-slate-900 drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]' // Efek Glow Putih di Light Mode
           }`}>
-            EXPLOR ROBOT <br /> GROUND STATION
+            XPLORE ROBOT <br /> GROUND STATION
           </h1>
           <h2 className={`text-sm md:text-base font-bold tracking-widest uppercase ${
             isDarkMode 
