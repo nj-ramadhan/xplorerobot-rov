@@ -35,7 +35,7 @@ export const menuGroups = [
     title: "SYSTEM",
     items: [
       { title: "System Information", icon: Info, path: "/system-info" },
-      { title: "BlueOS Version", icon: Package, path: "/blueos", status: "BETA" },
+      { title: "Xplore Robot Version", icon: Package, path: "/blueos", status: "BETA" },
       { title: "Terminal", icon: Terminal, path: "/terminal" },
       { title: "Video Streams", icon: Video, path: "/video" },
       { title: "Log Browser", icon: FileSearch, path: "/logs" } 

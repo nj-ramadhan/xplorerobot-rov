@@ -27,7 +27,7 @@ const menus = [
   { path: '/simulation', title: 'Autopilot Firmware',          desc: 'Update flight controller firmware.', icon: '🚀' },
   { path: '/browser',    title: 'Log Browser',                 desc: 'Allow browsing the Telemetry (.tlog) and Binary (.bin) logs.', icon: '📁' },
   { path: '/system-info',title: 'System Information',          desc: 'Monitor system, processes, and kernel.', icon: '🖥️' },
-  { path: '/blueos',     title: 'BlueOS Version',              desc: 'Manage system firmware and updates.', icon: '📦' },
+  { path: '/blueos',     title: 'Xplore Robot Version',        desc: 'Manage system firmware and updates.', icon: '📦' },
   { path: '/kami',       title: 'Dokumentasi Team',            desc: 'Informasi dan dokumentasi tentang tim pengembang.', icon: '👥' },
 ];
 

@@ -111,13 +111,39 @@ export const OrientationModal: React.FC<OrientationModalProps> = ({
             {compassLayout.map((row, ri) =>
               row.map((opt, ci) => {
                 if (!opt) {
-                  // Tengah — ikon ROV
+                  // Tengah — SVG ikon ROV pengganti emoji pesawat
                   return (
                     <div
                       key={`center-${ri}-${ci}`}
                       className="w-16 h-16 flex items-center justify-center rounded-xl bg-blue-600/10 border border-blue-500/20"
                     >
-                      <span style={{ fontSize: 24 }}>🛩️</span>
+                      <svg 
+                        viewBox="0 0 40 40" 
+                        width="32" 
+                        height="32" 
+                        xmlns="http://www.w3.org/2000/svg"
+                        style={{ filter: 'drop-shadow(0 0 6px rgba(59,130,246,0.4))' }}
+                      >
+                        {/* Thrusters (Baling-baling luar) */}
+                        <rect x="2" y="10" width="6" height="6" rx="1" fill="#1e293b"/>
+                        <rect x="32" y="10" width="6" height="6" rx="1" fill="#1e293b"/>
+                        <rect x="2" y="24" width="6" height="6" rx="1" fill="#1e293b"/>
+                        <rect x="32" y="24" width="6" height="6" rx="1" fill="#1e293b"/>
+                        
+                        {/* Buoyancy Foams (Pelampung Kuning Kiri-Kanan) */}
+                        <rect x="6" y="6" width="8" height="28" rx="3" fill="#38bdf8"/>
+                        <rect x="26" y="6" width="8" height="28" rx="3" fill="#38bdf8"/>
+                        
+                        {/* Main Enclosure (Bodi Utama Hitam/Abu-abu) */}
+                        <rect x="12" y="9" width="16" height="22" rx="4" fill="#334155"/>
+                        
+                        {/* Front Camera Dome (Kaca Kamera Depan) */}
+                        <path d="M14 9 Q20 2 26 9 Z" fill="#eab308" opacity="0.9"/>
+                        
+                        {/* Center detail (Kabel/Tether port) */}
+                        <circle cx="20" cy="20" r="3" fill="#0f172a"/>
+                        <circle cx="20" cy="20" r="1.5" fill="#f8fafc"/>
+                      </svg>
                     </div>
                   );
                 }
