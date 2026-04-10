@@ -447,7 +447,7 @@ const Landing: React.FC = () => {
           </div>
         </div>
 
-        {/* FOOTER */}
+        {/* FOOTER LANDING*/}
         <footer className="border-t border-white/10 bg-[#060b19] pt-10 pb-6 px-8 relative z-20">
           <div className="container mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center md:items-start gap-6">
             <div className="text-center md:text-left">
