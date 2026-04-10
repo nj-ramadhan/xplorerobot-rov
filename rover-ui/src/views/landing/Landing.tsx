@@ -143,7 +143,7 @@ const Landing: React.FC = () => {
             <div className="flex-1 text-center md:text-left z-20">
               <p className="font-mono text-[9px] mb-4 text-cyan-400 tracking-[0.2em] font-bold flex items-center justify-center md:justify-start gap-3">
                 <span className="w-6 h-[2px] bg-cyan-400 inline-block shadow-[0_0_8px_rgba(34,211,238,0.8)]"></span>
-                INDUSTRIAL INFORMATICS - TRIN
+                XPLORE ROBOT TEAM
               </p>
               
               <h1 className="font-heading text-4xl md:text-6xl font-black leading-[1.05] mb-5 uppercase tracking-tight transition-transform duration-500 hover:translate-x-1 cursor-default">
@@ -266,7 +266,7 @@ const Landing: React.FC = () => {
               </div>
 
               <p className="text-slate-200/90 leading-relaxed mt-2 text-sm drop-shadow-sm">
-                <strong className="text-white font-bold tracking-wide">Explore Robot</strong> adalah pusat komando Ground Control Station (GCS) canggih berbasis web yang dirancang khusus untuk memonitor dan mengendalikan Remotely Operated Vehicle (ROV) Anda.
+                <strong className="text-white font-bold tracking-wide">Xplore Robot</strong> adalah pusat komando Ground Control Station (GCS) canggih berbasis web yang dirancang khusus untuk memonitor dan mengendalikan Remotely Operated Vehicle (ROV) Anda.
               </p>
 
               <p className="text-slate-300/90 leading-relaxed text-sm drop-shadow-sm">
@@ -447,7 +447,7 @@ const Landing: React.FC = () => {
           </div>
         </div>
 
-        {/* FOOTER */}
+        {/* FOOTER LANDING*/}
         <footer className="border-t border-white/10 bg-[#060b19] pt-10 pb-6 px-8 relative z-20">
           <div className="container mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center md:items-start gap-6">
             <div className="text-center md:text-left">
@@ -457,14 +457,14 @@ const Landing: React.FC = () => {
                   alt="Xplore Robot logo" 
                   className="h-5 md:h-6 w-auto brightness-0 invert opacity-90" 
                 /> 
-                EXPLOR ROBOT
+                XPLORE ROBOT
               </div>
               <p className="text-slate-400 text-[10px] leading-relaxed max-w-sm font-light">
                 Developed by Industrial Informatics Engineering (TRIN) students for advanced underwater vehicle control.
               </p>
             </div>
             <div className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest text-center md:text-right flex flex-col justify-end h-full">
-              <p className="selection:text-cyan-500 mb-1.5">© {new Date().getFullYear()} EXPLORE ROBOT. CREATE WITH FULL OF LOVE 🩵.</p>
+              <p className="selection:text-cyan-500 mb-1.5">© {new Date().getFullYear()} XPLORE ROBOT. CREATE WITH FULL OF LOVE 🩵.</p>
               <p className="text-cyan-500/60">SYSTEM_STABLE_v1.0.4</p>
             </div>
           </div>

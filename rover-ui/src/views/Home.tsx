@@ -27,7 +27,7 @@ const menus = [
   // 🚀 Autopilot Firmware sudah dihapus dari sini!
   { path: '/browser',    title: 'Log Browser',                 desc: 'Allow browsing the Telemetry (.tlog) and Binary (.bin) logs.', icon: '📁' },
   { path: '/system-info',title: 'System Information',          desc: 'Monitor system, processes, and kernel.', icon: '🖥️' },
-  { path: '/blueos',     title: 'BlueOS Version',              desc: 'Manage system firmware and updates.', icon: '📦' },
+  { path: '/blueos',     title: 'Xplore Robot Version',        desc: 'Manage system firmware and updates.', icon: '📦' },
   { path: '/kami',       title: 'Dokumentasi Team',            desc: 'Informasi dan dokumentasi tentang tim pengembang.', icon: '👥' },
 ];
 
@@ -54,7 +54,7 @@ export const Home: React.FC<HomeProps> = ({ isDarkMode = true, onCardClick }) =>
               ? 'text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]' 
               : 'text-slate-900 drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]' // Efek Glow Putih di Light Mode
           }`}>
-            EXPLOR ROBOT <br /> GROUND STATION
+            XPLORE ROBOT <br /> GROUND STATION
           </h1>
           <h2 className={`text-sm md:text-base font-bold tracking-widest uppercase ${
             isDarkMode 
