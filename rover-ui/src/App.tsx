@@ -146,10 +146,10 @@ function AppContent() {
               <Route path="/manual" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><Manual telemetry={telemetry} isArmed={isArmed} toggleArm={toggleArm} sendRC={sendRC} /></div>} />
               <Route path="/manualros2" element={<div className="p-1 text-white"><ManualROS2 /></div>} />
               <Route path="/autonomous" element={<div className="p-1 text-white h-full"><AutonomousROS2 /></div>} />
-              <Route path="/setup" element={<VehicleSetup />} />
-              <Route path="/params" element={<ParamsView />} /> 
-              <Route path="/mission" element={<MissionControl />} /> 
-              <Route path="/ping" element={<PingSonarView />} /> 
+              <Route path="/setup" element={<VehicleSetup isDarkMode={isDarkMode} />} />
+              <Route path="/params" element={<ParamsView isDarkMode={isDarkMode} />} /> 
+              <Route path="/mission" element={<MissionControl isDarkMode={isDarkMode} />} /> 
+              <Route path="/ping" element={<PingSonarView isDarkMode={isDarkMode} />} />
               <Route path="/browser" element={<LogBrowser />} /> 
               <Route path="/video" element={<VideoStream isDarkMode={isDarkMode} />} />
               <Route path="/system-info" element={<SystemInformation />} />
