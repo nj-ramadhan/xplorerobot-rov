@@ -43,6 +43,19 @@ const MAX_VEL           = 1.0;
 const MAX_YAW_VEL       = 0.8;
 const LOOP_HZ           = 100;
 
+// ── Fix D: Trail ROV — batasi panjang dan frekuensi simpan ────────────────
+// MAX_PATH_POINTS : jumlah titik maksimum yang disimpan di memory browser.
+//   100 poin × resolusi 5 cm = ±5 meter trail yang terlihat — cukup untuk
+//   visualisasi misi tanpa membebani React state.
+// MIN_PATH_DIST_M : jarak minimum (meter) antara dua poin trail.
+//   0.05 m = 5 cm. Poin baru dibuang kalau ROV hampir tidak bergerak
+//   (hover in-place, rotate, dsb) sehingga trail tidak menumpuk di satu titik.
+// PATH_THROTTLE_MS: interval waktu minimum antar simpan poin (ms).
+//   200 ms pada 100 Hz odom = simpan 1 dari ~20 frame → hemat 95% render.
+const MAX_PATH_POINTS   = 500;
+const MIN_PATH_DIST_M   = 0.05;
+const PATH_THROTTLE_MS  = 200;
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function angleDiff(target: number, current: number): number {
@@ -101,6 +114,13 @@ const AutonomousROS2: React.FC = () => {
   const seqIndexRef    = useRef(-1);
   const isMissionRef   = useRef(false);
   const missionModeRef = useRef<MissionMode>('waypoint');
+
+  // ── Fix D: rovPath throttle refs ──────────────────────────────────────────
+  // Mencegah trail tumbuh tak terbatas saat odom 100 Hz.
+  // lastPathTime  → timestamp terakhir poin disimpan (throttle waktu 200 ms)
+  // lastPathPos   → posisi terakhir yang disimpan (skip jika < MIN_PATH_DIST meter)
+  const lastPathTime = useRef<number>(0);
+  const lastPathPos  = useRef<{ rosX: number; rosY: number } | null>(null);
 
   const phaseRef        = useRef<ControlPhase>('travel');
   const travelGoalRef   = useRef<number | null>(null);
@@ -290,7 +310,20 @@ const AutonomousROS2: React.FC = () => {
           const newPos: RovPos = { rosX: p.x, rosY: p.y, z: p.z, yaw: yawRad*(180/Math.PI) };
           rovPosRef.current = newPos;
           setRovPos(newPos);
-          setRovPath(prev => [...prev.slice(-150), { rosX: p.x, rosY: p.y }]);
+          // Fix D: throttle waktu + filter jarak sebelum simpan ke trail
+          const now     = Date.now();
+          const lastPos = lastPathPos.current;
+          const distOk  = !lastPos || Math.hypot(p.x - lastPos.rosX, p.y - lastPos.rosY) >= MIN_PATH_DIST_M;
+          const timeOk  = now - lastPathTime.current >= PATH_THROTTLE_MS;
+          if (distOk && timeOk) {
+            lastPathTime.current = now;
+            lastPathPos.current  = { rosX: p.x, rosY: p.y };
+            setRovPath(prev => {
+              const next = [...prev, { rosX: p.x, rosY: p.y }];
+              // Buang poin terlama kalau melebihi batas maksimum
+              return next.length > MAX_PATH_POINTS ? next.slice(-MAX_PATH_POINTS) : next;
+            });
+          }
         }
       } catch (e) { console.error(e); }
     };
