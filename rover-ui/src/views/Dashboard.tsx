@@ -2,6 +2,7 @@ import React from 'react';
 import { Compass } from '../components/widgets/Compass';
 import { AttitudeIndicator } from '../components/widgets/AttitudeIndicator';
 import { TelemetryData } from '../types/telemetry';
+import { Activity } from 'lucide-react'; // Tambahkan import ikon ini!
 
 interface DashboardProps {
   telemetry: TelemetryData;
@@ -35,21 +36,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ telemetry, isDarkMode = tr
     <div className="flex flex-col gap-6 animate-in fade-in duration-700 pb-10 mt-2 min-h-screen w-full font-['Inter',sans-serif]">
       
       {/* =========================================
-          HEADER / JUDUL DASHBOARD
+          HEADER YANG SUDAH DISELARASKAN
           ========================================= */}
-      <div className="w-full">
-        <h2 className={`font-heading text-3xl md:text-4xl font-black uppercase tracking-tight transition-colors duration-300 ${titleColor}`}>
-          Live Telemetry
-        </h2>
-        <p className={`font-mono text-xs tracking-widest uppercase mt-1 font-bold transition-colors duration-300 ${subtitleColor}`}>
-          Real-time ROV Monitoring & Sensor Data
-        </p>
+      <div className="flex items-center gap-5 w-full">
+        {/* Kotak Ikon Biru */}
+        <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 shrink-0">
+          <Activity size={32} className="text-white" />
+        </div>
+        
+        {/* Teks Judul & Subtitle */}
+        <div>
+          <h2 className={`font-heading text-3xl md:text-4xl font-black uppercase tracking-tight transition-colors duration-300 ${titleColor}`}>
+            Live Telemetry
+          </h2>
+          <p className={`font-mono text-[11px] md:text-xs tracking-widest uppercase mt-1 font-bold transition-colors duration-300 ${subtitleColor}`}>
+            Real-time ROV Monitoring & Sensor Data
+          </p>
+        </div>
       </div>
 
       {/* =========================================
           1. LAYAR VIDEO STREAM (FULL ATAS)
           ========================================= */}
-      <div className={`w-full rounded-3xl aspect-video lg:aspect-[21/9] flex items-center justify-center relative overflow-hidden group border transition-all duration-500 ${videoClasses}`}>
+      <div className={`w-full rounded-3xl aspect-video lg:aspect-[21/9] flex items-center justify-center relative overflow-hidden group border transition-all duration-500 mt-2 ${videoClasses}`}>
         {/* Teks Loading */}
         <p className={`italic font-mono text-[11px] md:text-xs uppercase tracking-[0.2em] z-10 animate-pulse transition-colors duration-300 ${textLoading}`}>
           Waiting for Gazebo Stream...

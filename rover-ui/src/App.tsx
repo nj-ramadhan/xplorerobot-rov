@@ -42,7 +42,7 @@ function AppContent() {
   });
   const [isArmed, setIsArmed] = useState(false);
 
-  // Integrasi WebSocket MAVLink & Simulasi Sensor (Dipertahankan karena ini data aslinya)
+  // Integrasi WebSocket MAVLink & Simulasi Sensor
   useEffect(() => {
     const socket = new WebSocket('ws://127.0.0.1:8000/ws/telemetry');
     ws.current = socket;
@@ -141,21 +141,27 @@ function AppContent() {
             <Routes>
               {/* Route Utama dashboard. Meneruskan isDarkMode dan onCardClick ke Home */}
               <Route path="/home" element={<Home isDarkMode={isDarkMode} onCardClick={() => setIsDetailMode(true)} />} />
-              <Route path="/live" element={<Dashboard telemetry={telemetry} isDarkMode={isDarkMode} />} 
-/>
+              <Route path="/live" element={<Dashboard telemetry={telemetry} isDarkMode={isDarkMode} />} />
               
-              <Route path="/manual" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><Manual telemetry={telemetry} isArmed={isArmed} toggleArm={toggleArm} sendRC={sendRC} /></div>} />
-              <Route path="/manualros2" element={<div className="p-1 text-white"><ManualROS2 /></div>} />
-              <Route path="/autonomous" element={<div className="p-1 text-white h-full"><AutonomousROS2 /></div>} />
+              {/* PERBAIKAN: Bungkus div abu-abu dihapus, komponen dipanggil langsung agar bersih! */}
+              <Route path="/manual" element={<Manual telemetry={telemetry} isArmed={isArmed} toggleArm={toggleArm} sendRC={sendRC} isDarkMode={isDarkMode} />} />
+              
+              {/* Note: /manualros2 dan /autonomous masih dibungkus div biasa agar tidak pecah layoutnya */}
+              <Route path="/manualros2" element={<div className="p-1"><ManualROS2 isDarkMode={isDarkMode} /></div>} />
+              <Route path="/autonomous" element={<div className="p-1 h-full"><AutonomousROS2 /></div>} />
+              
               <Route path="/setup" element={<VehicleSetup isDarkMode={isDarkMode} />} />
               <Route path="/params" element={<ParamsView isDarkMode={isDarkMode} />} /> 
               <Route path="/mission" element={<MissionControl isDarkMode={isDarkMode} />} /> 
               <Route path="/ping" element={<PingSonarView isDarkMode={isDarkMode} />} />
               <Route path="/browser" element={<LogBrowser isDarkMode={isDarkMode} />} /> 
               <Route path="/video" element={<VideoStream isDarkMode={isDarkMode} />} />
-              <Route path="/system-info" element={<SystemInformation />} />
-              <Route path="/blueos" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><BlueOSVersion /></div>} />
-              <Route path="/kami" element={<Team />} /> 
+              <Route path="/system-info" element={<SystemInformation isDarkMode={isDarkMode} />} />
+              
+              {/* Bungkus div gelap di BlueOS juga dihapus sekalian biar rapi kalau nanti dipasang tema terang */}
+              <Route path="/blueos" element={<BlueOSVersion isDarkMode={isDarkMode} />} />
+              
+              <Route path="/kami" element={<Team isDarkMode={isDarkMode}  />} /> 
               
               {/* Redirect jika route tidak ditemukan */}
               <Route path="*" element={<Navigate to="/home" />} />

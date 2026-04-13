@@ -421,12 +421,6 @@ const Landing: React.FC = () => {
                 <p className="font-mono text-slate-500 text-[9px] uppercase tracking-widest font-bold">Politeknik Manufaktur Bandung</p>
               </div>
               
-              <div className="flex flex-wrap justify-center md:justify-end items-center gap-5 md:gap-6 text-slate-400 font-bold text-xs">
-                <div className="flex items-center gap-1.5 hover:text-[#61DAFB] transition-colors cursor-default drop-shadow-sm hover:scale-110 duration-300"><span className="text-lg">⚛️</span> React</div>
-                <div className="flex items-center gap-1.5 hover:text-[#38B2AC] transition-colors cursor-default drop-shadow-sm hover:scale-110 duration-300"><span className="text-lg">🌊</span> Tailwind</div>
-                <div className="flex items-center gap-1.5 hover:text-[#FFD859] transition-colors cursor-default drop-shadow-sm hover:scale-110 duration-300"><span className="text-lg">⚡</span> Vite</div>
-                <div className="flex items-center gap-1.5 hover:text-[#68A063] transition-colors cursor-default drop-shadow-sm hover:scale-110 duration-300"><span className="text-lg">🟢</span> Node.js</div>
-              </div>
             </div>
           </div>
         </div>
