@@ -141,7 +141,8 @@ function AppContent() {
             <Routes>
               {/* Route Utama dashboard. Meneruskan isDarkMode dan onCardClick ke Home */}
               <Route path="/home" element={<Home isDarkMode={isDarkMode} onCardClick={() => setIsDetailMode(true)} />} />
-              <Route path="/live" element={<Dashboard telemetry={telemetry} />} />
+              <Route path="/live" element={<Dashboard telemetry={telemetry} isDarkMode={isDarkMode} />} 
+/>
               
               <Route path="/manual" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><Manual telemetry={telemetry} isArmed={isArmed} toggleArm={toggleArm} sendRC={sendRC} /></div>} />
               <Route path="/manualros2" element={<div className="p-1 text-white"><ManualROS2 /></div>} />
@@ -150,7 +151,7 @@ function AppContent() {
               <Route path="/params" element={<ParamsView isDarkMode={isDarkMode} />} /> 
               <Route path="/mission" element={<MissionControl isDarkMode={isDarkMode} />} /> 
               <Route path="/ping" element={<PingSonarView isDarkMode={isDarkMode} />} />
-              <Route path="/browser" element={<LogBrowser />} /> 
+              <Route path="/browser" element={<LogBrowser isDarkMode={isDarkMode} />} /> 
               <Route path="/video" element={<VideoStream isDarkMode={isDarkMode} />} />
               <Route path="/system-info" element={<SystemInformation />} />
               <Route path="/blueos" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><BlueOSVersion /></div>} />
