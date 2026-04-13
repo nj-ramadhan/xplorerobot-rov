@@ -134,7 +134,7 @@ export const Home: React.FC<HomeProps> = ({ isDarkMode = true, onCardClick }) =>
           <h1 className={`text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-2 tracking-wide ${
             isDarkMode ? 'text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]' : 'text-slate-800 drop-shadow-sm'
           }`}>
-            EXPLOR ROBOT <br /> GROUND STATION
+            XPLORE ROBOT <br /> GROUND STATION
           </h1>
           <h2 className={`text-sm md:text-base font-bold tracking-widest uppercase ${
             isDarkMode ? 'text-blue-300 drop-shadow-md' : 'text-blue-700'

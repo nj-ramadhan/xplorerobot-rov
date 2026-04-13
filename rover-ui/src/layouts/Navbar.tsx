@@ -3,7 +3,6 @@ import { TelemetryData } from '../types/telemetry';
 import { Link } from 'react-router-dom';
 
 // Import gambar logo dari folder assets
-import LogoXplore from '../assets/logo_xplore_robot_simple.png';
 
 interface NavbarProps {
   telemetry: TelemetryData;
@@ -42,17 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
       ${isDarkMode ? 'bg-[#111827] border-white/10 text-white' : 'bg-white border-black/10 text-slate-900'}
     `}>
       
-      {/* --- BAGIAN KIRI: Logo & Teks --- */}
-      <div className="flex items-center gap-3">
-        {/* Logo Xplore */}
-        <Link to="/">
-          <img 
-            src={LogoXplore} 
-            alt="Xplore Robot Logo" 
-            className={`h-10 w-auto object-contain transition-all duration-500 hover:scale-105 ${isDarkMode ? 'invert opacity-90' : 'opacity-90'}`}
-          />
-        </Link>
-        
+<div>
         {/* Teks ROV */}
         <div className="flex flex-col border-l-2 pl-3 border-slate-300 dark:border-slate-700 transition-colors">
           <h1 className="text-sm font-black tracking-tighter uppercase flex items-center gap-2">
