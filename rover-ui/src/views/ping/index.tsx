@@ -138,7 +138,7 @@ const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
             </div>
           </div>
 
-          {/* CARD PING360 */}
+          {/* CARD PING*/}
           <div className={`border rounded-3xl overflow-hidden transition-all duration-300 group ${cardBg}`}>
             <div className={`p-8 flex flex-col items-center border-b transition-colors duration-300 ${cardHeaderBg}`}>
                <div className={`p-4 rounded-full mb-3 group-hover:scale-110 transition-transform ${isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
