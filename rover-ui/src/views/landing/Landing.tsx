@@ -179,7 +179,7 @@ const Landing: React.FC = () => {
           <div className="container mx-auto max-w-7xl">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-white/10 pb-4">
               <div className="flex items-center gap-3 cursor-default group">
-                <span className="text-cyan-400 text-2xl drop-shadow-md group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">👥</span>
+                <span className="text-cyan-400 text-2xl drop-shadow-md group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300"></span>
                 <h2 className="font-heading text-2xl md:text-3xl font-black text-white tracking-wide drop-shadow-sm group-hover:text-cyan-50 transition-colors">
                   Layanan Sistem
                 </h2>
