@@ -62,7 +62,7 @@ export default function VehicleSetup({ isDarkMode = true }: VehicleSetupProps) {
       <div className="mt-4 transition-colors duration-300">
         {activeTab === 'overview' && <Overview isDarkMode={isDarkMode} />}
         {activeTab === 'pwm' && <PwmOutputs isDarkMode={isDarkMode} />}
-        {activeTab === 'configure' && <Configure />}
+        {activeTab === 'configure' && <Configure isDarkMode={isDarkMode} />}
       </div>
       
     </div>
