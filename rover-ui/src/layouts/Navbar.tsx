@@ -3,6 +3,7 @@ import { TelemetryData } from '../types/telemetry';
 import { Link } from 'react-router-dom';
 
 // Import gambar logo dari folder assets
+// @ts-ignore
 import LogoXplore from '../assets/logo_xplore_robot_simple.png';
 
 interface NavbarProps {

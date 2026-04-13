@@ -179,7 +179,7 @@ const Landing: React.FC = () => {
           <div className="container mx-auto max-w-7xl">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-white/10 pb-4">
               <div className="flex items-center gap-3 cursor-default group">
-                <span className="text-cyan-400 text-2xl drop-shadow-md group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">👥</span>
+                <span className="text-cyan-400 text-2xl drop-shadow-md group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300"></span>
                 <h2 className="font-heading text-2xl md:text-3xl font-black text-white tracking-wide drop-shadow-sm group-hover:text-cyan-50 transition-colors">
                   Layanan Sistem
                 </h2>
@@ -421,12 +421,6 @@ const Landing: React.FC = () => {
                 <p className="font-mono text-slate-500 text-[9px] uppercase tracking-widest font-bold">Politeknik Manufaktur Bandung</p>
               </div>
               
-              <div className="flex flex-wrap justify-center md:justify-end items-center gap-5 md:gap-6 text-slate-400 font-bold text-xs">
-                <div className="flex items-center gap-1.5 hover:text-[#61DAFB] transition-colors cursor-default drop-shadow-sm hover:scale-110 duration-300"><span className="text-lg">⚛️</span> React</div>
-                <div className="flex items-center gap-1.5 hover:text-[#38B2AC] transition-colors cursor-default drop-shadow-sm hover:scale-110 duration-300"><span className="text-lg">🌊</span> Tailwind</div>
-                <div className="flex items-center gap-1.5 hover:text-[#FFD859] transition-colors cursor-default drop-shadow-sm hover:scale-110 duration-300"><span className="text-lg">⚡</span> Vite</div>
-                <div className="flex items-center gap-1.5 hover:text-[#68A063] transition-colors cursor-default drop-shadow-sm hover:scale-110 duration-300"><span className="text-lg">🟢</span> Node.js</div>
-              </div>
             </div>
           </div>
         </div>

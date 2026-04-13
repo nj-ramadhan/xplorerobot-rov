@@ -24,7 +24,7 @@ const menus = [
   { path: '/ping',       title: 'Ping Sonar Devices',          desc: 'Manage detected Ping family sonar devices connected to the network.', icon: '📡' },
   { path: '/setup',      title: 'Vehicle Setup',               desc: 'Sensor calibrations and motor tests.', icon: '🔧' },
   { path: '/params',     title: 'Autopilot Parameters',        desc: 'Modify vehicle parameters in real-time.', icon: '📑' },
-  { path: '/simulation', title: 'Autopilot Firmware',          desc: 'Update flight controller firmware.', icon: '🚀' },
+  // 🚀 Autopilot Firmware sudah dihapus dari sini!
   { path: '/browser',    title: 'Log Browser',                 desc: 'Allow browsing the Telemetry (.tlog) and Binary (.bin) logs.', icon: '📁' },
   { path: '/system-info',title: 'System Information',          desc: 'Monitor system, processes, and kernel.', icon: '🖥️' },
   { path: '/blueos',     title: 'Xplore Robot Version',        desc: 'Manage system firmware and updates.', icon: '📦' },
@@ -106,8 +106,7 @@ export const Home: React.FC<HomeProps> = ({ isDarkMode = true, onCardClick }) =>
               onClick={() => handleMenuClick(m.path)}
               className={`relative rounded-xl p-4 flex flex-col justify-between border transition-all duration-500 cursor-pointer min-h-[140px] overflow-hidden group ${cardBorderClasses}`}
             >
-              {/* LAYER 1: Latar Kartu Default.
-                  DIUBAH: bg-white/95 untuk Light Mode agar warna putihnya solid dan kontras teks bagus. */}
+              {/* LAYER 1: Latar Kartu Default. */}
               <div className={`absolute inset-0 transition-opacity duration-500 ${
                 isDarkMode ? 'bg-[#1e293b]/60 backdrop-blur-md group-hover:opacity-0' : 'bg-white/95 backdrop-blur-sm group-hover:opacity-0'
               }`}></div>
@@ -118,7 +117,7 @@ export const Home: React.FC<HomeProps> = ({ isDarkMode = true, onCardClick }) =>
                 style={{ backgroundImage: `url(${bgTeam})` }}
               ></div>
 
-              {/* LAYER 3: Gradien Penyelamat Teks (Agar teks putih terbaca di atas gambar). */}
+              {/* LAYER 3: Gradien Penyelamat Teks */}
               <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t ${
                 isDarkMode ? 'from-[#060b19] via-[#060b19]/80 to-transparent' : 'from-[#060b19]/80 via-[#060b19]/50 to-transparent'
               }`}></div>

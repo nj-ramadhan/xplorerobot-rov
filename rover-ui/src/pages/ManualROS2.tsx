@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom'; // 🔥 Tambahan jurus sakti portal!
 import { AutoSliderPanel } from '../components/manual-control/AutoSliderPanel';
 import { KeyboardPanel } from '../components/manual-control/KeyboardPanel';
 import { ThrusterMatrixPanel } from '../components/manual-control/ThrusterMatrixPanel';
@@ -11,7 +12,12 @@ const LOOP_HZ       = 100;                // ms per tick (10 Hz)
 const THRUSTER_TYPE = 'std_msgs/msg/Float64';
 const THRUSTER_COUNT = 6;
 
-export const ManualROS2: React.FC = () => {
+// Tambahkan interface untuk menerima saklar isDarkMode
+interface ManualROS2Props {
+  isDarkMode?: boolean;
+}
+
+export const ManualROS2: React.FC<ManualROS2Props> = ({ isDarkMode = true }) => {
 
   // ── State ─────────────────────────────────────────────────────────────────
   const [showChecklist, setShowChecklist] = useState(() => {
@@ -23,13 +29,11 @@ export const ManualROS2: React.FC = () => {
   const [debugLog, setDebugLog]       = useState<string[]>([]);
 
   // ── Refs ──────────────────────────────────────────────────────────────────
-  // FIX: pakai WebSocket native, bukan ROSLIB
-  // ROSLIB kadang gagal negotiate koneksi dengan rosbridge versi tertentu
   const ws           = useRef<WebSocket | null>(null);
   const thrustersRef = useRef<number[]>(Array(THRUSTER_COUNT).fill(0));
   const advertised   = useRef(false);
 
-  // Sync state → ref (supaya interval selalu baca nilai terbaru)
+  // Sync state → ref
   useEffect(() => {
     thrustersRef.current = thrusters;
   }, [thrusters]);
@@ -78,7 +82,6 @@ export const ManualROS2: React.FC = () => {
       log('rosbridge putus');
     };
 
-    // Publish thruster values 10 Hz
     const interval = setInterval(() => {
       if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
 
@@ -125,50 +128,67 @@ export const ManualROS2: React.FC = () => {
     resetAll();
   };
 
-  // ── Status label ──────────────────────────────────────────────────────────
+  // ==========================================
+  // LOGIKA TEMA BUNGLON
+  // ==========================================
+  const textColor = isDarkMode ? 'text-white' : 'text-slate-900';
+  const mutedColor = isDarkMode ? 'text-slate-500' : 'text-slate-500';
+  const borderColor = isDarkMode ? 'border-white/10' : 'border-slate-200';
+  
+  // Status label warna disesuaikan agar kontras di Light Mode
   const statusLabel = {
-    connecting: { text: 'Menunggu Koneksi...', dot: 'bg-yellow-400 animate-pulse', color: 'text-yellow-400' },
-    online:     { text: 'Terhubung ke ROS2 Gazebo', dot: 'bg-green-400 animate-pulse', color: 'text-green-400' },
-    error:      { text: 'Koneksi Gagal — Cek rosbridge', dot: 'bg-red-400', color: 'text-red-400' },
+    connecting: { text: 'Menunggu Koneksi...', dot: 'bg-yellow-400 animate-pulse', color: isDarkMode ? 'text-yellow-400' : 'text-yellow-600' },
+    online:     { text: 'Terhubung ke ROS2 Gazebo', dot: 'bg-green-400 animate-pulse', color: isDarkMode ? 'text-green-400' : 'text-emerald-600' },
+    error:      { text: 'Koneksi Gagal — Cek rosbridge', dot: 'bg-red-400', color: isDarkMode ? 'text-red-400' : 'text-red-600' },
   }[connStatus];
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-6 animate-in fade-in duration-700 p-8 text-white relative">
+    <div className={`space-y-6 animate-in fade-in duration-700 p-8 relative font-['Inter',sans-serif] ${textColor}`}>
 
-      {/* Pre-flight checklist modal */}
-      {showChecklist && <PreFlightChecklist onFinish={handleFinishChecklist} />}
+      {/* =========================================================
+          MODAL PRE-FLIGHT CHECKLIST DENGAN PORTAL
+          Pasti muncul di paling depan layar, menutupi segalanya!
+          ========================================================= */}
+      {showChecklist && createPortal(
+        <PreFlightChecklist onFinish={handleFinishChecklist} isDarkMode={isDarkMode} />,
+        document.body
+      )}
 
       {/* Header */}
-      <div className="flex justify-between items-end border-b border-white/10 pb-4">
+      <div className={`flex justify-between items-end border-b pb-4 transition-colors duration-300 ${borderColor}`}>
         <div>
-          <h2 className="font-black text-xl text-blue-400 uppercase tracking-wider flex items-center gap-3">
-            <span className="bg-blue-600/20 text-blue-400 p-2 rounded-lg text-lg">⚙️</span>
+          <h2 className={`font-black text-xl uppercase tracking-wider flex items-center gap-3 transition-colors duration-300 ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>
+            <span className={`p-2 rounded-lg text-lg ${isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>⚙️</span>
             Manual Override Control
           </h2>
           <div className="flex items-center gap-2 mt-2">
-            <span className={`w-2 h-2 rounded-full ${statusLabel.dot}`}/>
-            <p className={`text-sm font-mono tracking-widest ${statusLabel.color}`}>
+            <span className={`w-2 h-2 rounded-full shadow-sm ${statusLabel.dot}`}/>
+            <p className={`text-sm font-mono font-bold tracking-widest transition-colors duration-300 ${statusLabel.color}`}>
               {statusLabel.text}
             </p>
           </div>
         </div>
         <button
           onClick={resetAll}
-          className="bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30 px-6 py-2 rounded font-bold transition-all uppercase text-xs tracking-tighter"
+          className={`px-6 py-2 rounded font-bold transition-all uppercase text-xs tracking-tighter shadow-sm border ${
+            isDarkMode 
+              ? 'bg-red-500/20 text-red-500 border-red-500/50 hover:bg-red-500/30' 
+              : 'bg-red-100 text-red-600 border-red-200 hover:bg-red-200'
+          }`}
         >
           🛑 Emergency Stop All
         </button>
       </div>
 
       {/* Tab mode */}
-      <div className="flex gap-2 p-1 bg-black/40 w-fit rounded border border-white/5">
+      <div className={`flex gap-2 p-1 w-fit rounded border transition-colors duration-300 ${isDarkMode ? 'bg-black/40 border-white/5' : 'bg-slate-200/50 border-slate-300'}`}>
         <button
           onClick={() => handleSwitchMode('slider')}
           className={`px-6 py-2 font-bold text-[10px] uppercase tracking-widest rounded transition-all ${
             controlMode === 'slider'
               ? 'bg-blue-600 text-white shadow-lg'
-              : 'text-slate-500 hover:text-slate-300'
+              : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')
           }`}
         >
           🎚️ Auto-Slider
@@ -178,7 +198,7 @@ export const ManualROS2: React.FC = () => {
           className={`px-6 py-2 font-bold text-[10px] uppercase tracking-widest rounded transition-all ${
             controlMode === 'keyboard'
               ? 'bg-purple-600 text-white shadow-lg'
-              : 'text-slate-500 hover:text-slate-300'
+              : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')
           }`}
         >
           ⌨️ Keyboard
@@ -188,39 +208,40 @@ export const ManualROS2: React.FC = () => {
       {/* Content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        {/* Panel kiri: input mode */}
+        {/* Panel kiri: input mode (Meneruskan isDarkMode) */}
         <div className="lg:col-span-6">
           {controlMode === 'slider' ? (
-            <AutoSliderPanel currentThrusters={thrusters} onApply={setThrusters} />
+            <AutoSliderPanel currentThrusters={thrusters} onApply={setThrusters} isDarkMode={isDarkMode} />
           ) : (
-            <KeyboardPanel isActive={controlMode === 'keyboard'} onUpdate={handleKeyboardUpdate} />
+            <KeyboardPanel isActive={controlMode === 'keyboard'} onUpdate={handleKeyboardUpdate} isDarkMode={isDarkMode} />
           )}
         </div>
 
-        {/* Panel kanan: thruster matrix */}
+        {/* Panel kanan: thruster matrix (Meneruskan isDarkMode) */}
         <div className="lg:col-span-6">
           <ThrusterMatrixPanel
             thrusters={thrusters}
             isLocked={controlMode === 'keyboard'}
             onChange={handleSliderChange}
+            isDarkMode={isDarkMode}
           />
         </div>
       </div>
 
       {/* Debug log */}
-      <div className="bg-black/40 rounded-xl border border-white/5 p-3 h-32 overflow-y-auto">
-        <p className="text-[9px] font-bold uppercase text-slate-500 mb-1">Connection Log</p>
+      <div className={`rounded-xl border p-3 h-32 overflow-y-auto custom-scrollbar transition-colors duration-300 shadow-inner ${isDarkMode ? 'bg-black/40 border-white/5' : 'bg-white border-slate-200'}`}>
+        <p className={`text-[9px] font-bold uppercase mb-2 transition-colors duration-300 ${mutedColor}`}>Connection Log</p>
         {debugLog.length === 0 && (
-          <p className="text-[9px] text-slate-700 italic">Menunggu aktivitas...</p>
+          <p className={`text-[9px] italic transition-colors duration-300 ${isDarkMode ? 'text-slate-700' : 'text-slate-400'}`}>Menunggu aktivitas...</p>
         )}
         {debugLog.map((entry, i) => (
-          <p key={i} className="text-[9px] font-mono text-slate-400 leading-relaxed">{entry}</p>
+          <p key={i} className={`text-[10px] font-mono font-medium leading-relaxed transition-colors duration-300 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{entry}</p>
         ))}
       </div>
 
       {/* Footer */}
-      <div className="pt-4 border-t border-white/5 text-center">
-        <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em]">
+      <div className={`pt-4 border-t text-center transition-colors duration-300 ${borderColor}`}>
+        <p className={`text-[10px] font-mono font-bold uppercase tracking-[0.2em] transition-colors duration-300 ${mutedColor}`}>
           Polman Bandung — TRIN PBL Project [ROV_AOV_SYSTEM]
         </p>
       </div>
