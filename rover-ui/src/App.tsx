@@ -151,7 +151,7 @@ function AppContent() {
               <Route path="/mission" element={<MissionControl />} /> 
               <Route path="/ping" element={<PingSonarView />} /> 
               <Route path="/browser" element={<LogBrowser />} /> 
-              <Route path="/video" element={<VideoStream />} />
+              <Route path="/video" element={<VideoStream isDarkMode={isDarkMode} />} />
               <Route path="/system-info" element={<SystemInformation />} />
               <Route path="/blueos" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><BlueOSVersion /></div>} />
               <Route path="/kami" element={<Team />} /> 

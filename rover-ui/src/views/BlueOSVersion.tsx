@@ -3,7 +3,7 @@ import React from 'react';
 const BlueOSVersion = () => {
   return (
     <div className="p-8 text-slate-300 max-w-5xl mx-auto space-y-8">
-      <h2 className="text-2xl font-bold text-white">BlueOS Version</h2>
+      <h2 className="text-2xl font-bold text-white">Xplore Robot Version</h2>
 
       {/* Local Versions Card */}
       <div className="bg-[#1A2332] border border-slate-700 rounded-xl p-6 shadow-lg">
