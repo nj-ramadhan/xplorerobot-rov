@@ -17,7 +17,7 @@ interface SidebarProps {
 
 const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) => {
   const [isHovered, setIsHovered] = useState(false);
-
+  const [isBugModalOpen, setIsBugModalOpen] = useState(false);
   const isHidden = isDetailMode && !isHovered;
   const isWide = isHovered;
 
@@ -111,10 +111,49 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
           <div className="flex flex-row justify-center items-center gap-4">
             <Power size={18} className={`cursor-pointer transition-colors shrink-0 ${isDarkMode ? 'text-gray-500 hover:text-red-500' : 'text-slate-400 hover:text-red-500'}`} />
             <SettingsIcon size={18} className={`cursor-pointer transition-colors shrink-0 ${isDarkMode ? 'text-gray-500 hover:text-blue-500' : 'text-slate-400 hover:text-blue-500'}`} />
-            <Bug size={18} className={`cursor-pointer transition-colors shrink-0 ${isDarkMode ? 'text-gray-500 hover:text-yellow-500' : 'text-slate-400 hover:text-yellow-500'}`} />
-          </div>
-        </div>
+          <Bug 
+            size={18} 
+            onClick={() => setIsBugModalOpen(true)} // Buka modal di sini
+            className={`cursor-pointer transition-colors shrink-0 ${isDarkMode ? 'text-gray-500 hover:text-yellow-500' : 'text-slate-400 hover:text-yellow-500'}`} 
+          />          </div>
+        </div>      
       </aside>
+  {/* MODAL BUG REPORT */}
+  {isBugModalOpen && (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-md shadow-2xl w-[400px] overflow-hidden text-slate-800">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-gray-100">
+          <h2 className="text-xl font-medium">Bug report / Feature request</h2>
+        </div>
+
+        {/* Buttons Container */}
+        <div className="p-6 flex flex-col gap-4">
+          <button className="flex items-center justify-center gap-3 w-full py-3 border border-gray-200 rounded shadow-sm hover:bg-gray-50 transition-colors uppercase text-sm font-bold tracking-wider">
+            <Bug size={18} /> WITH GITHUB
+          </button>
+          
+          <button className="flex items-center justify-center gap-3 w-full py-3 border border-gray-200 rounded shadow-sm hover:bg-gray-50 transition-colors uppercase text-sm font-bold tracking-wider">
+            <span className="text-lg">💬</span> WITH SIMPLE REPORT
+          </button>
+
+          <button className="flex items-center justify-center gap-3 w-full py-3 border border-gray-200 rounded shadow-sm hover:bg-gray-50 transition-colors uppercase text-sm font-bold tracking-wider">
+            <span className="text-lg">🗨️</span> ON BLUE ROBOTICS FORUM
+          </button>
+        </div>
+
+        {/* Footer / Close Area */}
+        <div 
+          className="bg-gray-50 p-3 text-center cursor-pointer hover:bg-gray-100 text-gray-500 text-sm"
+          onClick={() => setIsBugModalOpen(false)}
+        >
+          Close
+        </div>
+    </div>
+    {/* Klik di luar modal untuk tutup */}
+    <div className="fixed inset-0 -z-10" onClick={() => setIsBugModalOpen(false)}></div>
+  </div>
+)}
     </>
   );
 };
