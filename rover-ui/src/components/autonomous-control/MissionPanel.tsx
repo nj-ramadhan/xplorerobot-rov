@@ -5,7 +5,7 @@ type WaypointStatus = 'pending' | 'active' | 'rotating' | 'waiting_orientation' 
 type MissionMode = 'waypoint' | 'path';
 
 function yawToCompass(yaw: number): string {
-  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const dirs = ['N', 'NW', 'W', 'SW', 'S', 'SE', 'E', 'NE']; // E=-90°, W=+90°
   return dirs[Math.round(((yaw % 360) + 360) / 45) % 8];
 }
 
@@ -124,6 +124,7 @@ export const MissionPanel: React.FC<MissionPanelProps> = ({
                 </div>
                 <span className="text-[9px] font-mono text-slate-500">
                   X:{g.rosX.toFixed(2)} Y:{g.rosY.toFixed(2)}
+                  {'depth' in g && <span className="text-blue-400/70"> Z:{(g as any).depth.toFixed(1)}</span>}
                 </span>
               </div>
             </div>
@@ -163,6 +164,7 @@ export const MissionPanel: React.FC<MissionPanelProps> = ({
                   </div>
                   <span className="text-[9px] font-mono text-slate-500">
                     X:{g.rosX.toFixed(2)} Y:{g.rosY.toFixed(2)}
+                    {'depth' in g && <span className="text-blue-400/70"> Z:{(g as any).depth.toFixed(1)}</span>}
                     {' '}
                     <span className={g.yawDeg !== 0 ? 'text-purple-400' : 'text-slate-600'}>
                       | {yawToCompass(g.yawDeg)} ({g.yawDeg.toFixed(0)}°)

@@ -13,6 +13,7 @@ interface Goal {
   id: number;
   rosX: number;
   rosY: number;
+  depth: number; // target Z per waypoint
 }
 
 type WaypointStatus =
@@ -42,19 +43,6 @@ const KP_YAW            = 0.03;
 const MAX_VEL           = 1.0;
 const MAX_YAW_VEL       = 0.8;
 const LOOP_HZ           = 100;
-
-// ── Fix D: Trail ROV — batasi panjang dan frekuensi simpan ────────────────
-// MAX_PATH_POINTS : jumlah titik maksimum yang disimpan di memory browser.
-//   100 poin × resolusi 5 cm = ±5 meter trail yang terlihat — cukup untuk
-//   visualisasi misi tanpa membebani React state.
-// MIN_PATH_DIST_M : jarak minimum (meter) antara dua poin trail.
-//   0.05 m = 5 cm. Poin baru dibuang kalau ROV hampir tidak bergerak
-//   (hover in-place, rotate, dsb) sehingga trail tidak menumpuk di satu titik.
-// PATH_THROTTLE_MS: interval waktu minimum antar simpan poin (ms).
-//   200 ms pada 100 Hz odom = simpan 1 dari ~20 frame → hemat 95% render.
-const MAX_PATH_POINTS   = 500;
-const MIN_PATH_DIST_M   = 0.05;
-const PATH_THROTTLE_MS  = 200;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -114,13 +102,6 @@ const AutonomousROS2: React.FC = () => {
   const seqIndexRef    = useRef(-1);
   const isMissionRef   = useRef(false);
   const missionModeRef = useRef<MissionMode>('waypoint');
-
-  // ── Fix D: rovPath throttle refs ──────────────────────────────────────────
-  // Mencegah trail tumbuh tak terbatas saat odom 100 Hz.
-  // lastPathTime  → timestamp terakhir poin disimpan (throttle waktu 200 ms)
-  // lastPathPos   → posisi terakhir yang disimpan (skip jika < MIN_PATH_DIST meter)
-  const lastPathTime = useRef<number>(0);
-  const lastPathPos  = useRef<{ rosX: number; rosY: number } | null>(null);
 
   const phaseRef        = useRef<ControlPhase>('travel');
   const travelGoalRef   = useRef<number | null>(null);
@@ -310,20 +291,7 @@ const AutonomousROS2: React.FC = () => {
           const newPos: RovPos = { rosX: p.x, rosY: p.y, z: p.z, yaw: yawRad*(180/Math.PI) };
           rovPosRef.current = newPos;
           setRovPos(newPos);
-          // Fix D: throttle waktu + filter jarak sebelum simpan ke trail
-          const now     = Date.now();
-          const lastPos = lastPathPos.current;
-          const distOk  = !lastPos || Math.hypot(p.x - lastPos.rosX, p.y - lastPos.rosY) >= MIN_PATH_DIST_M;
-          const timeOk  = now - lastPathTime.current >= PATH_THROTTLE_MS;
-          if (distOk && timeOk) {
-            lastPathTime.current = now;
-            lastPathPos.current  = { rosX: p.x, rosY: p.y };
-            setRovPath(prev => {
-              const next = [...prev, { rosX: p.x, rosY: p.y }];
-              // Buang poin terlama kalau melebihi batas maksimum
-              return next.length > MAX_PATH_POINTS ? next.slice(-MAX_PATH_POINTS) : next;
-            });
-          }
+          setRovPath(prev => [...prev.slice(-150), { rosX: p.x, rosY: p.y }]);
         }
       } catch (e) { console.error(e); }
     };
@@ -389,14 +357,18 @@ const AutonomousROS2: React.FC = () => {
       // TRAVEL
       const dx     = target.rosX - cur.rosX;
       const dy     = target.rosY - cur.rosY;
-      const dz     = depthRef.current - cur.z;
+      // Fix F: gunakan depth per waypoint, fallback ke depthRef (global slider)
+      const targetZ = ('depth' in target && typeof (target as any).depth === 'number')
+        ? (target as any).depth
+        : depthRef.current;
+      const dz = targetZ - cur.z;
       const distXY = Math.hypot(dx, dy);
 
       if (distXY < ARRIVAL_THRESHOLD && Math.abs(dz) < ARRIVAL_THRESHOLD) {
         sendVel(0, 0, 0, 0);
         travelGoalRef.current = null;
         setActiveGoalId(null);
-        log(`✅ Sampai WP! (${distXY.toFixed(2)}m)`);
+        log(`✅ Sampai WP! (${distXY.toFixed(2)}m, Z=${targetZ.toFixed(1)}m)`);
 
         if (isMissionRef.current) {
           if (missionModeRef.current === 'waypoint') {
@@ -487,9 +459,10 @@ const AutonomousROS2: React.FC = () => {
   const addGoal = (rosX: number, rosY: number) => {
     if (isMissionRunning) return;
     const id = Date.now();
-    setGoals(prev => [...prev, { id, rosX, rosY }]);
+    // Fix F: simpan depth saat ini sebagai default per waypoint
+    setGoals(prev => [...prev, { id, rosX, rosY, depth: targetDepth }]);
     setWpStatus(prev => ({ ...prev, [id]: 'pending' }));
-    log(`📍 WP ditambah: X=${rosX.toFixed(2)} Y=${rosY.toFixed(2)}`);
+    log(`📍 WP ditambah: X=${rosX.toFixed(2)} Y=${rosY.toFixed(2)} Z=${targetDepth.toFixed(1)}m`);
   };
 
   const removeGoal = (id: number) => {
@@ -643,6 +616,7 @@ const AutonomousROS2: React.FC = () => {
               activeGoalId={activeGoalId}
               rovPos={rovPos}
               rovPath={rovPath}
+              defaultDepth={targetDepth}
               disabled={isMissionRunning}
             />
           )}
@@ -656,7 +630,7 @@ const AutonomousROS2: React.FC = () => {
 
         {/* Side Panel */}
         <div className="col-span-4 flex flex-col gap-4">
-          <DepthControl targetDepth={targetDepth} setTargetDepth={setTargetDepth} />
+          <DepthControl targetDepth={targetDepth} setTargetDepth={setTargetDepth} isDefault />
 
           {/* Telemetry */}
           <div className="bg-slate-900/50 rounded-xl border border-white/5 p-3">

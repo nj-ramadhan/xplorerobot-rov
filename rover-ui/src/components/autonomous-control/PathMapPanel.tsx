@@ -5,6 +5,7 @@ export interface PathGoal {
   rosX: number;
   rosY: number;
   yawDeg: number; // orientation set by dragging (0=North, -90=East, +90=West, 180=South)
+  depth: number;  // Fix F: target Z per waypoint
 }
 
 interface PathMapPanelProps {
@@ -13,6 +14,7 @@ interface PathMapPanelProps {
   activeGoalId: number | null;
   rovPos: { rosX: number; rosY: number; yaw: number };
   rovPath: Array<{ rosX: number; rosY: number }>;
+  defaultDepth: number; // Fix F: depth default dari slider global
   disabled?: boolean;
 }
 
@@ -27,13 +29,16 @@ const DRAG_ORIENTATION_THRESHOLD_PX = 30;
 const DRAG_GUIDE_RADIUS = 30;
 
 function yawToCompass(yaw: number): string {
-  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  // Konvensi: E=-90°, W=+90° → urutan dibalik dari standar
+  const dirs = ['N', 'NW', 'W', 'SW', 'S', 'SE', 'E', 'NE'];
   return dirs[Math.round(((yaw % 360) + 360) / 45) % 8];
 }
 
 function dragToYaw(dx: number, dy: number): number {
-  const screenAngle = Math.atan2(dx, -dy) * (180 / Math.PI);
-  return -screenAngle;
+  // Layar: pixel X naik ke kanan, tapi rosY = -(px - center) → kanan layar = rosY negatif = West
+  // Maka dx harus dibalik agar drag kanan → East (-90°), drag kiri → West (+90°)
+  const screenAngle = Math.atan2(-dx, -dy) * (180 / Math.PI);
+  return screenAngle;
 }
 
 // ── Fix C: Tipe untuk pending confirmation ──────────────────────────────────
@@ -41,14 +46,15 @@ interface PendingGoal {
   rosX: number;
   rosY: number;
   yawDeg: number;
-  uiX: number; // posisi pixel untuk menaruh card
+  depth: number; // Fix F: depth per waypoint
+  uiX: number;
   uiY: number;
 }
 
 export const PathMapPanel: React.FC<PathMapPanelProps> = ({
   pathGoals, setPathGoals,
   activeGoalId, rovPos, rovPath,
-  disabled,
+  defaultDepth, disabled,
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -140,6 +146,7 @@ export const PathMapPanel: React.FC<PathMapPanelProps> = ({
       rosX: dragState.originRos.rosX,
       rosY: dragState.originRos.rosY,
       yawDeg,
+      depth: defaultDepth, // Fix F: ambil dari defaultDepth, bisa diubah di card
       uiX: dragState.originPx.x,
       uiY: dragState.originPx.y,
     });
@@ -154,6 +161,7 @@ export const PathMapPanel: React.FC<PathMapPanelProps> = ({
       rosX: pendingGoal.rosX,
       rosY: pendingGoal.rosY,
       yawDeg: pendingGoal.yawDeg,
+      depth: pendingGoal.depth, // Fix F
     };
     setPathGoals(prev => [...prev, newGoal]);
     setPendingGoal(null);
@@ -172,15 +180,15 @@ export const PathMapPanel: React.FC<PathMapPanelProps> = ({
     const ui = toUI(p.rosX, p.rosY);
     return `${ui.x},${ui.y}`;
   }).join(' ');
-  const wpPathPoints = pathGoals.map(g => {
-    const ui = toUI(g.rosX, g.rosY);
-    return `${ui.x},${ui.y}`;
-  }).join(' ');
+  // wpPathPoints dihapus — garis antar waypoint tidak ditampilkan saat awal.
+  // Garis hanya muncul dari rovPath (trail ROV yang sudah dilalui).
 
   const arrowEnd = (uiX: number, uiY: number, yawDeg: number, len: number) => {
-    const rad = (-yawDeg) * Math.PI / 180;
+    // yawDeg: 0=North(atas), -90=East(kanan layar), +90=West(kiri layar)
+    // Sumbu X layar terbalik (kanan=East), jadi sin dibalik
+    const rad = yawDeg * Math.PI / 180;
     return {
-      x: uiX + len * Math.sin(rad),
+      x: uiX - len * Math.sin(rad),
       y: uiY - len * Math.cos(rad),
     };
   };
@@ -446,6 +454,24 @@ export const PathMapPanel: React.FC<PathMapPanelProps> = ({
                     <p className="text-[9px] text-slate-500">
                       {pendingGoal.yawDeg === 0 ? 'drag lebih jauh untuk set arah' : 'orientasi dari drag'}
                     </p>
+                  </div>
+                </div>
+
+                {/* Fix F: slider depth per waypoint */}
+                <div className="px-3 py-2 border-t border-white/5">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[9px] font-bold text-blue-400 uppercase tracking-wide">Depth (Z)</span>
+                    <span className="text-[10px] font-mono text-white">{pendingGoal.depth.toFixed(1)} m</span>
+                  </div>
+                  <input
+                    type="range" min="-10" max="0" step="0.5"
+                    value={pendingGoal.depth}
+                    onChange={e => setPendingGoal(prev => prev ? { ...prev, depth: parseFloat(e.target.value) } : null)}
+                    className="w-full accent-blue-500 h-1"
+                    onMouseDown={e => e.stopPropagation()}
+                  />
+                  <div className="flex justify-between text-[9px] text-slate-600 mt-0.5">
+                    <span>−10 m</span><span>0 m</span>
                   </div>
                 </div>
 
