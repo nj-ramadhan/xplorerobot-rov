@@ -60,7 +60,7 @@ const Landing: React.FC = () => {
   const scrollToSection = (elementId: string) => {
     const element = document.getElementById(elementId);
     if (element) {
-      const navHeight = 70;
+      const navHeight = 90; // Disesuaikan sedikit karena navbar baru bentuknya pill
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.scrollY - navHeight;
 
@@ -109,51 +109,64 @@ const Landing: React.FC = () => {
 
       <div className="relative z-10">
         
-        {/* NAVBAR */}
-        <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 px-8 py-3 transform-gpu ${
-          isScrolled ? 'bg-[#0b111a]/90 backdrop-blur-md border-b border-white/5 shadow-lg' : 'bg-transparent'
-        }`}>
-          <div className="container mx-auto max-w-7xl flex justify-between items-center">
-            <div className="flex items-center cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+        {/* NEW UPDATED NAVBAR */}
+        <div className={`fixed top-0 left-0 w-full z-50 flex justify-center px-4 transition-all duration-500 ${isScrolled ? 'pt-4' : 'pt-6'}`}>
+          <nav className={`relative w-full max-w-6xl rounded-2xl md:rounded-full transition-all duration-500 flex items-center justify-between px-6 md:px-10 py-3 md:py-0 md:h-20 overflow-hidden ${
+            isScrolled 
+              ? 'bg-gradient-to-r from-[#86255d]/95 via-[#151515]/95 to-[#151515]/95 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl border border-white/10' 
+              : 'bg-transparent'
+          }`}>
+            
+            {/* === Efek Cahaya / Orbs === */}
+            <div className={`absolute top-2 right-40 w-10 h-10 bg-red-600 rounded-full blur-[20px] pointer-events-none transition-opacity duration-500 ${isScrolled ? 'opacity-60' : 'opacity-0'}`}></div>
+            <div className={`absolute bottom-3 right-[40%] w-4 h-4 bg-fuchsia-500 rounded-full blur-[10px] pointer-events-none transition-opacity duration-500 ${isScrolled ? 'opacity-80' : 'opacity-0'}`}></div>
+
+            {/* === Kiri: LOGO === */}
+            <div className="flex items-center cursor-pointer relative z-10 group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <img 
                 src={isScrolled ? logoXploreGif : logoXploreSimple} 
                 alt="Xplore Robot" 
                 className={`w-auto brightness-0 invert transition-all duration-500 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)] transform-gpu group-hover:scale-105 ${
-                  isScrolled ? 'h-10 md:h-12' : 'h-8 md:h-10 animate-pulse'
+                  isScrolled ? 'h-8 md:h-10' : 'h-8 md:h-10 animate-pulse'
                 }`}
               />
             </div>
-            <div className="hidden md:flex gap-6 text-[10px] font-mono uppercase tracking-widest font-semibold opacity-90 items-center">
-              <span onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-cyan-400 cursor-pointer transition-colors relative group">
-                Home
-                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
-              </span>
-              <span onClick={() => scrollToSection('about')} className="hover:text-cyan-400 cursor-pointer transition-colors relative group">
-                About
-                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
-              </span>
-              
-              {/* MENU DIRECTS TO /data */}
-              <span onClick={() => navigate('/data')} className="hover:text-cyan-400 cursor-pointer transition-colors relative group">
-                Data
-                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
-              </span>
 
-              {/* NAVIGATE TO SYSTEM PAGE */}
-              <span onClick={() => navigate('/system')} className="hover:text-cyan-400 cursor-pointer transition-colors relative group">
-                System
-                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
+            {/* === Tengah: MENU LINKS === */}
+            <div className="hidden md:flex items-center gap-8 relative z-10">
+              <span onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-gray-300 text-sm font-medium hover:text-white cursor-pointer transition-colors duration-300">
+                Home
               </span>
-              
-              <button onClick={() => navigate('/home')} className="ml-2 px-4 py-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/40 rounded-full hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 font-heading">
-                Launch GCS
+              <span onClick={() => scrollToSection('about')} className="text-gray-300 text-sm font-medium hover:text-white cursor-pointer transition-colors duration-300">
+                About
+              </span>
+              <span onClick={() => navigate('/data')} className="text-gray-300 text-sm font-medium hover:text-white cursor-pointer transition-colors duration-300">
+                Data
+              </span>
+              <span onClick={() => navigate('/system')} className="text-gray-300 text-sm font-medium hover:text-white cursor-pointer transition-colors duration-300">
+                System
+              </span>
+            </div>
+
+            {/* === Kanan: TOMBOL LAUNCH GCS === */}
+            <div className="relative z-10 ml-4 md:ml-0">
+              <button onClick={() => navigate('/home')} className="relative group px-6 py-2.5 rounded-lg text-white text-sm font-semibold transition-all duration-300 font-heading tracking-wide">
+                {/* Background gradien tombol */}
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#f43f5e] via-[#d946ef] to-[#3b82f6] opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                {/* Efek Glow (bayangan bercahaya) di luar tombol */}
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#f43f5e] via-[#d946ef] to-[#3b82f6] blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300"></div>
+                
+                {/* Teks tombol */}
+                <span className="relative z-10 drop-shadow-sm">Launch GCS</span>
               </button>
             </div>
-          </div>
-        </nav>
+
+          </nav>
+        </div>
 
         {/* HERO SECTION */}
-        <div className="relative min-h-screen flex flex-col pt-16">
+        <div className="relative min-h-screen flex flex-col pt-24 md:pt-16">
           <main className="container mx-auto max-w-7xl px-8 flex-1 flex flex-col md:flex-row items-center py-8">
             <div className="flex-1 text-center md:text-left z-20">
               <p className="font-mono text-[9px] mb-4 text-cyan-400 tracking-widest font-bold flex items-center justify-center md:justify-start gap-3">
