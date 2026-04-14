@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Import gambar & video (Pastikan path ini sesuai dengan struktur folder kamu)
+// Import images & videos (Ensure these paths match your folder structure)
 // @ts-ignore
 import underImage from '../../assets/rov-under.png'; 
 // @ts-ignore
@@ -16,29 +16,29 @@ import logoXploreSimple from '../../assets/logo_xplore_robot_simple.png';
 import logoXploreGif from '../../assets/Logo XploreRobot.gif'; 
 
 // =========================================
-// DATA DUMMY UNTUK BERITA ROV
+// DUMMY DATA FOR ROV NEWS
 // =========================================
 const rovNews = [
   {
     id: 1,
-    title: "Eksplorasi Palung Mariana: Penemuan Spesies Baru di Era Modern",
-    excerpt: "Misi ROV terbaru berhasil merekam visual spesies laut dalam yang belum pernah teridentifikasi sebelumnya pada kedalaman 8.000 meter.",
+    title: "Mariana Trench Exploration: New Species Discovery in Modern Era",
+    excerpt: "The latest ROV mission successfully recorded visuals of previously unidentified deep-sea species at a depth of 8,000 meters.",
     date: "12 Apr 2026",
-    category: "Eksplorasi",
+    category: "Exploration",
     image: "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=600&auto=format&fit=crop"
   },
   {
     id: 2,
-    title: "Teknologi Thruster Generasi Baru Tingkatkan Efisiensi Baterai",
-    excerpt: "Pengembangan motor propulsi bawah air kini memungkinkan ROV beroperasi 30% lebih lama berkat optimasi aliran hidrodinamis.",
+    title: "Next-Generation Thruster Technology Improves Battery Efficiency",
+    excerpt: "The development of underwater propulsion motors now allows ROVs to operate 30% longer thanks to hydrodynamic flow optimization.",
     date: "05 Apr 2026",
-    category: "Teknologi",
+    category: "Technology",
     image: "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?q=80&w=600&auto=format&fit=crop"
   },
   {
     id: 3,
-    title: "Integrasi AI dalam Navigasi Autonomous Bawah Air",
-    excerpt: "Sistem cerdas kini mampu menghindari rintangan karang secara otomatis menggunakan pemetaan sonar 3D real-time.",
+    title: "AI Integration in Autonomous Underwater Navigation",
+    excerpt: "Smart systems can now automatically avoid reef obstacles using real-time 3D sonar mapping.",
     date: "28 Mar 2026",
     category: "Software",
     image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=600&auto=format&fit=crop"
@@ -98,7 +98,7 @@ const Landing: React.FC = () => {
         }
       `}</style>
 
-      {/* BACKGROUND GLOBAL */}
+      {/* GLOBAL BACKGROUND */}
       <div className="fixed inset-0 z-0 pointer-events-none transform-gpu">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60" 
@@ -133,13 +133,13 @@ const Landing: React.FC = () => {
                 <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
               </span>
               
-              {/* MENU ARAH KE /data */}
+              {/* MENU DIRECTS TO /data */}
               <span onClick={() => navigate('/data')} className="hover:text-cyan-400 cursor-pointer transition-colors relative group">
                 Data
                 <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
               </span>
 
-              {/* UBAH JADI NAVIGATE KE HALAMAN SYSTEM BUKAN SCROLL */}
+              {/* NAVIGATE TO SYSTEM PAGE */}
               <span onClick={() => navigate('/system')} className="hover:text-cyan-400 cursor-pointer transition-colors relative group">
                 System
                 <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
@@ -180,7 +180,8 @@ const Landing: React.FC = () => {
 
             <div className="flex-1 relative mt-12 md:mt-0 flex justify-center items-center">
               <div className="relative group p-4 rounded-xl">
-                <div className="absolute inset-0 bg-cyan-500/20 blur-[60px] rounded-full group-hover:blur-[80px] group-hover:bg-cyan-400/30 transition-all duration-700 transform-gpu"></div>
+                {/* Efek glow dikurangi di sini: blur dan opacity diturunkan */}
+                <div className="absolute inset-0 bg-cyan-500/10 blur-[40px] rounded-full group-hover:blur-[50px] group-hover:bg-cyan-400/20 transition-all duration-700 transform-gpu"></div>
                 <img src={rovImage} alt="ROV Model" className="w-full max-w-xl animate-float z-10 relative drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform-gpu group-hover:scale-105 transition-transform duration-700 ease-out" />
               </div>
             </div>
@@ -213,7 +214,7 @@ const Landing: React.FC = () => {
                   <div className="text-cyan-400 text-3xl opacity-90 drop-shadow-md transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">🎯</div>
                 </div>
                 <p className="text-slate-300/80 text-xs leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
-                  Sistem kendali cerdas untuk navigasi otomatis terprogram tanpa campur tangan manual operator.
+                  Intelligent control system for pre-programmed automatic navigation without manual operator intervention.
                 </p>
                 <div className="border-t border-white/10 pt-4 mt-auto">
                   <div onClick={() => navigate('/system')} className="w-8 h-8 rounded-full bg-cyan-500 text-[#080d14] flex items-center justify-center group-hover:bg-cyan-400 transition-all cursor-pointer shadow-[0_0_10px_rgba(34,211,238,0.3)] group-hover:shadow-[0_0_15px_rgba(34,211,238,0.5)] group-hover:translate-x-1.5">
@@ -229,7 +230,7 @@ const Landing: React.FC = () => {
                   <div className="text-cyan-400 text-3xl opacity-90 drop-shadow-md transform group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">🕹️</div>
                 </div>
                 <p className="text-slate-300/80 text-xs leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
-                  Komunikasi data dan telemetri real-time antara Ground Station dan flight controller ROV secara stabil.
+                  Real-time, stable data and telemetry communication between the Ground Station and the ROV flight controller.
                 </p>
                 <div className="border-t border-white/10 pt-4 mt-auto">
                   <div onClick={() => navigate('/system')} className="w-8 h-8 rounded-full bg-cyan-500 text-[#080d14] flex items-center justify-center group-hover:bg-cyan-400 transition-all cursor-pointer shadow-[0_0_10px_rgba(34,211,238,0.3)] group-hover:shadow-[0_0_15px_rgba(34,211,238,0.5)] group-hover:translate-x-1.5">
@@ -245,7 +246,7 @@ const Landing: React.FC = () => {
                   <div className="text-cyan-400 text-3xl opacity-90 drop-shadow-md transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">⌨️</div>
                 </div>
                 <p className="text-slate-300/80 text-xs leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
-                  Kendali manuver 6-DOF yang presisi untuk navigasi kendaraan bawah air dari stasiun permukaan.
+                  Precise 6-DOF maneuverability control for underwater vehicle navigation from the surface station.
                 </p>
                 <div className="border-t border-white/10 pt-4 mt-auto">
                   <div onClick={() => navigate('/system')} className="w-8 h-8 rounded-full bg-cyan-500 text-[#080d14] flex items-center justify-center group-hover:bg-cyan-400 transition-all cursor-pointer shadow-[0_0_10px_rgba(34,211,238,0.3)] group-hover:shadow-[0_0_15px_rgba(34,211,238,0.5)] group-hover:translate-x-1.5">
@@ -279,11 +280,11 @@ const Landing: React.FC = () => {
               </div>
 
               <p className="text-slate-200/90 leading-relaxed mt-2 text-sm drop-shadow-sm">
-                <strong className="text-white font-bold tracking-wide">Xplore Robot</strong> adalah pusat komando Ground Control Station (GCS) canggih berbasis web yang dirancang khusus untuk memonitor dan mengendalikan Remotely Operated Vehicle (ROV) Anda.
+                <strong className="text-white font-bold tracking-wide">Xplore Robot</strong> is an advanced web-based Ground Control Station (GCS) command center specifically designed to monitor and control your Remotely Operated Vehicle (ROV).
               </p>
 
               <p className="text-slate-300/90 leading-relaxed text-sm drop-shadow-sm">
-                Membawa standar sistem sekelas BlueOS ke level berikutnya dengan pembaruan eksklusif dari tim kami. Rasakan kendali melalui integrasi protokol <strong className="text-cyan-400 font-semibold tracking-wide">MAVLink</strong>, fleksibilitas <strong className="text-cyan-400 font-semibold tracking-wide">Manual Controlling</strong>, hingga eksekusi misi <strong className="text-cyan-400 font-semibold tracking-wide">Autonomous</strong>.
+                Taking BlueOS-grade system standards to the next level with exclusive updates from our team. Experience control through <strong className="text-cyan-400 font-semibold tracking-wide">MAVLink</strong> protocol integration, <strong className="text-cyan-400 font-semibold tracking-wide">Manual Controlling</strong> flexibility, to <strong className="text-cyan-400 font-semibold tracking-wide">Autonomous</strong> mission execution.
               </p>
 
               <ul className="space-y-3 mt-4 text-xs font-mono text-slate-300 font-medium">
@@ -319,10 +320,10 @@ const Landing: React.FC = () => {
               </div>
 
               <p className="text-slate-200/90 leading-relaxed mt-2 text-sm drop-shadow-sm">
-                Desain hidrodinamis yang dioptimalkan memungkinkan ROV bergerak dengan kelincahan maksimal di bawah tekanan air, merespons setiap input kendali dengan instan.
+                An optimized hydrodynamic design allows the ROV to move with maximum agility underwater, responding instantly to every control input.
               </p>
               <p className="text-slate-300/90 leading-relaxed text-sm drop-shadow-sm">
-                Ditenagai oleh sistem propulsi mutakhir, kendaraan ini mampu melakukan manuver 6-DOF (Degrees of Freedom) dengan presisi tinggi. Hal ini menjamin kestabilan observasi visual dan akurasi sensor.
+                Powered by a cutting-edge propulsion system, this vehicle is capable of high-precision 6-DOF (Degrees of Freedom) maneuvers. This ensures the stability of visual observation and sensor accuracy.
               </p>
               
               <div className="flex flex-wrap items-center gap-4 mt-4">
