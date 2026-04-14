@@ -16,32 +16,35 @@ import logoXploreSimple from '../../assets/logo_xplore_robot_simple.png';
 import logoXploreGif from '../../assets/Logo XploreRobot.gif'; 
 
 // =========================================
-// DUMMY DATA FOR ROV NEWS
+// REAL DATA FOR ROV NEWS
 // =========================================
 const rovNews = [
   {
     id: 1,
-    title: "Mariana Trench Exploration: New Species Discovery in Modern Era",
-    excerpt: "The latest ROV mission successfully recorded visuals of previously unidentified deep-sea species at a depth of 8,000 meters.",
-    date: "12 Apr 2026",
-    category: "Exploration",
-    image: "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=600&auto=format&fit=crop"
+    title: "Deployable AI for Deep Sea Exploration & Discovery",
+    excerpt: "NOAA's recent expedition successfully tested new AI technology on ROVs to automatically detect and track underwater animals like siphonophores and jellyfish in real-time.",
+    date: "12 Feb 2026",
+    category: "AI & Software",
+    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=600&auto=format&fit=crop",
+    url: "https://oceanexplorer.noaa.gov/expedition/25deployable-ai/"
   },
   {
     id: 2,
-    title: "Next-Generation Thruster Technology Improves Battery Efficiency",
-    excerpt: "The development of underwater propulsion motors now allows ROVs to operate 30% longer thanks to hydrodynamic flow optimization.",
-    date: "05 Apr 2026",
-    category: "Technology",
-    image: "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?q=80&w=600&auto=format&fit=crop"
+    title: "Deep-Sea Coral Reefs Discovered off Uruguay",
+    excerpt: "ROV SuBastian uncovered flourishing cold-water coral reefs and over 30 potential new species, including crystal squids and a unique deep-sea bamboo coral.",
+    date: "08 Oct 2025",
+    category: "Exploration",
+    image: "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=600&auto=format&fit=crop",
+    url: "https://www.discoverwildlife.com/animal-facts/marine-animals/deep-sea-coral-reefs-discovered-uruguay"
   },
   {
     id: 3,
-    title: "AI Integration in Autonomous Underwater Navigation",
-    excerpt: "Smart systems can now automatically avoid reef obstacles using real-time 3D sonar mapping.",
-    date: "28 Mar 2026",
-    category: "Software",
-    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=600&auto=format&fit=crop"
+    title: "High-Tech Exploration of Mar del Plata Canyon",
+    excerpt: "Researchers documented rich biodiversity and 40 new species nearly twice as deep as the Grand Canyon, utilizing advanced ROV photogrammetry.",
+    date: "15 Aug 2025",
+    category: "Research",
+    image: "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?q=80&w=600&auto=format&fit=crop",
+    url: "https://schmidtocean.org/first-high-tech-exploration-of-argentinas-mar-del-plata-canyon-inspires-millions/"
   }
 ];
 
@@ -60,7 +63,7 @@ const Landing: React.FC = () => {
   const scrollToSection = (elementId: string) => {
     const element = document.getElementById(elementId);
     if (element) {
-      const navHeight = 90; // Disesuaikan sedikit karena navbar baru bentuknya pill
+      const navHeight = 90; 
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.scrollY - navHeight;
 
@@ -109,41 +112,37 @@ const Landing: React.FC = () => {
 
       <div className="relative z-10">
         
-        {/* NEW UPDATED NAVBAR */}
+        {/* NEW UPDATED NAVBAR - BENTUK PILL PANJANG TAPI ADA JARAK (MARGIN) */}
         <div className={`fixed top-0 left-0 w-full z-50 flex justify-center px-4 transition-all duration-500 ${isScrolled ? 'pt-4' : 'pt-6'}`}>
-          <nav className={`relative w-full max-w-6xl rounded-2xl md:rounded-full transition-all duration-500 flex items-center justify-between px-6 md:px-10 py-3 md:py-0 md:h-20 overflow-hidden ${
+          <nav className={`relative w-[92%] max-w-7xl rounded-2xl md:rounded-full transition-all duration-500 flex items-center justify-between px-6 md:px-10 py-3 md:py-0 md:h-20 ${
             isScrolled 
-              ? 'bg-gradient-to-r from-[#86255d]/95 via-[#151515]/95 to-[#151515]/95 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl border border-white/10' 
-              : 'bg-transparent'
+              ? 'bg-[#0b111a]/40 backdrop-blur-md shadow-lg border border-white/10' 
+              : 'bg-[#0b111a]/10 backdrop-blur-sm border border-white/5'
           }`}>
             
-            {/* === Efek Cahaya / Orbs === */}
-            <div className={`absolute top-2 right-40 w-10 h-10 bg-red-600 rounded-full blur-[20px] pointer-events-none transition-opacity duration-500 ${isScrolled ? 'opacity-60' : 'opacity-0'}`}></div>
-            <div className={`absolute bottom-3 right-[40%] w-4 h-4 bg-fuchsia-500 rounded-full blur-[10px] pointer-events-none transition-opacity duration-500 ${isScrolled ? 'opacity-80' : 'opacity-0'}`}></div>
-
             {/* === Kiri: LOGO === */}
             <div className="flex items-center cursor-pointer relative z-10 group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <img 
                 src={isScrolled ? logoXploreGif : logoXploreSimple} 
                 alt="Xplore Robot" 
                 className={`w-auto brightness-0 invert transition-all duration-500 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)] transform-gpu group-hover:scale-105 ${
-                  isScrolled ? 'h-8 md:h-10' : 'h-8 md:h-10 animate-pulse'
+                  isScrolled ? 'h-10 md:h-12' : 'h-12 md:h-14 animate-pulse'
                 }`}
               />
             </div>
 
             {/* === Tengah: MENU LINKS === */}
-            <div className="hidden md:flex items-center gap-8 relative z-10">
-              <span onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-gray-300 text-sm font-medium hover:text-white cursor-pointer transition-colors duration-300">
+            <div className="hidden md:flex items-center gap-8 md:gap-12 relative z-10">
+              <span onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-gray-300 text-lg font-semibold hover:text-white cursor-pointer transition-colors duration-300">
                 Home
               </span>
-              <span onClick={() => scrollToSection('about')} className="text-gray-300 text-sm font-medium hover:text-white cursor-pointer transition-colors duration-300">
+              <span onClick={() => scrollToSection('about')} className="text-gray-300 text-lg font-semibold hover:text-white cursor-pointer transition-colors duration-300">
                 About
               </span>
-              <span onClick={() => navigate('/data')} className="text-gray-300 text-sm font-medium hover:text-white cursor-pointer transition-colors duration-300">
+              <span onClick={() => navigate('/data')} className="text-gray-300 text-lg font-semibold hover:text-white cursor-pointer transition-colors duration-300">
                 Data
               </span>
-              <span onClick={() => navigate('/system')} className="text-gray-300 text-sm font-medium hover:text-white cursor-pointer transition-colors duration-300">
+              <span onClick={() => navigate('/system')} className="text-gray-300 text-lg font-semibold hover:text-white cursor-pointer transition-colors duration-300">
                 System
               </span>
             </div>
@@ -151,13 +150,8 @@ const Landing: React.FC = () => {
             {/* === Kanan: TOMBOL LAUNCH GCS === */}
             <div className="relative z-10 ml-4 md:ml-0">
               <button onClick={() => navigate('/home')} className="relative group px-6 py-2.5 rounded-lg text-white text-sm font-semibold transition-all duration-300 font-heading tracking-wide">
-                {/* Background gradien tombol */}
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#f43f5e] via-[#d946ef] to-[#3b82f6] opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
-                
-                {/* Efek Glow (bayangan bercahaya) di luar tombol */}
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#f43f5e] via-[#d946ef] to-[#3b82f6] blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300"></div>
-                
-                {/* Teks tombol */}
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300"></div>
                 <span className="relative z-10 drop-shadow-sm">Launch GCS</span>
               </button>
             </div>
@@ -193,7 +187,6 @@ const Landing: React.FC = () => {
 
             <div className="flex-1 relative mt-12 md:mt-0 flex justify-center items-center">
               <div className="relative group p-4 rounded-xl">
-                {/* Efek glow dikurangi di sini: blur dan opacity diturunkan */}
                 <div className="absolute inset-0 bg-cyan-500/10 blur-[40px] rounded-full group-hover:blur-[50px] group-hover:bg-cyan-400/20 transition-all duration-700 transform-gpu"></div>
                 <img src={rovImage} alt="ROV Model" className="w-full max-w-xl animate-float z-10 relative drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform-gpu group-hover:scale-105 transition-transform duration-700 ease-out" />
               </div>
@@ -385,14 +378,18 @@ const Landing: React.FC = () => {
                   More ROV <span className="text-cyan-400 group-hover:text-cyan-300 transition-colors">News</span>
                 </h2>
               </div>
-              <div className="mt-5 md:mt-0 text-[10px] font-mono font-bold text-slate-300 hover:text-cyan-400 cursor-pointer transition-all uppercase tracking-widest border border-white/20 hover:border-cyan-400/60 px-5 py-2.5 rounded-full bg-white/5 backdrop-blur-sm hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] group flex items-center gap-2">
-                View All Articles <span className="text-xs transform group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
-              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {rovNews.map((news) => (
-                <div key={news.id} className="bg-[#0b111a]/80 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 group cursor-pointer hover:border-cyan-500/40 hover:shadow-[0_15px_30px_rgba(0,0,0,0.4)] transition-all duration-500 flex flex-col z-20 hover:-translate-y-1.5">
+                {/* Diubah jadi tag <a> biar bisa diklik ke link asli */}
+                <a 
+                  href={news.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  key={news.id} 
+                  className="bg-[#0b111a]/80 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 group cursor-pointer hover:border-cyan-500/40 hover:shadow-[0_15px_30px_rgba(0,0,0,0.4)] transition-all duration-500 flex flex-col z-20 hover:-translate-y-1.5 decoration-transparent"
+                >
                   <div className="h-48 overflow-hidden relative">
                     <img 
                       src={news.image} 
@@ -414,7 +411,7 @@ const Landing: React.FC = () => {
                       Read Article <span className="text-xs transform group-hover:translate-x-1.5 transition-transform duration-300">&rarr;</span>
                     </div>
                   </div>
-                </div>
+                </a>
               ))}
             </div>
           </div>
