@@ -4,6 +4,8 @@ import { PathMapPanel, PathGoal } from '../components/autonomous-control/PathMap
 import { MissionPanel } from '../components/autonomous-control/MissionPanel';
 import { OrientationModal, OrientationOption } from '../components/autonomous-control/OrientationModal';
 import { DepthControl } from '../components/autonomous-control/DepthControl';
+// ── [1] IMPORT MISSION IO ──────────────────────────────────────────────────
+import { MissionIO } from '../components/autonomous-control/MissionIO';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -485,6 +487,34 @@ const AutonomousROS2: React.FC = () => {
     setRovPath([]);
   };
 
+  // ── [2] HANDLER UNTUK MISSION IO ───────────────────────────────────────────
+  const handleMissionImport = useCallback((
+    mode: MissionMode,
+    waypoints: Goal[],
+    importedPathGoals: PathGoal[],
+  ) => {
+    // Reset misi yang sedang berjalan
+    stopAll();
+
+    // Terapkan mode sesuai file
+    setMissionMode(mode);
+
+    if (mode === 'waypoint') {
+      setGoals(waypoints);
+      const initStatus: Record<number, WaypointStatus> = {};
+      waypoints.forEach(g => { initStatus[g.id] = 'pending'; });
+      setWpStatus(initStatus);
+    } else {
+      setPathGoals(importedPathGoals);
+      const initStatus: Record<number, WaypointStatus> = {};
+      importedPathGoals.forEach(g => { initStatus[g.id] = 'pending'; });
+      setWpStatus(initStatus);
+    }
+
+    setRovPath([]);
+    log(`📂 Misi dimuat: ${waypoints.length || importedPathGoals.length} waypoint (mode: ${mode})`);
+  }, [stopAll, log]);
+
   // ── Derived ────────────────────────────────────────────────────────────────
 
   const activeGoals    = missionMode === 'waypoint' ? goals : pathGoals;
@@ -631,6 +661,15 @@ const AutonomousROS2: React.FC = () => {
         {/* Side Panel */}
         <div className="col-span-4 flex flex-col gap-4">
           <DepthControl targetDepth={targetDepth} setTargetDepth={setTargetDepth} isDefault />
+
+          {/* ── [3] MISSION IO COMPONENT ─────────────────────────────────────── */}
+          <MissionIO
+            missionMode={missionMode}
+            goals={goals}
+            pathGoals={pathGoals}
+            isMissionRunning={isMissionRunning}
+            onImport={handleMissionImport}
+          />
 
           {/* Telemetry */}
           <div className="bg-slate-900/50 rounded-xl border border-white/5 p-3">
