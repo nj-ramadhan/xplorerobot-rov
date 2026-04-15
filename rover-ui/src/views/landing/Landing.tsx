@@ -14,14 +14,6 @@ import rovVideo from '../../assets/rov-gif.mp4';
 import logoXploreSimple from '../../assets/logo_xplore_robot_simple.png'; 
 // @ts-ignore
 import logoXploreGif from '../../assets/Logo XploreRobot.gif'; 
-
-// Import Asset Baru untuk Fitur
-// @ts-ignore
-import mavlinkLogo from '../../assets/mavlink.png';
-// @ts-ignore
-import autoLogo from '../../assets/auto.png';
-// @ts-ignore
-import manualLogo from '../../assets/manual.png';
 // @ts-ignore
 import rovImageWithPings from '../../assets/rov-model-final.png'; 
 
@@ -35,7 +27,6 @@ const rovNews = [
     excerpt: "NOAA's recent expedition successfully tested new AI technology on ROVs to automatically detect and track underwater animals like siphonophores and jellyfish in real-time.",
     date: "12 Feb 2026",
     category: "AI & Software",
-    // Gambar HD server stabil (Tema: AI & Deep Sea)
     image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop",
     url: "https://oceanexplorer.noaa.gov/expedition/25deployable-ai/"
   },
@@ -45,7 +36,6 @@ const rovNews = [
     excerpt: "ROV SuBastian uncovered flourishing cold-water coral reefs and over 30 potential new species, including crystal squids and a unique deep-sea bamboo coral.",
     date: "08 Oct 2025",
     category: "Exploration",
-    // Gambar HD server stabil (Tema: Laut)
     image: "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=800&auto=format&fit=crop",
     url: "https://www.discoverwildlife.com/animal-facts/marine-animals/deep-sea-coral-reefs-discovered-uruguay"
   },
@@ -55,7 +45,6 @@ const rovNews = [
     excerpt: "Researchers documented rich biodiversity and 40 new species nearly twice as deep as the Grand Canyon, utilizing advanced ROV photogrammetry.",
     date: "15 Aug 2025",
     category: "Research",
-    // Gambar HD server stabil (Tema: Penelitian Bawah Air)
     image: "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?q=80&w=800&auto=format&fit=crop",
     url: "https://schmidtocean.org/first-high-tech-exploration-of-argentinas-mar-del-plata-canyon-inspires-millions/"
   }
@@ -91,7 +80,7 @@ const Landing: React.FC = () => {
     <div className="relative text-white overflow-x-hidden antialiased selection:bg-cyan-500 selection:text-black min-h-screen">
       
       <style>{`
-        /* 1. Penyeragaman Font Global menggunakan Quicksand */
+        /* Penyeragaman Font Global menggunakan Quicksand */
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700;800&display=swap');
         
         * {
@@ -127,7 +116,7 @@ const Landing: React.FC = () => {
 
       <div className="relative z-10">
         
-        {/* DYNAMIC NAVBAR - Transisi Full Width -> Pill */}
+        {/* DYNAMIC NAVBAR */}
         <div className={`fixed top-0 left-0 w-full z-50 flex justify-center transition-all duration-700 ${isScrolled ? 'px-4 pt-4' : 'px-0 pt-0'}`}>
           <nav className={`relative transition-all duration-700 flex items-center justify-between py-3 md:py-0 ${
             isScrolled 
@@ -162,7 +151,7 @@ const Landing: React.FC = () => {
               </span>
             </div>
 
-            {/* TOMBOL LAUNCH GCS - 4. Lebih melengkung */}
+            {/* TOMBOL LAUNCH GCS */}
             <div className="relative z-10 ml-4 md:ml-0">
               <button onClick={() => navigate('/home')} className="relative group px-6 py-2.5 rounded-xl text-white text-sm font-semibold transition-all duration-300 tracking-wide">
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -170,7 +159,6 @@ const Landing: React.FC = () => {
                 <span className="relative z-10 drop-shadow-sm">Launch GCS</span>
               </button>
             </div>
-
           </nav>
         </div>
 
@@ -203,13 +191,13 @@ const Landing: React.FC = () => {
             <div className="flex-1 relative mt-12 md:mt-0 flex justify-center items-center">
               <div className="relative group p-4 rounded-xl">
                 <div className="absolute inset-0 bg-cyan-500/10 blur-[40px] rounded-full group-hover:blur-[50px] group-hover:bg-cyan-400/20 transition-all duration-700 transform-gpu"></div>
-                <img src={rovImageWithPings} alt="ROV Model with Signals" className="w-full max-w-xl animate-float z-10 relative drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform-gpu group-hover:scale-105 transition-transform duration-700 ease-out" />
+                <img src={rovImage} alt="ROV Model" className="w-full max-w-xl animate-float z-10 relative drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform-gpu group-hover:scale-105 transition-transform duration-700 ease-out" />
               </div>
             </div>
           </main>
         </div>
 
-        {/* SYSTEM FEATURES SECTION - Ikon monokrom minimalis di dalam squircle kecil abu-abu */}
+        {/* SYSTEM FEATURES SECTION */}
         <div id="features" className="px-8 py-12 mt-4 relative z-20">
           <div className="container mx-auto max-w-7xl">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-white/10 pb-4">
@@ -228,13 +216,15 @@ const Landing: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Feature 1 - Autonomous (Compass icon) */}
+              {/* Feature 1 - Autonomous */}
               <div className="flex flex-col group p-6 rounded-2xl hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all duration-500 hover:-translate-y-1">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm">Autonomous Mode</h3>
-                  <div className="p-4 bg-[#2D303E] rounded-xl flex items-center justify-center w-16 h-16 shadow-md transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                    <svg className="w-8 h-8 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5A2.5 2.5 0 0119 14.5V17m-13 4v-2.945M22 12a10 10 0 11-20 0 10 10 0 0120 0z"></path></svg>
+                {/* Diubah layout icon-teks ke flex row */}
+                <div className="flex items-center gap-4 mb-4">
+                  {/* Icon Box: Diperkecil & Diwarna Biru */}
+                  <div className="p-2.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex-shrink-0 flex items-center justify-center w-12 h-12 shadow-[0_4px_15px_rgba(34,211,238,0.4)] transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5A2.5 2.5 0 0119 14.5V17m-13 4v-2.945M22 12a10 10 0 11-20 0 10 10 0 0120 0z"></path></svg>
                   </div>
+                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm leading-tight">Autonomous Mode</h3>
                 </div>
                 <p className="text-slate-300/80 text-sm font-medium leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
                   Intelligent control system for pre-programmed automatic navigation without manual operator intervention.
@@ -246,13 +236,13 @@ const Landing: React.FC = () => {
                 </div>
               </div>
               
-              {/* Feature 2 - MAVLink (Wi-Fi icon) */}
+              {/* Feature 2 - MAVLink */}
               <div className="flex flex-col group p-6 rounded-2xl hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all duration-500 hover:-translate-y-1">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm">MAVLink Protocol</h3>
-                  <div className="p-4 bg-[#2D303E] rounded-xl flex items-center justify-center w-16 h-16 shadow-md transform group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                    <svg className="w-8 h-8 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.141c5.857-5.857 15.355-5.857 21.213 0"></path></svg>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-2.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex-shrink-0 flex items-center justify-center w-12 h-12 shadow-[0_4px_15px_rgba(34,211,238,0.4)] transform group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.141c5.857-5.857 15.355-5.857 21.213 0"></path></svg>
                   </div>
+                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm leading-tight">MAVLink Protocol</h3>
                 </div>
                 <p className="text-slate-300/80 text-sm font-medium leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
                   Real-time, stable data and telemetry communication between the Ground Station and the ROV flight controller.
@@ -264,13 +254,13 @@ const Landing: React.FC = () => {
                 </div>
               </div>
 
-              {/* Feature 3 - Manual (Keyboard icon) */}
+              {/* Feature 3 - Manual */}
               <div className="flex flex-col group p-6 rounded-2xl hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all duration-500 hover:-translate-y-1">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm">Manual Control</h3>
-                  <div className="p-4 bg-[#2D303E] rounded-xl flex items-center justify-center w-16 h-16 shadow-md transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                    <svg className="w-8 h-8 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 10h18M7 15h1m4 0h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-2.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex-shrink-0 flex items-center justify-center w-12 h-12 shadow-[0_4px_15px_rgba(34,211,238,0.4)] transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                   </div>
+                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm leading-tight">Manual Control</h3>
                 </div>
                 <p className="text-slate-300/80 text-sm font-medium leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
                   Precise 6-DOF maneuverability control for underwater vehicle navigation from the surface station.
@@ -285,19 +275,19 @@ const Landing: React.FC = () => {
           </div>
         </div>
 
-        {/* ABOUT SECTION - Gambar lebih kecil, teks lebih rapat dan panjang */}
+        {/* ABOUT SECTION */}
         <div id="about" className="px-8 py-16 relative z-20">
-          <div className="container mx-auto max-w-7xl flex flex-col md:flex-row items-center gap-12 lg:gap-20">
-            {/* Bagian Kiri: Gambar - Ukuran diperkecil (dari flex-1 jadi flex-none max-w-sm) */}
-            <div className="flex-none max-w-sm relative mt-12 md:mt-0 flex justify-center items-center">
-              <div className="relative group p-4 rounded-xl cursor-pointer">
+          <div className="container mx-auto max-w-7xl flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+            {/* Bagian Kiri: Gambar */}
+            <div className="flex-none w-full max-w-[320px] lg:max-w-md relative mt-12 lg:mt-0 flex justify-center items-center">
+              <div className="relative group p-4 rounded-xl cursor-pointer w-full">
                 <div className="absolute inset-0 bg-cyan-900/20 blur-[80px] rounded-full transform-gpu group-hover:bg-cyan-800/30 transition-colors duration-700"></div>
-                <img src={underImage} alt="Detailed ROV View" className="w-full max-w-md relative z-10 drop-shadow-[0_10px_30px_rgba(34,211,238,0.15)] transform-gpu group-hover:scale-105 group-hover:-translate-y-2 transition-all duration-700" />
+                <img src={underImage} alt="Detailed ROV View" className="w-full h-auto relative z-10 drop-shadow-[0_10px_30px_rgba(34,211,238,0.15)] transform-gpu group-hover:scale-105 group-hover:-translate-y-2 transition-all duration-700" />
               </div>
             </div>
 
-            {/* Bagian Kanan: Teks - Lebih rapat dan deskriptif */}
-            <div className="flex flex-col gap-5 flex-1 group lg:max-w-2xl">
+            {/* Bagian Kanan: Teks */}
+            <div className="flex flex-col gap-5 flex-1 w-full group">
               <div className="border-l-[3px] border-cyan-400 pl-5 group-hover:border-cyan-300 transition-colors duration-300">
                 <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight leading-[1.1] drop-shadow-md">
                  Discover<br />
@@ -410,40 +400,40 @@ const Landing: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {rovNews.map((news) => (
                 <a 
-              href={news.url} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              key={news.id} 
-              className="bg-[#0b111a]/80 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 group cursor-pointer hover:border-cyan-500/40 hover:shadow-[0_15px_30px_rgba(0,0,0,0.4)] transition-all duration-500 flex flex-col z-20 hover:-translate-y-1.5 decoration-transparent"
+                  href={news.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  key={news.id} 
+                  className="bg-[#0b111a]/80 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 group cursor-pointer hover:border-cyan-500/40 hover:shadow-[0_15px_30px_rgba(0,0,0,0.4)] transition-all duration-500 flex flex-col z-20 hover:-translate-y-1.5 decoration-transparent"
                 >
-              <div className="h-48 overflow-hidden relative">
-                <img 
-                  src={news.image} 
-                  alt={news.title} 
-                  className="w-full h-full object-cover transform-gpu group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100" 
-                />
-                <div className="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-md border border-white/10 text-cyan-400 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-md">
-                  {news.category}
-                </div>
-              </div>
+                  <div className="h-48 overflow-hidden relative">
+                    <img 
+                      src={news.image} 
+                      alt={news.title} 
+                      className="w-full h-full object-cover transform-gpu group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100" 
+                    />
+                    <div className="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-md border border-white/10 text-cyan-400 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-md">
+                      {news.category}
+                    </div>
+                  </div>
 
-              <div className="p-6 flex flex-col flex-grow relative">
-                <div className="text-[11px] font-bold text-cyan-400/70 mb-3 tracking-widest uppercase">{news.date}</div>
-                <h3 className="text-lg font-bold text-white mb-3 leading-[1.3] group-hover:text-cyan-300 transition-colors">
-                  {news.title}
-                </h3>
-                <p className="text-sm font-medium text-slate-400 leading-relaxed line-clamp-3 mb-6">{news.excerpt}</p>
-                <div className="mt-auto pt-4 border-t border-white/5 flex items-center gap-2 text-[11px] font-bold text-slate-300 group-hover:text-cyan-400 transition-colors uppercase tracking-widest">
-                  Read Article <span className="text-xs transform group-hover:translate-x-1.5 transition-transform duration-300">&rarr;</span>
-                </div>
-              </div>
+                  <div className="p-6 flex flex-col flex-grow relative">
+                    <div className="text-[11px] font-bold text-cyan-400/70 mb-3 tracking-widest uppercase">{news.date}</div>
+                    <h3 className="text-lg font-bold text-white mb-3 leading-[1.3] group-hover:text-cyan-300 transition-colors">
+                      {news.title}
+                    </h3>
+                    <p className="text-sm font-medium text-slate-400 leading-relaxed line-clamp-3 mb-6">{news.excerpt}</p>
+                    <div className="mt-auto pt-4 border-t border-white/5 flex items-center gap-2 text-[11px] font-bold text-slate-300 group-hover:text-cyan-400 transition-colors uppercase tracking-widest">
+                      Read Article <span className="text-xs transform group-hover:translate-x-1.5 transition-transform duration-300">&rarr;</span>
+                    </div>
+                  </div>
                 </a>
               ))}
             </div>
           </div>
         </div>
 
-        {/* CTA BANNER & 3. DEVELOPER CREDIT - Bagian yang diminta dikembalikan */}
+        {/* CTA BANNER & DEVELOPER CREDIT */}
         <div className="px-8 pt-12 pb-20 relative z-20">
           <div className="container mx-auto max-w-3xl">
             <div className="bg-gradient-to-br from-[#0b111a] to-[#06101f] border border-cyan-500/30 rounded-3xl p-10 text-center relative overflow-hidden group backdrop-blur-xl shadow-[0_15px_40px_rgba(0,0,0,0.4)] transform-gpu hover:border-cyan-400/50 transition-colors duration-500">
@@ -454,7 +444,7 @@ const Landing: React.FC = () => {
                 Launch Dashboard
               </button>
 
-              {/* Teks Credit TRIN sebelum Footer */}
+              {/* Teks Pengembang TRIN Polman Bandung */}
               <div className="relative z-10 border-t border-cyan-500/20 pt-5 mt-2">
                 <p className="text-[11px] font-bold text-cyan-400/80 tracking-widest uppercase">
                   Proudly Developed by Industrial Informatics Engineering Students (TRIN)
