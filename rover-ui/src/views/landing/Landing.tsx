@@ -15,8 +15,18 @@ import logoXploreSimple from '../../assets/logo_xplore_robot_simple.png';
 // @ts-ignore
 import logoXploreGif from '../../assets/Logo XploreRobot.gif'; 
 
+// Import Asset Baru untuk Fitur
+// @ts-ignore
+import mavlinkLogo from '../../assets/mavlink.png';
+// @ts-ignore
+import autoLogo from '../../assets/auto.png';
+// @ts-ignore
+import manualLogo from '../../assets/manual.png';
+// @ts-ignore
+import rovImageWithPings from '../../assets/rov-model-final.png'; 
+
 // =========================================
-// REAL DATA FOR ROV NEWS
+// REAL DATA FOR ROV NEWS (GAMBAR HD STABIL)
 // =========================================
 const rovNews = [
   {
@@ -25,7 +35,8 @@ const rovNews = [
     excerpt: "NOAA's recent expedition successfully tested new AI technology on ROVs to automatically detect and track underwater animals like siphonophores and jellyfish in real-time.",
     date: "12 Feb 2026",
     category: "AI & Software",
-    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=600&auto=format&fit=crop",
+    // Gambar HD server stabil (Tema: AI & Deep Sea)
+    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop",
     url: "https://oceanexplorer.noaa.gov/expedition/25deployable-ai/"
   },
   {
@@ -34,7 +45,8 @@ const rovNews = [
     excerpt: "ROV SuBastian uncovered flourishing cold-water coral reefs and over 30 potential new species, including crystal squids and a unique deep-sea bamboo coral.",
     date: "08 Oct 2025",
     category: "Exploration",
-    image: "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=600&auto=format&fit=crop",
+    // Gambar HD server stabil (Tema: Laut)
+    image: "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=800&auto=format&fit=crop",
     url: "https://www.discoverwildlife.com/animal-facts/marine-animals/deep-sea-coral-reefs-discovered-uruguay"
   },
   {
@@ -43,7 +55,8 @@ const rovNews = [
     excerpt: "Researchers documented rich biodiversity and 40 new species nearly twice as deep as the Grand Canyon, utilizing advanced ROV photogrammetry.",
     date: "15 Aug 2025",
     category: "Research",
-    image: "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?q=80&w=600&auto=format&fit=crop",
+    // Gambar HD server stabil (Tema: Penelitian Bawah Air)
+    image: "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?q=80&w=800&auto=format&fit=crop",
     url: "https://schmidtocean.org/first-high-tech-exploration-of-argentinas-mar-del-plata-canyon-inspires-millions/"
   }
 ];
@@ -75,13 +88,15 @@ const Landing: React.FC = () => {
   };
 
   return (
-    <div className="relative text-white overflow-x-hidden font-['Nunito',sans-serif] antialiased selection:bg-cyan-500 selection:text-black min-h-screen">
+    <div className="relative text-white overflow-x-hidden antialiased selection:bg-cyan-500 selection:text-black min-h-screen">
       
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&family=Quicksand:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+        /* 1. Penyeragaman Font Global menggunakan Quicksand */
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700;800&display=swap');
         
-        .font-heading { font-family: 'Quicksand', sans-serif; }
-        .font-mono { font-family: 'Space Mono', monospace; }
+        * {
+          font-family: 'Quicksand', sans-serif !important;
+        }
         
         .animate-gradient-x {
           background-size: 200% auto;
@@ -112,26 +127,26 @@ const Landing: React.FC = () => {
 
       <div className="relative z-10">
         
-        {/* NEW UPDATED NAVBAR - BENTUK PILL PANJANG TAPI ADA JARAK (MARGIN) */}
-        <div className={`fixed top-0 left-0 w-full z-50 flex justify-center px-4 transition-all duration-500 ${isScrolled ? 'pt-4' : 'pt-6'}`}>
-          <nav className={`relative w-[92%] max-w-7xl rounded-2xl md:rounded-full transition-all duration-500 flex items-center justify-between px-6 md:px-10 py-3 md:py-0 md:h-20 ${
+        {/* DYNAMIC NAVBAR - Transisi Full Width -> Pill */}
+        <div className={`fixed top-0 left-0 w-full z-50 flex justify-center transition-all duration-700 ${isScrolled ? 'px-4 pt-4' : 'px-0 pt-0'}`}>
+          <nav className={`relative transition-all duration-700 flex items-center justify-between py-3 md:py-0 ${
             isScrolled 
-              ? 'bg-[#0b111a]/40 backdrop-blur-md shadow-lg border border-white/10' 
-              : 'bg-[#0b111a]/10 backdrop-blur-sm border border-white/5'
+              ? 'w-[92%] max-w-7xl rounded-2xl md:rounded-full bg-[#0b111a]/40 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/10 px-6 md:px-10 md:h-20' 
+              : 'w-full max-w-full rounded-none bg-transparent border-transparent px-8 md:px-12 md:h-24'
           }`}>
             
-            {/* === Kiri: LOGO === */}
+            {/* LOGO */}
             <div className="flex items-center cursor-pointer relative z-10 group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <img 
                 src={isScrolled ? logoXploreGif : logoXploreSimple} 
                 alt="Xplore Robot" 
-                className={`w-auto brightness-0 invert transition-all duration-500 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)] transform-gpu group-hover:scale-105 ${
+                className={`w-auto brightness-0 invert transition-all duration-700 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)] transform-gpu group-hover:scale-105 ${
                   isScrolled ? 'h-10 md:h-12' : 'h-12 md:h-14 animate-pulse'
                 }`}
               />
             </div>
 
-            {/* === Tengah: MENU LINKS === */}
+            {/* MENU LINKS */}
             <div className="hidden md:flex items-center gap-8 md:gap-12 relative z-10">
               <span onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-gray-300 text-lg font-semibold hover:text-white cursor-pointer transition-colors duration-300">
                 Home
@@ -147,11 +162,11 @@ const Landing: React.FC = () => {
               </span>
             </div>
 
-            {/* === Kanan: TOMBOL LAUNCH GCS === */}
+            {/* TOMBOL LAUNCH GCS - 4. Lebih melengkung */}
             <div className="relative z-10 ml-4 md:ml-0">
-              <button onClick={() => navigate('/home')} className="relative group px-6 py-2.5 rounded-lg text-white text-sm font-semibold transition-all duration-300 font-heading tracking-wide">
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300"></div>
+              <button onClick={() => navigate('/home')} className="relative group px-6 py-2.5 rounded-xl text-white text-sm font-semibold transition-all duration-300 tracking-wide">
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300"></div>
                 <span className="relative z-10 drop-shadow-sm">Launch GCS</span>
               </button>
             </div>
@@ -163,23 +178,23 @@ const Landing: React.FC = () => {
         <div className="relative min-h-screen flex flex-col pt-24 md:pt-16">
           <main className="container mx-auto max-w-7xl px-8 flex-1 flex flex-col md:flex-row items-center py-8">
             <div className="flex-1 text-center md:text-left z-20">
-              <p className="font-mono text-[9px] mb-4 text-cyan-400 tracking-widest font-bold flex items-center justify-center md:justify-start gap-3">
+              <p className="text-[10px] mb-4 text-cyan-400 tracking-widest font-bold flex items-center justify-center md:justify-start gap-3">
                 <span className="w-6 h-[2px] bg-cyan-400 inline-block shadow-[0_0_8px_rgba(34,211,238,0.8)]"></span>
                 XPLORE ROBOT TEAM
               </p>
               
-              <h1 className="font-heading text-4xl md:text-6xl font-black leading-[1.05] mb-5 uppercase tracking-tight transition-transform duration-500 hover:translate-x-1 cursor-default">
+              <h1 className="text-4xl md:text-6xl font-black leading-[1.05] mb-5 uppercase tracking-tight transition-transform duration-500 hover:translate-x-1 cursor-default">
                 Start Exploring <br /> 
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-200 drop-shadow-sm animate-gradient-x">
                   Infinite Depths
                 </span>
               </h1>
               
-              <p className="text-slate-300 max-w-sm mb-8 text-sm leading-relaxed font-light mx-auto md:mx-0 opacity-90 hover:opacity-100 transition-opacity duration-300">
+              <p className="text-slate-300 max-w-sm mb-8 text-sm leading-relaxed font-semibold mx-auto md:mx-0 opacity-90 hover:opacity-100 transition-opacity duration-300">
                 Initialize your underwater mission, monitor real-time telemetry, and control your vehicle through the abyss.
               </p>
               
-              <button onClick={() => navigate('/home')} className="group relative px-6 py-3 bg-cyan-500 text-[#0b111a] font-black uppercase text-[10px] tracking-widest hover:bg-cyan-400 hover:scale-105 active:scale-95 transition-all duration-300 rounded-md shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] overflow-hidden font-heading">
+              <button onClick={() => navigate('/home')} className="group relative px-6 py-3 bg-cyan-500 text-[#0b111a] font-black uppercase text-[11px] tracking-widest hover:bg-cyan-400 hover:scale-105 active:scale-95 transition-all duration-300 rounded-md shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] overflow-hidden">
                 <span className="relative z-10">Get Started</span>
                 <div className="absolute inset-0 w-full h-full bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
               </button>
@@ -188,24 +203,24 @@ const Landing: React.FC = () => {
             <div className="flex-1 relative mt-12 md:mt-0 flex justify-center items-center">
               <div className="relative group p-4 rounded-xl">
                 <div className="absolute inset-0 bg-cyan-500/10 blur-[40px] rounded-full group-hover:blur-[50px] group-hover:bg-cyan-400/20 transition-all duration-700 transform-gpu"></div>
-                <img src={rovImage} alt="ROV Model" className="w-full max-w-xl animate-float z-10 relative drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform-gpu group-hover:scale-105 transition-transform duration-700 ease-out" />
+                <img src={rovImageWithPings} alt="ROV Model with Signals" className="w-full max-w-xl animate-float z-10 relative drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform-gpu group-hover:scale-105 transition-transform duration-700 ease-out" />
               </div>
             </div>
           </main>
         </div>
 
-        {/* SECTION: SYSTEM FEATURES */}
+        {/* SYSTEM FEATURES SECTION - Ikon monokrom minimalis di dalam squircle kecil abu-abu */}
         <div id="features" className="px-8 py-12 mt-4 relative z-20">
           <div className="container mx-auto max-w-7xl">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-white/10 pb-4">
               <div className="flex items-center gap-3 cursor-default group">
-                <h2 className="font-heading text-2xl md:text-3xl font-black text-white tracking-wide drop-shadow-sm group-hover:text-cyan-50 transition-colors">
+                <h2 className="text-2xl md:text-3xl font-black text-white tracking-wide drop-shadow-sm group-hover:text-cyan-50 transition-colors">
                   System Features
                 </h2>
               </div>
               <div 
                 onClick={() => navigate('/system')}
-                className="mt-3 md:mt-0 text-[10px] font-mono font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer transition-colors flex items-center gap-2 drop-shadow-sm uppercase tracking-widest group"
+                className="mt-3 md:mt-0 text-[11px] font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer transition-colors flex items-center gap-2 drop-shadow-sm uppercase tracking-widest group"
               >
                 Explore All Features 
                 <span className="text-base transform group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
@@ -213,13 +228,15 @@ const Landing: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Feature 1 */}
+              {/* Feature 1 - Autonomous (Compass icon) */}
               <div className="flex flex-col group p-6 rounded-2xl hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all duration-500 hover:-translate-y-1">
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-heading text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm">Autonomous Mode</h3>
-                  <div className="text-cyan-400 text-3xl opacity-90 drop-shadow-md transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">🎯</div>
+                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm">Autonomous Mode</h3>
+                  <div className="p-4 bg-[#2D303E] rounded-xl flex items-center justify-center w-16 h-16 shadow-md transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    <svg className="w-8 h-8 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5A2.5 2.5 0 0119 14.5V17m-13 4v-2.945M22 12a10 10 0 11-20 0 10 10 0 0120 0z"></path></svg>
+                  </div>
                 </div>
-                <p className="text-slate-300/80 text-xs leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
+                <p className="text-slate-300/80 text-sm font-medium leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
                   Intelligent control system for pre-programmed automatic navigation without manual operator intervention.
                 </p>
                 <div className="border-t border-white/10 pt-4 mt-auto">
@@ -229,13 +246,15 @@ const Landing: React.FC = () => {
                 </div>
               </div>
               
-              {/* Feature 2 */}
+              {/* Feature 2 - MAVLink (Wi-Fi icon) */}
               <div className="flex flex-col group p-6 rounded-2xl hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all duration-500 hover:-translate-y-1">
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-heading text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm">MAVLink Protocol</h3>
-                  <div className="text-cyan-400 text-3xl opacity-90 drop-shadow-md transform group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">🕹️</div>
+                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm">MAVLink Protocol</h3>
+                  <div className="p-4 bg-[#2D303E] rounded-xl flex items-center justify-center w-16 h-16 shadow-md transform group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                    <svg className="w-8 h-8 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.141c5.857-5.857 15.355-5.857 21.213 0"></path></svg>
+                  </div>
                 </div>
-                <p className="text-slate-300/80 text-xs leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
+                <p className="text-slate-300/80 text-sm font-medium leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
                   Real-time, stable data and telemetry communication between the Ground Station and the ROV flight controller.
                 </p>
                 <div className="border-t border-white/10 pt-4 mt-auto">
@@ -245,13 +264,15 @@ const Landing: React.FC = () => {
                 </div>
               </div>
 
-              {/* Feature 3 */}
+              {/* Feature 3 - Manual (Keyboard icon) */}
               <div className="flex flex-col group p-6 rounded-2xl hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all duration-500 hover:-translate-y-1">
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-heading text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm">Manual Control</h3>
-                  <div className="text-cyan-400 text-3xl opacity-90 drop-shadow-md transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">⌨️</div>
+                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors drop-shadow-sm">Manual Control</h3>
+                  <div className="p-4 bg-[#2D303E] rounded-xl flex items-center justify-center w-16 h-16 shadow-md transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    <svg className="w-8 h-8 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 10h18M7 15h1m4 0h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                  </div>
                 </div>
-                <p className="text-slate-300/80 text-xs leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
+                <p className="text-slate-300/80 text-sm font-medium leading-relaxed mb-6 flex-grow group-hover:text-slate-200 transition-colors">
                   Precise 6-DOF maneuverability control for underwater vehicle navigation from the surface station.
                 </p>
                 <div className="border-t border-white/10 pt-4 mt-auto">
@@ -264,47 +285,53 @@ const Landing: React.FC = () => {
           </div>
         </div>
 
-        {/* ABOUT SECTION */}
+        {/* ABOUT SECTION - Gambar lebih kecil, teks lebih rapat dan panjang */}
         <div id="about" className="px-8 py-16 relative z-20">
-          <div className="container mx-auto max-w-7xl flex flex-col-reverse md:flex-row items-center gap-12">
-            <div className="flex-1 relative mt-12 md:mt-0 flex justify-center items-center">
+          <div className="container mx-auto max-w-7xl flex flex-col md:flex-row items-center gap-12 lg:gap-20">
+            {/* Bagian Kiri: Gambar - Ukuran diperkecil (dari flex-1 jadi flex-none max-w-sm) */}
+            <div className="flex-none max-w-sm relative mt-12 md:mt-0 flex justify-center items-center">
               <div className="relative group p-4 rounded-xl cursor-pointer">
                 <div className="absolute inset-0 bg-cyan-900/20 blur-[80px] rounded-full transform-gpu group-hover:bg-cyan-800/30 transition-colors duration-700"></div>
                 <img src={underImage} alt="Detailed ROV View" className="w-full max-w-md relative z-10 drop-shadow-[0_10px_30px_rgba(34,211,238,0.15)] transform-gpu group-hover:scale-105 group-hover:-translate-y-2 transition-all duration-700" />
               </div>
             </div>
 
-            <div className="flex flex-col gap-5 max-w-lg group">
+            {/* Bagian Kanan: Teks - Lebih rapat dan deskriptif */}
+            <div className="flex flex-col gap-5 flex-1 group lg:max-w-2xl">
               <div className="border-l-[3px] border-cyan-400 pl-5 group-hover:border-cyan-300 transition-colors duration-300">
-                <h2 className="font-heading text-3xl md:text-4xl font-black text-white uppercase tracking-tight leading-[1.1] drop-shadow-md">
-                  Discover<br />
-                  <span className="text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300">The System</span>
+                <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight leading-[1.1] drop-shadow-md">
+                 Discover<br />
+                 <span className="text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300">The System</span>
                 </h2>
-                <p className="font-mono text-[9px] md:text-[10px] font-bold text-cyan-400/80 tracking-widest mt-3 uppercase">
-                  // Web-Based Ground Control Station
+                <p className="text-[10px] font-bold text-cyan-400/80 tracking-widest mt-3 uppercase">
+                 // Web-Based Ground Control Station
                 </p>
               </div>
 
-              <p className="text-slate-200/90 leading-relaxed mt-2 text-sm drop-shadow-sm">
-                <strong className="text-white font-bold tracking-wide">Xplore Robot</strong> is an advanced web-based Ground Control Station (GCS) command center specifically designed to monitor and control your Remotely Operated Vehicle (ROV).
+              <p className="text-slate-200/90 leading-relaxed mt-2 text-sm font-medium drop-shadow-sm text-justify">
+                 <strong className="text-white font-bold tracking-wide">Xplore Robot</strong> is an advanced, highly responsive web-based Ground Control Station (GCS) command center specifically designed to monitor, manage, and pilot your Remotely Operated Vehicle (ROV) with unparalleled precision. Engineered for both shallow water inspections and deep-sea explorations, our platform ensures seamless communication between the operator and the vehicle.
               </p>
 
-              <p className="text-slate-300/90 leading-relaxed text-sm drop-shadow-sm">
-                Taking BlueOS-grade system standards to the next level with exclusive updates from our team. Experience control through <strong className="text-cyan-400 font-semibold tracking-wide">MAVLink</strong> protocol integration, <strong className="text-cyan-400 font-semibold tracking-wide">Manual Controlling</strong> flexibility, to <strong className="text-cyan-400 font-semibold tracking-wide">Autonomous</strong> mission execution.
+              <p className="text-slate-300/90 leading-relaxed text-sm font-medium drop-shadow-sm text-justify">
+                 Taking BlueOS-grade system standards to the next level, we have integrated exclusive updates and custom-built interfaces tailored by our engineering team. The dashboard provides a comprehensive suite of tools including real-time telemetry visualization, low-latency high-definition video streaming, and dynamic sensor data logging to ensure optimal mission success.
+              </p>
+              
+              <p className="text-slate-300/90 leading-relaxed text-sm font-medium drop-shadow-sm text-justify">
+                 Experience ultimate operational flexibility through our robust <strong className="text-cyan-400 font-bold tracking-wide">MAVLink</strong> protocol integration. Whether you require the precise maneuverability of <strong className="text-cyan-400 font-bold tracking-wide">Manual Controlling</strong> for delicate tasks, or the efficiency of pre-programmed <strong className="text-cyan-400 font-bold tracking-wide">Autonomous</strong> mission execution, Xplore Robot adapts to your critical mission requirements.
               </p>
 
-              <ul className="space-y-3 mt-4 text-xs font-mono text-slate-300 font-medium">
-                <li className="flex items-center gap-3 hover:text-cyan-100 transition-colors cursor-default">
+              <ul className="space-y-3 mt-4 text-sm text-slate-200 font-semibold bg-white/5 p-5 rounded-xl border border-white/10">
+                <li className="flex items-center gap-3 hover:text-cyan-300 transition-colors cursor-default">
                   <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.8)]"></div>
-                  <span>Architecture: Web-Based React UI</span>
+                  <span>Architecture: Advanced Web-Based React UI</span>
+                </li>
+                <li className="flex items-center gap-3 hover:text-cyan-300 transition-colors cursor-default">
+                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.8)]"></div>
+                  <span>Protocol: Bi-directional MAVLink Communication</span>
                 </li>
                 <li className="flex items-center gap-3 hover:text-cyan-100 transition-colors cursor-default">
                   <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.8)]"></div>
-                  <span>Protocol: MAVLink Communication</span>
-                </li>
-                <li className="flex items-center gap-3 hover:text-cyan-100 transition-colors cursor-default">
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.8)]"></div>
-                  <span>Capabilities: Manual & Autonomous Modes</span>
+                  <span>Capabilities: Seamless Manual & Autonomous Switching</span>
                 </li>
               </ul>
             </div>
@@ -316,30 +343,30 @@ const Landing: React.FC = () => {
           <div className="container mx-auto max-w-7xl flex flex-col md:flex-row items-center gap-12">
             <div className="flex-1 flex flex-col gap-5 group">
               <div className="border-l-[3px] border-cyan-400 pl-5 group-hover:border-cyan-300 transition-colors duration-300">
-                <h2 className="font-heading text-3xl md:text-4xl font-black text-white uppercase tracking-tight leading-[1.1] drop-shadow-md">
+                <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight leading-[1.1] drop-shadow-md">
                   Precision<br />
                   <span className="text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300">In Motion</span>
                 </h2>
-                <p className="font-mono text-[9px] md:text-[10px] font-bold text-cyan-400/80 tracking-widest mt-3 uppercase">
+                <p className="text-[10px] font-bold text-cyan-400/80 tracking-widest mt-3 uppercase">
                   // High-Performance Maneuverability
                 </p>
               </div>
 
-              <p className="text-slate-200/90 leading-relaxed mt-2 text-sm drop-shadow-sm">
+              <p className="text-slate-200/90 leading-relaxed mt-2 text-sm font-medium drop-shadow-sm">
                 An optimized hydrodynamic design allows the ROV to move with maximum agility underwater, responding instantly to every control input.
               </p>
-              <p className="text-slate-300/90 leading-relaxed text-sm drop-shadow-sm">
+              <p className="text-slate-300/90 leading-relaxed text-sm font-medium drop-shadow-sm">
                 Powered by a cutting-edge propulsion system, this vehicle is capable of high-precision 6-DOF (Degrees of Freedom) maneuvers. This ensures the stability of visual observation and sensor accuracy.
               </p>
               
               <div className="flex flex-wrap items-center gap-4 mt-4">
                 <div className="px-4 py-2 rounded-xl bg-cyan-900/20 border border-cyan-500/20 backdrop-blur-sm hover:bg-cyan-900/40 transition-all duration-300 cursor-default">
-                  <span className="font-heading block text-cyan-400 font-black text-xl leading-none mb-1">6 DOF</span>
-                  <span className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-widest">Movement</span>
+                  <span className="block text-cyan-400 font-black text-xl leading-none mb-1">6 DOF</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Movement</span>
                 </div>
                 <div className="px-4 py-2 rounded-xl bg-cyan-900/20 border border-cyan-500/20 backdrop-blur-sm hover:bg-cyan-900/40 transition-all duration-300 cursor-default">
-                  <span className="font-heading block text-cyan-400 font-black text-xl leading-none mb-1">High</span>
-                  <span className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-widest">Stability</span>
+                  <span className="block text-cyan-400 font-black text-xl leading-none mb-1">High</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stability</span>
                 </div>
               </div>
             </div>
@@ -370,11 +397,11 @@ const Landing: React.FC = () => {
               <div className="group cursor-default">
                 <div className="inline-flex items-center gap-2 mb-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]"></span>
-                  <span className="text-[9px] font-mono font-bold text-cyan-400 uppercase tracking-widest drop-shadow-sm">
+                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest drop-shadow-sm">
                     Latest Updates
                   </span>
                 </div>
-                <h2 className="font-heading text-3xl md:text-4xl font-black text-white uppercase tracking-tight drop-shadow-md">
+                <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight drop-shadow-md">
                   More ROV <span className="text-cyan-400 group-hover:text-cyan-300 transition-colors">News</span>
                 </h2>
               </div>
@@ -382,50 +409,60 @@ const Landing: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {rovNews.map((news) => (
-                {/* Diubah jadi tag <a> biar bisa diklik ke link asli */}
                 <a 
-                  href={news.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  key={news.id} 
-                  className="bg-[#0b111a]/80 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 group cursor-pointer hover:border-cyan-500/40 hover:shadow-[0_15px_30px_rgba(0,0,0,0.4)] transition-all duration-500 flex flex-col z-20 hover:-translate-y-1.5 decoration-transparent"
+              href={news.url} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              key={news.id} 
+              className="bg-[#0b111a]/80 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 group cursor-pointer hover:border-cyan-500/40 hover:shadow-[0_15px_30px_rgba(0,0,0,0.4)] transition-all duration-500 flex flex-col z-20 hover:-translate-y-1.5 decoration-transparent"
                 >
-                  <div className="h-48 overflow-hidden relative">
-                    <img 
-                      src={news.image} 
-                      alt={news.title} 
-                      className="w-full h-full object-cover transform-gpu group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100" 
-                    />
-                    <div className="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-md border border-white/10 text-cyan-400 text-[8px] font-mono font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-md">
-                      {news.category}
-                    </div>
-                  </div>
+              <div className="h-48 overflow-hidden relative">
+                <img 
+                  src={news.image} 
+                  alt={news.title} 
+                  className="w-full h-full object-cover transform-gpu group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100" 
+                />
+                <div className="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-md border border-white/10 text-cyan-400 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-md">
+                  {news.category}
+                </div>
+              </div>
 
-                  <div className="p-6 flex flex-col flex-grow relative">
-                    <div className="text-[9px] font-bold text-cyan-400/70 mb-3 font-mono tracking-widest uppercase">{news.date}</div>
-                    <h3 className="font-heading text-lg font-bold text-white mb-3 leading-[1.3] group-hover:text-cyan-300 transition-colors">
-                      {news.title}
-                    </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed line-clamp-3 mb-6 font-light">{news.excerpt}</p>
-                    <div className="mt-auto pt-4 border-t border-white/5 flex items-center gap-2 text-[10px] font-bold text-slate-300 group-hover:text-cyan-400 transition-colors uppercase tracking-widest">
-                      Read Article <span className="text-xs transform group-hover:translate-x-1.5 transition-transform duration-300">&rarr;</span>
-                    </div>
-                  </div>
+              <div className="p-6 flex flex-col flex-grow relative">
+                <div className="text-[11px] font-bold text-cyan-400/70 mb-3 tracking-widest uppercase">{news.date}</div>
+                <h3 className="text-lg font-bold text-white mb-3 leading-[1.3] group-hover:text-cyan-300 transition-colors">
+                  {news.title}
+                </h3>
+                <p className="text-sm font-medium text-slate-400 leading-relaxed line-clamp-3 mb-6">{news.excerpt}</p>
+                <div className="mt-auto pt-4 border-t border-white/5 flex items-center gap-2 text-[11px] font-bold text-slate-300 group-hover:text-cyan-400 transition-colors uppercase tracking-widest">
+                  Read Article <span className="text-xs transform group-hover:translate-x-1.5 transition-transform duration-300">&rarr;</span>
+                </div>
+              </div>
                 </a>
               ))}
             </div>
           </div>
         </div>
 
-        {/* CTA BANNER */}
+        {/* CTA BANNER & 3. DEVELOPER CREDIT - Bagian yang diminta dikembalikan */}
         <div className="px-8 pt-12 pb-20 relative z-20">
           <div className="container mx-auto max-w-3xl">
             <div className="bg-gradient-to-br from-[#0b111a] to-[#06101f] border border-cyan-500/30 rounded-3xl p-10 text-center relative overflow-hidden group backdrop-blur-xl shadow-[0_15px_40px_rgba(0,0,0,0.4)] transform-gpu hover:border-cyan-400/50 transition-colors duration-500">
-              <h2 className="font-heading text-3xl md:text-4xl font-black text-white mb-3 relative z-10 drop-shadow-md">Ready to Dive?</h2>
-              <p className="text-cyan-100/80 text-sm mb-6 relative z-10 max-w-md mx-auto drop-shadow-sm font-light">Access the full Ground Control Station and initialize your vehicle telemetry.</p>
-              <button onClick={() => navigate('/home')} className="relative z-10 px-8 py-3.5 bg-cyan-500 text-black font-black uppercase tracking-widest text-[10px] hover:bg-cyan-400 transition-all duration-300 rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] hover:scale-105 font-heading">
+              <h2 className="text-3xl md:text-4xl font-black text-white mb-3 relative z-10 drop-shadow-md">Ready to Dive?</h2>
+              <p className="text-cyan-100/80 text-sm font-medium mb-6 relative z-10 max-w-md mx-auto drop-shadow-sm">Access the full Ground Control Station and initialize your vehicle telemetry.</p>
+              
+              <button onClick={() => navigate('/home')} className="relative z-10 px-8 py-3.5 bg-cyan-500 text-black font-black uppercase tracking-widest text-[11px] hover:bg-cyan-400 transition-all duration-300 rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] hover:scale-105 mb-6 tracking-wide">
                 Launch Dashboard
               </button>
+
+              {/* Teks Credit TRIN sebelum Footer */}
+              <div className="relative z-10 border-t border-cyan-500/20 pt-5 mt-2">
+                <p className="text-[11px] font-bold text-cyan-400/80 tracking-widest uppercase">
+                  Proudly Developed by Industrial Informatics Engineering Students (TRIN)
+                </p>
+                <p className="text-[9px] font-medium text-slate-400 uppercase tracking-[3px] mt-1">
+                  Politeknik Manufaktur Bandung
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -434,15 +471,15 @@ const Landing: React.FC = () => {
         <footer className="border-t border-white/10 bg-[#060b19] pt-10 pb-6 px-8 relative z-20">
           <div className="container mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center md:items-start gap-6">
             <div className="text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-2.5 mb-3 text-white font-heading font-black tracking-tight text-lg drop-shadow-sm">
+              <div className="flex items-center justify-center md:justify-start gap-2.5 mb-3 text-white font-black tracking-tight text-lg drop-shadow-sm">
                 <img src={logoXploreSimple} alt="Xplore Robot logo" className="h-5 md:h-6 w-auto brightness-0 invert opacity-90" /> 
                 XPLORE ROBOT
               </div>
-              <p className="text-slate-400 text-[10px] leading-relaxed max-w-sm font-light">
-                Developed by Industrial Informatics Engineering students for advanced underwater vehicle control.
+              <p className="text-slate-400 text-[11px] font-medium leading-relaxed max-w-sm">
+                Advanced Web-Based Ground Control Station for ROV Missions.
               </p>
             </div>
-            <div className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest text-center md:text-right">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center md:text-right">
               <p className="mb-1.5">© {new Date().getFullYear()} XPLORE ROBOT. CREATE WITH LOVE 🩵.</p>
               <p className="text-cyan-500/60">SYSTEM_STABLE_v1.0.4</p>
             </div>
