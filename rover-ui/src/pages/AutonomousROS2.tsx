@@ -4,8 +4,8 @@ import { PathMapPanel, PathGoal } from '../components/autonomous-control/PathMap
 import { MissionPanel } from '../components/autonomous-control/MissionPanel';
 import { OrientationModal, OrientationOption } from '../components/autonomous-control/OrientationModal';
 import { DepthControl } from '../components/autonomous-control/DepthControl';
-// ── [1] IMPORT MISSION IO ──────────────────────────────────────────────────
-import { MissionIO } from '../components/autonomous-control/MissionIO';
+// ── [1] IMPORT MISSION DB ──────────────────────────────────────────────────
+import { MissionDB } from '../components/autonomous-control/MissionDB';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -662,13 +662,13 @@ const AutonomousROS2: React.FC = () => {
         <div className="col-span-4 flex flex-col gap-4">
           <DepthControl targetDepth={targetDepth} setTargetDepth={setTargetDepth} isDefault />
 
-          {/* ── [3] MISSION IO COMPONENT ─────────────────────────────────────── */}
-          <MissionIO
+          {/* ── [3] MISSION DB COMPONENT ─────────────────────────────────────── */}
+          <MissionDB
             missionMode={missionMode}
             goals={goals}
             pathGoals={pathGoals}
             isMissionRunning={isMissionRunning}
-            onImport={handleMissionImport}
+            onLoad={handleMissionImport}
           />
 
           {/* Telemetry */}
