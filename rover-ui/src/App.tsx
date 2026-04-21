@@ -20,7 +20,7 @@ import { Manual } from './views/manual';
 import ManualROS2 from './pages/manualros2'; 
 import AutonomousROS2 from './pages/AutonomousROS2'; 
 import ParamsView from './views/params'; 
-import MissionControl from './views/Mission';
+import MissionControl from './views/Mission/MissionControl';
 import PingSonarView from './views/ping'; 
 import LogBrowser from './views/browser'; 
 import VideoStream from './views/video'; 
