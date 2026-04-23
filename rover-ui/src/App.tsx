@@ -47,7 +47,7 @@ function AppContent() {
 
   // Integrasi WebSocket MAVLink & Simulasi Sensor
   useEffect(() => {
-    const socket = new WebSocket('ws://127.0.0.1:8000/ws/telemetry');
+    const socket = new WebSocket('ws://127.0.0.1:8001/ws/telemetry');
     ws.current = socket;
 
     socket.onopen = () => {

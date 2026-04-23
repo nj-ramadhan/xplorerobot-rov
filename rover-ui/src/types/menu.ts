@@ -6,6 +6,7 @@ import {
   Package, 
   Gamepad2,
   Navigation, 
+  MapPinPlusInsideIcon,
   Terminal,
   Video,
   Cpu, 
@@ -21,7 +22,8 @@ export const menuGroups = [
       { title: "Live Telemetry", icon: Activity, path: "/live" },
       { title: "Vehicle Setup", icon: Settings, path: "/setup" },
       { title: "Simulation", icon: Gamepad2, path: "/manualros2" },
-      { title: "Autonomous", icon: Navigation, path: "/autonomous" } 
+      { title: "Autonomous", icon: Navigation, path: "/autonomous" },
+      { title: "Mission Control", icon: MapPinPlusInsideIcon, path: "/mission" }
     ]
   },
   {
