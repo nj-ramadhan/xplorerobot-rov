@@ -1,158 +1,105 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+// Import Icons
+import { 
+  Cpu, Activity, Navigation, Target, Radio, Video, 
+  Waves, Settings, Sliders, HardDrive, FileSearch, 
+  Info, ShieldCheck, Users, LucideIcon 
+} from 'lucide-react';
 
-// Import aset
 // @ts-ignore
 import rovModel from '../assets/rov-model.png';
 // @ts-ignore
-import bgTeam from '../assets/rov-bg.jpg'; 
-// @ts-ignore
 import exploreGif from '../assets/Logo XploreRobot.gif'; 
 
-interface HomeProps {
-  isDarkMode?: boolean;
-  onCardClick?: () => void;
+interface MenuItem {
+  path: string;
+  title: string;
+  subtitle: string;
+  desc: string;
+  icon: LucideIcon;
 }
 
-const menus = [
-  { path: '/manual',     title: 'Manual Simulation (MAVLink)', desc: 'Override and control vehicle movements via ArduSub SITL.', icon: '🎮' },
-  { path: '/manualros2', title: 'Manual Simulation (ROS 2)',   desc: 'Direct Thruster Control Matrix within Gazebo ROS 2 environment.', icon: '⚙️' },
-  { path: '/autonomous', title: 'Autonomous Simulation (ROS 2)', desc: 'Point & Go tactical navigation map via ROS 2 Bridge.', icon: '🛰️' },
-  { path: '/mission',    title: 'Mission Control',             desc: 'Create, manage, and execute navigation missions with real-time updates.', icon: '🎯' },
-  { path: '/live',       title: 'Live Telemetry',              desc: 'Real-time sensor data and video stream.', icon: '📊' },
-  { path: '/video',      title: 'Video Streams',               desc: 'Manage your video devices and video streams.', icon: '🎥' },
-  { path: '/ping',       title: 'Ping Sonar Devices',          desc: 'Manage detected Ping family sonar devices connected to the network.', icon: '📡' },
-  { path: '/setup',      title: 'Vehicle Setup',               desc: 'Sensor calibrations and motor tests.', icon: '🔧' },
-  { path: '/params',     title: 'Autopilot Parameters',        desc: 'Modify vehicle parameters in real-time.', icon: '📑' },
-  { path: '/simulation', title: 'Autopilot Firmware',          desc: 'Update flight controller firmware.', icon: '🚀' },
-  { path: '/browser',    title: 'Log Browser',                 desc: 'Allow browsing the Telemetry (.tlog) and Binary (.bin) logs.', icon: '📁' },
-  { path: '/system-info',title: 'System Information',          desc: 'Monitor system, processes, and kernel.', icon: '🖥️' },
-  { path: '/blueos',     title: 'Xplore Robot Version',        desc: 'Manage system firmware and updates.', icon: '📦' },
-  { path: '/kami',       title: 'Dokumentasi Team',            desc: 'Informasi dan dokumentasi tentang tim pengembang.', icon: '👥' },
+const menus: MenuItem[] = [
+  { path: '/manual',     title: 'Manual Simulation', subtitle: 'MAVLINK_CORE', icon: Cpu, desc: 'Override and control vehicle movements via ArduSub SITL.' },
+  { path: '/manualros2', title: 'ROS 2 Simulation', subtitle: 'ROS2_GAZEBO', icon: Activity, desc: 'Direct Thruster Control Matrix within Gazebo environment.' },
+  { path: '/autonomous', title: 'Autonomous Mode', subtitle: 'TACTICAL_NAV', icon: Navigation, desc: 'Point & Go tactical navigation map via ROS 2 Bridge.' },
+  { path: '/mission',    title: 'Mission Control', subtitle: 'EXEC_PLAN', icon: Target, desc: 'Create, manage, and execute navigation missions.' },
+  { path: '/live',       title: 'Live Telemetry', subtitle: 'SENSOR_DATA', icon: Radio, desc: 'Real-time sensor data and video stream.' },
+  { path: '/video',      title: 'Video Streams', subtitle: 'MEDIA_MGMT', icon: Video, desc: 'Manage your video devices and video streams.' },
+  { path: '/ping',       title: 'Ping Sonar', subtitle: 'AC_SCAN', icon: Waves, desc: 'Manage detected Ping family sonar devices.' },
+  { path: '/setup',      title: 'Vehicle Setup', subtitle: 'CALIBRATION', icon: Settings, desc: 'Sensor calibrations and motor tests.' },
+  { path: '/params',     title: 'Autopilot Params', subtitle: 'CONFIG_INT', icon: Sliders, desc: 'Modify vehicle parameters in real-time.' },
+  { path: '/simulation', title: 'Firmware Update', subtitle: 'SYS_UPDATE', icon: HardDrive, desc: 'Update flight controller firmware.' },
+  { path: '/browser',    title: 'Log Browser', subtitle: 'DATA_ANALYSIS', icon: FileSearch, desc: 'Browse Telemetry (.tlog) and Binary (.bin) logs.' },
+  { path: '/system-info',title: 'System Info', subtitle: 'KERNEL_STAT', icon: Info, desc: 'Monitor system, processes, and kernel.' },
+  { path: '/blueos',     title: 'System Version', subtitle: 'REPO_MGMT', icon: ShieldCheck, desc: 'Manage system firmware and updates.' },
+  { path: '/kami',       title: 'Team Archive', subtitle: 'TEAM_ARCHIVE', icon: Users, desc: 'Documentation about the development team.' },
 ];
 
-export const Home: React.FC<HomeProps> = ({ isDarkMode = true, onCardClick }) => {
+export const Home: React.FC<{ isDarkMode?: boolean; onCardClick?: () => void }> = ({ isDarkMode = true, onCardClick }) => {
   const navigate = useNavigate();
 
-  const handleMenuClick = (path: string) => {
-    navigate(path);
-    if (onCardClick) {
-      onCardClick();
-    }
-  };
-
   return (
-    <div className="relative w-full flex flex-col space-y-10 animate-in fade-in duration-500">
+    <div className="relative w-full flex flex-col space-y-12 animate-in fade-in duration-700 font-sans">
       
-      {/* =========================================
-          1. HERO SECTION
-          ========================================= */}
-      <div className="group flex flex-col md:flex-row h-auto md:h-[220px] items-center pt-2">
-        <div className="w-full md:w-1/2 flex flex-col justify-center drop-shadow-xl z-10">
-          <h1 className={`text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-2 tracking-wide ${
-            isDarkMode 
-              ? 'text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]' 
-              : 'text-slate-900 drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]' // Efek Glow Putih di Light Mode
-          }`}>
-            XPLORE ROBOT <br /> GROUND STATION
+      {/* HERO SECTION (Tata letak Gambar 1) */}
+      <div className="group flex flex-col md:flex-row h-auto md:h-auto items-center pt-4">
+        <div className="w-full md:w-1/2 flex flex-col justify-center z-10 ">
+          <h1 className={`text-5xl md:text-6xl font-extrabold tracking-tight leading-[1] mb-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+            XPLORE ROBOT <br /> 
+            <span className={isDarkMode ? 'text-blue-500' : 'text-blue-600'}>GROUND STATION</span>
           </h1>
-          <h2 className={`text-sm md:text-base font-bold tracking-widest uppercase ${
-            isDarkMode 
-              ? 'text-blue-300 drop-shadow-md' 
-              : 'text-blue-700 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]' // Efek Glow Putih
-          }`}>
-            Initialize System & Telemetry Control
-          </h2>
+          <p className={`text-sm font-medium tracking-[0.15em] uppercase opacity-70 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            Industrial Informatics — TRIN
+          </p>
         </div>
 
-        <div className="w-full md:w-1/2 flex items-center justify-center relative mt-10 md:mt-0 z-10 hidden md:flex">
-          <img 
-            src={exploreGif} 
-            alt="Explore Team" 
-            className={`absolute w-56 h-auto z-10 invisible group-hover:visible group-hover:opacity-100 transition-opacity duration-500 delay-150 ${
-              isDarkMode ? 'invert drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]' : 'drop-shadow-md'
-            }`}
-          />
-          <img 
-            src={rovModel} 
-            alt="ROV" 
-            className={`absolute w-64 h-auto z-20 transform transition-transform duration-700 ease-in-out group-hover:translate-x-40 ${
-              isDarkMode ? 'drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]' : 'drop-shadow-[0_10px_20px_rgba(0,0,0,0.2)]'
-            }`}
-          />
+        <div className="w-full md:w-1/2 flex items-center justify-center relative hidden md:flex">
+          <img src={exploreGif} alt="Logo" className={`absolute w-48 opacity-0 group-hover:opacity-100 transition-all duration-500 ${isDarkMode ? 'invert' : ''}`} />
+          <img src={rovModel} alt="ROV" className="absolute w-72 z-20 transition-transform duration-700 group-hover:translate-x-42" />
         </div>
       </div>
 
-      {/* =========================================
-          2. GRID CARDS SECTION
-          ========================================= */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 pb-6">
-        {menus.map((m) => {
-          
-          // 1. Warna Border Kartu
-          const cardBorderClasses = isDarkMode 
-            ? 'border-slate-700/50 hover:border-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.25)]' 
-            : 'border-slate-200 hover:border-blue-500 hover:shadow-[0_8px_20px_rgba(59,130,246,0.2)] shadow-md';
-
-          // 2. Transisi Warna Teks (Dipertajam untuk Light Mode)
-          const titleColor = isDarkMode ? 'text-white' : 'text-slate-900 group-hover:text-white';
-          const descColor = isDarkMode ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-200';
-          const subtitleColor = isDarkMode ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-300';
-          const readyColor = isDarkMode ? 'text-emerald-400/90' : 'text-emerald-600 font-bold group-hover:text-emerald-400/90';
-
-          return (
-            <div 
-              key={m.path} 
-              onClick={() => handleMenuClick(m.path)}
-              className={`relative rounded-xl p-4 flex flex-col justify-between border transition-all duration-500 cursor-pointer min-h-[140px] overflow-hidden group ${cardBorderClasses}`}
-            >
-              {/* LAYER 1: Latar Kartu Default.
-                  DIUBAH: bg-white/95 untuk Light Mode agar warna putihnya solid dan kontras teks bagus. */}
-              <div className={`absolute inset-0 transition-opacity duration-500 ${
-                isDarkMode ? 'bg-[#1e293b]/60 backdrop-blur-md group-hover:opacity-0' : 'bg-white/95 backdrop-blur-sm group-hover:opacity-0'
-              }`}></div>
-
-              {/* LAYER 2: Gambar Background Tersembunyi (Reveal on Hover) */}
-              <div 
-                className="absolute inset-0 bg-cover bg-center opacity-0 group-hover:opacity-50 mix-blend-luminosity group-hover:mix-blend-normal transition-all duration-500 scale-105 group-hover:scale-100"
-                style={{ backgroundImage: `url(${bgTeam})` }}
-              ></div>
-
-              {/* LAYER 3: Gradien Penyelamat Teks (Agar teks putih terbaca di atas gambar). */}
-              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-t ${
-                isDarkMode ? 'from-[#060b19] via-[#060b19]/80 to-transparent' : 'from-[#060b19]/80 via-[#060b19]/50 to-transparent'
-              }`}></div>
-
-              {/* KONTEN TEKS */}
-              <div className="relative z-10">
-                <span className={`text-[10px] uppercase tracking-wider drop-shadow-sm transition-colors duration-300 ${subtitleColor}`}>
-                  Pratinjau Koneksi
-                </span>
-                <div className="flex items-center gap-2 mt-1 mb-2">
-                  <span className="text-blue-500 text-lg drop-shadow-sm">{m.icon}</span> 
-                  <h3 className={`font-bold text-sm drop-shadow-sm transition-colors duration-300 ${titleColor}`}>
-                    {m.title}
-                  </h3>
-                </div>
-                <p className={`text-[11px] leading-relaxed drop-shadow-sm transition-colors duration-300 ${descColor}`}>
-                  {m.desc}
-                </p>
-              </div>
-
-              <div className="relative z-10 flex items-center gap-2 mt-4">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></div>
-                <span className={`text-[11px] tracking-wide transition-colors duration-300 ${readyColor}`}>
-                  Ready to Connect
-                </span>
-              </div>
-
+      {/* GRID CARDS (Style Font Gambar 2 + Layout Gambar 1) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-10">
+        {menus.map((m) => (
+          <div 
+            key={m.path} 
+            onClick={() => { navigate(m.path); onCardClick?.(); }}
+            className={`group relative rounded-xl p-6 border transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[190px]
+              ${isDarkMode 
+                ? 'bg-slate-900/50 border-white/10 hover:border-blue-500/50 hover:bg-slate-800' 
+                : 'bg-white border-slate-200 shadow-sm hover:shadow-md hover:border-blue-400'}`}
+          >
+            {/* Header: Subtitle & Icon */}
+            <div className="flex justify-between items-start mb-4 ">
+              <span className={`text-[10px] font-bold tracking-widest uppercase ${isDarkMode ? 'text-blue-400/80' : 'text-blue-600'}`}>
+                {m.subtitle}
+              </span>
+              <m.icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
             </div>
-          );
-        })}
-      </div>
 
+            {/* Content: Simple Professional Font */}
+            <div className="flex-1">
+              <h3 className={`text-[15px] font-semibold mb-2 tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>
+                {m.title}
+              </h3>
+              <p className={`text-[11px] leading-relaxed line-clamp-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                {m.desc}
+              </p>
+            </div>
+
+            {/* Footer: Status Indicator */}
+            <div className="mt-4 pt-3 border-t border-slate-500/10 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+              <span className="text-[9px] font-bold tracking-widest uppercase text-emerald-500/90">
+                System Ready
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
-
-export default Home;
