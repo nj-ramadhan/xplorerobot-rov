@@ -13,30 +13,27 @@ const System: React.FC = () => {
         .font-mono { font-family: 'Space Mono', monospace; }
         
         /* Custom Scrollbar untuk Card */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.2); border-radius: 4px; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.5); }
+
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-15px); }
+          100% { transform: translateY(0px); }
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.02);
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(34, 211, 238, 0.2);
-          border-radius: 4px;
-        }
-        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-          background: rgba(34, 211, 238, 0.5);
-        }
+        .animate-float { animation: float 5s ease-in-out infinite; }
       `}</style>
 
       {/* BACKGROUND GLOW */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      <div className="fixed inset-0 z-0 pointer-events-none flex justify-center items-center">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-600/10 rounded-full blur-[120px]"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]"></div>
       </div>
 
-      {/* HEADER / NAVBAR KECIL */}
-      <nav className="relative z-10 border-b border-white/5 bg-[#0b111a]/80 backdrop-blur-xl px-8 py-4">
+      {/* HEADER / NAVBAR */}
+      <nav className="relative z-20 border-b border-white/5 bg-[#060b19]/80 backdrop-blur-xl px-8 py-4">
         <div className="container mx-auto max-w-7xl flex justify-between items-center">
           <div className="flex items-center gap-4">
             <button 
@@ -58,100 +55,193 @@ const System: React.FC = () => {
       </nav>
 
       {/* KONTEN UTAMA */}
-      <main className="relative z-10 container mx-auto max-w-7xl px-8 py-16">
+      <main className="relative z-10 w-full flex flex-col items-center pb-32">
         
-        {/* HEADER / JUDUL UTAMA */}
-        <div className="mb-16 flex flex-col items-center text-center">
-          <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-            System Exploration
-          </h2>
-          <p className="text-slate-400 text-base md:text-lg font-light max-w-2xl leading-relaxed mb-6">
-            Eksplorasi mendalam mengenai arsitektur kontrol, navigasi otonom, dan sistem telemetri yang menggerakkan kinerja presisi Xplore ROV.
-          </p>
-          <a href="#" className="text-cyan-500 font-semibold text-sm hover:text-cyan-400 transition-colors">
-            System Architecture
-          </a>
-        </div>
-
-        {/* === 3 CARD BAWAH DENGAN SCROLL === */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* HERO SECTION */}
+        <div className="container mx-auto max-w-7xl px-8 pt-20 pb-16 flex flex-col lg:flex-row items-center gap-12">
           
-          {/* Card 1: Autonomous Mode */}
-          <div className="bg-[#0b111a]/60 backdrop-blur-md p-8 rounded-3xl border border-white/5 hover:border-cyan-500/30 transition-colors group flex flex-col h-[450px]">
-            <div className="shrink-0 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/5 flex items-center justify-center text-3xl mb-4 shadow-[0_0_15px_rgba(34,211,238,0.1)]">🎯</div>
-              <h3 className="font-heading text-2xl font-bold text-white group-hover:text-cyan-400 transition-colors">Autonomous Mode</h3>
+          {/* Bagian Kiri: Teks */}
+          <div className="w-full lg:w-1/2 space-y-6">
+            <div className="inline-block border border-white/20 bg-white/5 text-slate-300 px-4 py-1.5 rounded-sm text-xs font-mono font-bold tracking-widest relative">
+              <div className="absolute -top-1 -left-1 w-2 h-2 border border-cyan-400 bg-[#060b19] rounded-full"></div>
+              <div className="absolute -bottom-1 -right-1 w-2 h-2 border border-cyan-400 bg-[#060b19] rounded-full"></div>
+              HELLO THERE!
             </div>
-            
-            {/* Area Konten Scrollable */}
-            <div className="flex-1 overflow-y-auto pr-3 custom-scrollbar text-sm text-slate-400 leading-relaxed space-y-4">
-              <p>
-                Dilengkapi dengan algoritma path-planning canggih. Operator dapat menentukan titik koordinat misi pada peta, dan sistem akan mengkalkulasi rute paling efisien secara otomatis.
-              </p>
-              <div>
-                <strong className="text-white block mb-1 text-xs uppercase tracking-wider">Mekanisme Kerja:</strong>
-                <p>Sistem menggunakan kontroler PID untuk menjaga kestabilan posisi bawah air. Navigasi mengandalkan fusi data sensor (seperti IMU dan DVL) untuk estimasi pergerakan presisi di area tanpa sinyal GPS, digabungkan dengan algoritma penghindaran rintangan dinamis.</p>
-              </div>
-              <ul className="space-y-2 text-xs font-mono text-slate-300 pt-2 border-t border-white/5">
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Waypoint Navigation</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Auto Depth / Heading Hold</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Dynamic Obstacle Avoidance</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Sensor Fusion Estimation</li>
-              </ul>
+
+            <h1 className="font-heading text-5xl md:text-6xl font-extrabold text-white leading-tight">
+              I'm <span className="text-cyan-400 underline decoration-cyan-400/30 underline-offset-8">System Explorer,</span> <br/>
+              ROV Core Architecture.
+            </h1>
+
+            <p className="text-slate-400 text-lg font-light leading-relaxed max-w-lg">
+              Eksplorasi mendalam mengenai arsitektur kontrol, navigasi otonom, dan sistem telemetri yang menggerakkan kinerja presisi Xplore ROV di bawah air.
+            </p>
+
+            <div className="flex items-center gap-4 pt-4">
+              <button className="px-8 py-3.5 bg-cyan-500 text-[#060b19] rounded-full font-bold text-sm hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all flex items-center gap-3">
+                View Architecture
+                <span className="bg-white/30 rounded-full p-1"><svg className="w-4 h-4 text-[#060b19]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+              </button>
+              <button className="px-8 py-3.5 border border-white/20 text-white rounded-full font-bold text-sm hover:bg-white/10 transition-all">
+                Documentation
+              </button>
             </div>
           </div>
 
-          {/* Card 2: MAVLink Protocol */}
-          <div className="bg-[#0b111a]/60 backdrop-blur-md p-8 rounded-3xl border border-white/5 hover:border-cyan-500/30 transition-colors group flex flex-col h-[450px]">
-            <div className="shrink-0 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/5 flex items-center justify-center text-3xl mb-4 shadow-[0_0_15px_rgba(34,211,238,0.1)]">🕹️</div>
-              <h3 className="font-heading text-2xl font-bold text-white group-hover:text-cyan-400 transition-colors">MAVLink Protocol</h3>
-            </div>
+          {/* Bagian Kanan: Visual/Grafis */}
+          <div className="w-full lg:w-1/2 relative flex justify-center items-center h-[400px]">
+            {/* Bentuk Abstrak Latar Belakang */}
+            <div className="absolute w-[350px] h-[350px] bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 rounded-[40%_60%_70%_30%/40%_50%_60%_50%] animate-[float_6s_ease-in-out_infinite]"></div>
             
-            {/* Area Konten Scrollable */}
-            <div className="flex-1 overflow-y-auto pr-3 custom-scrollbar text-sm text-slate-400 leading-relaxed space-y-4">
-              <p>
-                Tulang punggung komunikasi sistem. Mengirimkan data telemetri (suhu, tekanan, kedalaman, status baterai) dengan latensi sangat rendah antara ROV dan antarmuka web.
-              </p>
-              <div>
-                <strong className="text-white block mb-1 text-xs uppercase tracking-wider">Mekanisme Kerja:</strong>
-                <p>Pesan dienkode menjadi paket byte ringan (serialization) dan dikirim melalui koneksi UDP/TCP. Backend GCS bertindak sebagai jembatan *router*, menerjemahkan paket serial MAVLink menjadi aliran data WebSocket berkecepatan tinggi agar dapat dirender secara *real-time* di *dashboard* React.</p>
-              </div>
-              <ul className="space-y-2 text-xs font-mono text-slate-300 pt-2 border-t border-white/5">
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Real-time Telemetry</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Heartbeat Monitoring</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> UDP/WebSocket Routing</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Packet Loss Handling</li>
-              </ul>
+            <div className="relative z-10 w-[300px] h-[300px] bg-[#0b111a] border border-white/10 rounded-full shadow-2xl flex items-center justify-center">
+               <div className="text-center">
+                 <div className="text-5xl mb-2">🌊</div>
+                 <h3 className="font-heading font-bold text-xl text-white">Xplore ROV</h3>
+                 <p className="text-cyan-400 font-mono text-xs">System Active</p>
+               </div>
+            </div>
+
+            {/* Floating Badges */}
+            <div className="absolute top-10 right-10 bg-[#0b111a] border border-white/10 px-4 py-2 rounded-full shadow-xl z-20 flex items-center gap-2 animate-[float_4s_ease-in-out_infinite]">
+               <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+               <span className="text-xs font-bold text-white font-mono">Telemetri</span>
+            </div>
+            <div className="absolute bottom-16 left-10 bg-[#0b111a] border border-white/10 px-4 py-2 rounded-full shadow-xl z-20 flex items-center gap-2 animate-[float_5s_ease-in-out_infinite]">
+               <span className="text-xl">🕹️</span>
+               <span className="text-xs font-bold text-white font-mono">Kontrol</span>
             </div>
           </div>
-
-          {/* Card 3: Manual Control */}
-          <div className="bg-[#0b111a]/60 backdrop-blur-md p-8 rounded-3xl border border-white/5 hover:border-cyan-500/30 transition-colors group flex flex-col h-[450px]">
-            <div className="shrink-0 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/5 flex items-center justify-center text-3xl mb-4 shadow-[0_0_15px_rgba(34,211,238,0.1)]">⌨️</div>
-              <h3 className="font-heading text-2xl font-bold text-white group-hover:text-cyan-400 transition-colors">Manual Control</h3>
-            </div>
-            
-            {/* Area Konten Scrollable */}
-            <div className="flex-1 overflow-y-auto pr-3 custom-scrollbar text-sm text-slate-400 leading-relaxed space-y-4">
-              <p>
-                Kendali penuh di tangan Anda. Dukungan input dari keyboard maupun gamepad eksternal untuk manuver observasi yang membutuhkan tingkat presisi tinggi.
-              </p>
-              <div>
-                <strong className="text-white block mb-1 text-xs uppercase tracking-wider">Mekanisme Kerja:</strong>
-                <p>Input analog dari gamepad dibaca oleh *browser* melalui Gamepad API. Koordinat input difilter menggunakan sistem *deadzone* untuk mencegah pergerakan tak disengaja (drift). Algoritma *Thruster Allocation Matrix* kemudian memetakan sumbu gerak langsung ke sinyal PWM untuk masing-masing pendorong ROV.</p>
-              </div>
-              <ul className="space-y-2 text-xs font-mono text-slate-300 pt-2 border-t border-white/5">
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Gamepad Support</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Adjustable Gain/Speed</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Deadzone Filtering</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">▹</span> Thruster Allocation Matrix</li>
-              </ul>
-            </div>
-          </div>
-
         </div>
+
+
+        {/* ZIG-ZAG SERVICES SECTION (Replacing the 3 Cards) */}
+        <div className="w-full bg-[#030712] border-t border-white/5 pt-24 pb-16 relative">
+          
+          <div className="container mx-auto max-w-6xl px-8">
+            
+            {/* Judul Seksi */}
+            <div className="text-center mb-24">
+              <h2 className="font-heading text-4xl md:text-5xl font-extrabold text-white mb-4">
+                Core <span className="text-cyan-400">Systems</span> We Provide
+              </h2>
+              <div className="flex justify-center mt-2">
+                <svg width="150" height="15" viewBox="0 0 150 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 13C30 3 60 5 80 8C100 11 120 2 148 10" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round"/>
+                </svg>
+              </div>
+            </div>
+
+            {/* ITEM 1: Autonomous Mode (Teks Kiri, Gambar Kanan) */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-16 mb-32">
+              
+              {/* Teks Kiri */}
+              <div className="w-full lg:w-1/2 space-y-6">
+                <h3 className="font-heading text-3xl font-bold text-white">Autonomous Mode</h3>
+                <p className="text-slate-400 leading-relaxed font-light text-base">
+                  Dilengkapi dengan algoritma <span className="text-cyan-400">path-planning</span> canggih. Operator dapat menentukan titik koordinat misi pada peta, dan sistem akan mengkalkulasi rute paling efisien secara otomatis.
+                </p>
+                <div className="bg-[#0b111a] border border-white/5 p-4 rounded-xl shadow-inner">
+                  <strong className="text-white block mb-2 text-sm uppercase tracking-wider font-heading">Mekanisme Kerja:</strong>
+                  <p className="text-slate-400 text-sm font-light leading-relaxed">
+                    Sistem menggunakan kontroler PID untuk menjaga kestabilan posisi. Navigasi mengandalkan fusi data sensor (IMU & DVL) untuk estimasi pergerakan presisi di area tanpa sinyal GPS, digabungkan dengan algoritma penghindaran rintangan dinamis.
+                  </p>
+                </div>
+                <button className="mt-4 px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all flex items-center gap-2">
+                  Learn More <span className="bg-white text-cyan-600 rounded-full p-0.5 ml-2"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg></span>
+                </button>
+              </div>
+
+              {/* Visual Kanan */}
+              <div className="w-full lg:w-1/2 flex justify-center relative">
+                {/* Decorative Sparkle */}
+                <svg className="absolute top-0 left-10 w-8 h-8 text-cyan-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                {/* Decorative Squiggle */}
+                <svg className="absolute bottom-4 right-10 w-16 h-16 text-blue-500 opacity-50" viewBox="0 0 200 200" fill="none"><path d="M20 100 Q 40 50 60 100 T 100 100 T 140 100 T 180 100" stroke="currentColor" strokeWidth="6" fill="none" strokeLinecap="round"/></svg>
+                
+                {/* Organic Blob Frame */}
+                <div className="w-[300px] h-[300px] md:w-[350px] md:h-[350px] bg-gradient-to-br from-[#0b111a] to-[#121b2b] border-4 border-cyan-500/30 shadow-[0_0_40px_rgba(34,211,238,0.15)] flex items-center justify-center relative overflow-hidden" style={{ borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%' }}>
+                  <div className="absolute inset-0 bg-cyan-500 opacity-10 mix-blend-overlay"></div>
+                  <div className="text-8xl filter drop-shadow-[0_0_20px_rgba(34,211,238,0.6)] animate-[float_4s_ease-in-out_infinite]">🎯</div>
+                </div>
+              </div>
+
+            </div>
+
+
+            {/* ITEM 2: MAVLink Protocol (Visual Kiri, Teks Kanan) */}
+            <div className="flex flex-col lg:flex-row-reverse items-center justify-between gap-16 mb-32">
+              
+              {/* Teks Kanan */}
+              <div className="w-full lg:w-1/2 space-y-6 text-left">
+                <h3 className="font-heading text-3xl font-bold text-white">MAVLink Protocol</h3>
+                <p className="text-slate-400 leading-relaxed font-light text-base">
+                  Tulang punggung komunikasi sistem. Mengirimkan data telemetri (suhu, tekanan, kedalaman, status baterai) dengan <span className="text-blue-400">latensi sangat rendah</span> antara ROV dan antarmuka web.
+                </p>
+                <div className="bg-[#0b111a] border border-white/5 p-4 rounded-xl shadow-inner">
+                  <strong className="text-white block mb-2 text-sm uppercase tracking-wider font-heading">Mekanisme Kerja:</strong>
+                  <p className="text-slate-400 text-sm font-light leading-relaxed">
+                    Pesan dienkode menjadi paket byte ringan (serialization) dan dikirim melalui UDP/TCP. Backend GCS bertindak sebagai jembatan router, menerjemahkan paket serial menjadi aliran data WebSocket berkecepatan tinggi agar dirender real-time.
+                  </p>
+                </div>
+                <button className="mt-4 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all flex items-center gap-2">
+                  Learn More <span className="bg-white text-blue-600 rounded-full p-0.5 ml-2"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg></span>
+                </button>
+              </div>
+
+              {/* Visual Kiri */}
+              <div className="w-full lg:w-1/2 flex justify-center relative">
+                {/* Decorative Sparkle */}
+                <svg className="absolute bottom-10 left-4 w-10 h-10 text-blue-400 animate-pulse delay-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                
+                {/* Organic Blob Frame */}
+                <div className="w-[300px] h-[300px] md:w-[350px] md:h-[350px] bg-gradient-to-bl from-[#0b111a] to-[#121b2b] border-4 border-blue-500/30 shadow-[0_0_40px_rgba(59,130,246,0.15)] flex items-center justify-center relative overflow-hidden" style={{ borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' }}>
+                  <div className="absolute inset-0 bg-blue-500 opacity-10 mix-blend-overlay"></div>
+                  <div className="text-8xl filter drop-shadow-[0_0_20px_rgba(59,130,246,0.6)] animate-[float_5s_ease-in-out_infinite]">📡</div>
+                </div>
+              </div>
+
+            </div>
+
+
+            {/* ITEM 3: Manual Control (Teks Kiri, Gambar Kanan) */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-16 mb-10">
+              
+              {/* Teks Kiri */}
+              <div className="w-full lg:w-1/2 space-y-6">
+                <h3 className="font-heading text-3xl font-bold text-white">Manual Control</h3>
+                <p className="text-slate-400 leading-relaxed font-light text-base">
+                  Kendali penuh di tangan Anda. Dukungan input dari <span className="text-cyan-400">keyboard maupun gamepad eksternal</span> untuk manuver observasi yang membutuhkan tingkat presisi tinggi di ruang sempit.
+                </p>
+                <div className="bg-[#0b111a] border border-white/5 p-4 rounded-xl shadow-inner">
+                  <strong className="text-white block mb-2 text-sm uppercase tracking-wider font-heading">Mekanisme Kerja:</strong>
+                  <p className="text-slate-400 text-sm font-light leading-relaxed">
+                    Input analog dari gamepad dibaca oleh browser melalui Gamepad API. Koordinat input difilter menggunakan sistem deadzone untuk mencegah drift tak disengaja. Algoritma TAM kemudian memetakan sumbu gerak ke sinyal PWM tiap motor.
+                  </p>
+                </div>
+                <button className="mt-4 px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all flex items-center gap-2">
+                  Learn More <span className="bg-white text-cyan-600 rounded-full p-0.5 ml-2"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg></span>
+                </button>
+              </div>
+
+              {/* Visual Kanan */}
+              <div className="w-full lg:w-1/2 flex justify-center relative">
+                {/* Decorative Sparkle */}
+                <svg className="absolute top-10 right-4 w-6 h-6 text-cyan-400 animate-pulse delay-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                {/* Decorative Squiggle */}
+                <svg className="absolute bottom-0 left-10 w-20 h-10 text-blue-500 opacity-40" viewBox="0 0 200 100" fill="none"><path d="M10 50 Q 30 10 50 50 T 90 50 T 130 50 T 170 50" stroke="currentColor" strokeWidth="8" fill="none" strokeLinecap="round"/></svg>
+
+                {/* Organic Blob Frame */}
+                <div className="w-[300px] h-[300px] md:w-[350px] md:h-[350px] bg-gradient-to-tr from-[#0b111a] to-[#121b2b] border-4 border-cyan-500/30 shadow-[0_0_40px_rgba(34,211,238,0.15)] flex items-center justify-center relative overflow-hidden" style={{ borderRadius: '50% 50% 30% 70% / 40% 60% 40% 60%' }}>
+                  <div className="absolute inset-0 bg-cyan-500 opacity-10 mix-blend-overlay"></div>
+                  <div className="text-8xl filter drop-shadow-[0_0_20px_rgba(34,211,238,0.6)] animate-[float_4.5s_ease-in-out_infinite]">🕹️</div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
       </main>
     </div>
   );
