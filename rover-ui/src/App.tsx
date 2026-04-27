@@ -12,13 +12,15 @@ import { Navbar } from './layouts/Navbar';
 
 // Import Views (Gabungan semua modul)
 import Landing from './views/landing/Landing'; 
+import System from './views/landing/system'; // <-- Halaman System
+import Data from './views/landing/data';     // <-- Halaman Data
 import { Home } from './views/Home';
 import { Dashboard } from './views/Dashboard';
 import { Manual } from './views/manual';
 import ManualROS2 from './pages/manualros2'; 
 import AutonomousROS2 from './pages/AutonomousROS2'; 
 import ParamsView from './views/params'; 
-import MissionControl from './views/Mission';
+import MissionControl from './views/Mission/MissionControl';
 import PingSonarView from './views/ping'; 
 import LogBrowser from './views/browser'; 
 import VideoStream from './views/video'; 
@@ -35,16 +37,17 @@ function AppContent() {
   const [isDetailMode, setIsDetailMode] = useState(false);
   const ws = useRef<WebSocket | null>(null);
 
-  const isLandingPage = location.pathname === '/';
+  // PERUBAHAN: Cek apakah user sedang di Landing, System, atau Data
+  const isPublicPage = location.pathname === '/' || location.pathname === '/system' || location.pathname === '/data';
 
   const [telemetry, setTelemetry] = useState<TelemetryData>({
     depth: 0.0, heading: 0, voltage: 0.0, status: 'DISCONNECTED', mode: 'STABILIZE', pitch: 0, roll: 0
   });
   const [isArmed, setIsArmed] = useState(false);
 
-  // Integrasi WebSocket MAVLink & Simulasi Sensor (Dipertahankan karena ini data aslinya)
+  // Integrasi WebSocket MAVLink & Simulasi Sensor
   useEffect(() => {
-    const socket = new WebSocket('ws://127.0.0.1:8000/ws/telemetry');
+    const socket = new WebSocket('ws://127.0.0.1:8001/ws/telemetry');
     ws.current = socket;
 
     socket.onopen = () => {
@@ -87,36 +90,34 @@ function AppContent() {
     }
   };
 
-  // RENDER KHUSUS LANDING PAGE (Tanpa Sidebar & Navbar)
-  if (isLandingPage) {
+  // RENDER KHUSUS HALAMAN PUBLIK (Tanpa Sidebar & Navbar Dashboard)
+  if (isPublicPage) {
     return (
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/system" element={<System />} />
+        <Route path="/data" element={<Data />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     );
   }
 
+  // RENDER DASHBOARD
   return (
     <div className={`flex h-screen w-full overflow-hidden font-sans antialiased transition-colors duration-500 ${
       isDarkMode ? 'bg-[#060b19] text-slate-200' : 'bg-slate-50 text-slate-900'
     }`}>
 
-      {/* SIDEBAR LACI MELAYANG */}
       <Sidebar 
         isDarkMode={isDarkMode} 
         isDetailMode={isDetailMode} 
         setIsDetailMode={setIsDetailMode} 
       />
       
-      {/* AREA KONTEN UTAMA - Animasi dorong dari sidebar (ml-24 / ml-0) */}
       <div className={`flex-1 flex flex-col min-w-0 h-full relative transition-all duration-300 ${
         isDarkMode ? 'bg-[#060b19]' : 'bg-blue-50'
       } ${!isDetailMode ? 'ml-24' : 'ml-0'}`}>
         
-        {/* ==============================================
-            BACKGROUND LAUT GLOBAL (Support Dark & Light)
-            ============================================== */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-700 pointer-events-none z-0"
           style={{ 
@@ -125,7 +126,6 @@ function AppContent() {
           }}
         ></div>
 
-        {/* Overlay Gradient */}
         <div className={`absolute inset-0 z-0 pointer-events-none transition-all duration-700 bg-gradient-to-b ${
           isDarkMode ? 'from-transparent via-[#060b19]/80 to-[#060b19]' : 'from-white/30 via-white/70 to-[#f8fafc]'
         }`}></div>
@@ -139,30 +139,25 @@ function AppContent() {
         <main className="flex-1 overflow-y-auto p-6 md:p-8 z-10 relative">
           <div className="w-full h-full max-w-7xl mx-auto">
             <Routes>
-              {/* Route Utama dashboard. Meneruskan isDarkMode dan onCardClick ke Home */}
               <Route path="/home" element={<Home isDarkMode={isDarkMode} onCardClick={() => setIsDetailMode(true)} />} />
-              <Route path="/live" element={<Dashboard telemetry={telemetry} />} />
-              
-              <Route path="/manual" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><Manual telemetry={telemetry} isArmed={isArmed} toggleArm={toggleArm} sendRC={sendRC} /></div>} />
-              <Route path="/manualros2" element={<div className="p-1 text-white"><ManualROS2 /></div>} />
-              <Route path="/autonomous" element={<div className="p-1 text-white h-full"><AutonomousROS2 /></div>} />
-              <Route path="/setup" element={<VehicleSetup />} />
-              <Route path="/params" element={<ParamsView />} /> 
-              <Route path="/mission" element={<MissionControl />} /> 
-              <Route path="/ping" element={<PingSonarView />} /> 
-              <Route path="/browser" element={<LogBrowser />} /> 
+              <Route path="/live" element={<Dashboard telemetry={telemetry} isDarkMode={isDarkMode} />} />
+              <Route path="/manual" element={<Manual telemetry={telemetry} isArmed={isArmed} toggleArm={toggleArm} sendRC={sendRC} isDarkMode={isDarkMode} />} />
+              <Route path="/manualros2" element={<div className="p-1"><ManualROS2 isDarkMode={isDarkMode} /></div>} />
+              <Route path="/autonomous" element={<div className="p-1 h-full"><AutonomousROS2 /></div>} />
+              <Route path="/setup" element={<VehicleSetup isDarkMode={isDarkMode} />} />
+              <Route path="/params" element={<ParamsView isDarkMode={isDarkMode} />} /> 
+              <Route path="/mission" element={<MissionControl isDarkMode={isDarkMode} />} /> 
+              <Route path="/ping" element={<PingSonarView isDarkMode={isDarkMode} />} />
+              <Route path="/browser" element={<LogBrowser isDarkMode={isDarkMode} />} /> 
               <Route path="/video" element={<VideoStream isDarkMode={isDarkMode} />} />
-              <Route path="/system-info" element={<SystemInformation />} />
-              <Route path="/blueos" element={<div className="p-10 text-white bg-black/20 rounded-xl border border-white/5"><BlueOSVersion /></div>} />
-              <Route path="/kami" element={<Team />} /> 
-              
-              {/* Redirect jika route tidak ditemukan */}
+              <Route path="/system-info" element={<SystemInformation isDarkMode={isDarkMode} />} />
+              <Route path="/blueos" element={<BlueOSVersion isDarkMode={isDarkMode} />} />
+              <Route path="/kami" element={<Team isDarkMode={isDarkMode}  />} /> 
               <Route path="*" element={<Navigate to="/home" />} />
             </Routes>
           </div>
         </main>
 
-        {/* Footer Identitas Kampus */}
         <footer className={`h-6 px-6 flex items-center justify-between text-[9px] font-mono border-t z-20 ${
           isDarkMode ? 'bg-[#060b19]/90 border-white/10 text-slate-500' : 'bg-white/80 border-black/5 text-slate-600'
         }`}>

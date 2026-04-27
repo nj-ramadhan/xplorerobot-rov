@@ -4,7 +4,5 @@ import './index.css'
 import App from './App' // Hapus .jsx-nya
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
     <App />
-  </StrictMode>,
 )

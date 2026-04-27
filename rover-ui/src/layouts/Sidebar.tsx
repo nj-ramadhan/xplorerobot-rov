@@ -95,11 +95,15 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
               <div className="flex flex-col w-full px-2">
                 {group.items.map((item, itemIdx) => {
                   const Icon = item.icon;
+                  
+                  // 🔥 PENGALIH OTOMATIS: Kalau path-nya "/", paksa ganti ke "/home"
                   const targetPath = item.path === '/' ? '/home' : item.path;
+
                   return (
                     <NavLink
                       key={itemIdx}
                       to={targetPath}
+                      title={!isWide ? item.title : undefined}
                       className={({ isActive }) => `
                         flex items-center transition-all duration-200 my-1 rounded-xl
                         ${isWide ? 'px-4 py-2.5' : 'justify-center py-3 mx-1'}
