@@ -4,8 +4,8 @@ import { PathMapPanel, PathGoal } from '../components/autonomous-control/PathMap
 import { MissionPanel } from '../components/autonomous-control/MissionPanel';
 import { OrientationModal, OrientationOption } from '../components/autonomous-control/OrientationModal';
 import { DepthControl } from '../components/autonomous-control/DepthControl';
-// ── [1] IMPORT MISSION LOADER ─────────────────────────────────────────────
 import { MissionLoader } from '../components/autonomous-control/MissionLoader';
+import { RefreshCw } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -15,7 +15,7 @@ interface Goal {
   id: number;
   rosX: number;
   rosY: number;
-  depth: number; // target Z per waypoint
+  depth: number;
 }
 
 type WaypointStatus =
@@ -71,6 +71,7 @@ const AutonomousROS2: React.FC = () => {
 
   // ── Shared State ───────────────────────────────────────────────────────────
   const [isConnected, setIsConnected]           = useState(false);
+  const [isReconnecting, setIsReconnecting]     = useState(false); // ← state reconnect
   const [targetDepth, setTargetDepth]           = useState(-2.0);
   const [rovPos, setRovPos]                     = useState<RovPos>({ rosX: 0, rosY: 0, z: 0, yaw: 0 });
   const [rovPath, setRovPath]                   = useState<Array<{ rosX: number; rosY: number }>>([]);
@@ -97,6 +98,7 @@ const AutonomousROS2: React.FC = () => {
 
   // ── Refs ───────────────────────────────────────────────────────────────────
   const ws             = useRef<WebSocket | null>(null);
+  const timerRef       = useRef<ReturnType<typeof setInterval> | null>(null); // ← ref untuk control loop
   const goalsRef       = useRef<Goal[]>([]);
   const pathGoalsRef   = useRef<PathGoal[]>([]);
   const rovPosRef      = useRef<RovPos>({ rosX: 0, rosY: 0, z: 0, yaw: 0 });
@@ -197,7 +199,7 @@ const AutonomousROS2: React.FC = () => {
     log(`🚀 Menuju WP... (tanpa yaw hold)`);
   }, [log]);
 
-  // ── advanceSequential — works for both modes ───────────────────────────────
+  // ── advanceSequential ─────────────────────────────────────────────────────
 
   const advanceSequential = useCallback(() => {
     const mode        = missionModeRef.current;
@@ -222,10 +224,8 @@ const AutonomousROS2: React.FC = () => {
     const nextGoal = currentGoals[nextIdx];
 
     if (mode === 'waypoint') {
-      // Mode 1: show orientation popup
       showOrientModalFor(nextGoal.id, nextIdx + 1, nextGoal.rosX, nextGoal.rosY);
     } else {
-      // Mode 2: rotate immediately to pre-set yaw from drag, then travel
       const pg = nextGoal as PathGoal;
       holdYawRef.current    = pg.yawDeg;
       targetYawRef.current  = pg.yawDeg;
@@ -271,14 +271,30 @@ const AutonomousROS2: React.FC = () => {
     setTimeout(() => advanceSequential(), 300);
   }, [arrivalModal.forGoalId, advanceSequential, log]);
 
-  // ── WebSocket + Control Loop ───────────────────────────────────────────────
+  // ── connectBridge — fungsi terpisah agar bisa dipanggil ulang ─────────────
 
-  useEffect(() => {
+  const connectBridge = useCallback(() => {
+    // Tutup koneksi lama jika masih ada
+    if (ws.current) {
+      ws.current.onclose = null; // hindari log "putus" palsu saat reconnect manual
+      ws.current.close();
+      ws.current = null;
+    }
+    // Hentikan control loop lama
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setIsReconnecting(true);
+    log('🔄 Menghubungkan ke rosbridge ws://localhost:9090 ...');
+
     const socket = new WebSocket('ws://localhost:9090');
 
     socket.onopen = () => {
       setIsConnected(true);
-      log('rosbridge terhubung');
+      setIsReconnecting(false);
+      log('✅ rosbridge terhubung');
       socket.send(JSON.stringify({ op: 'advertise', topic: '/xr_rov/cmd_vel', type: 'geometry_msgs/msg/TwistStamped' }));
       socket.send(JSON.stringify({ op: 'subscribe', topic: '/xr_rov/odom',    type: 'nav_msgs/msg/Odometry' }));
     };
@@ -298,11 +314,20 @@ const AutonomousROS2: React.FC = () => {
       } catch (e) { console.error(e); }
     };
 
-    socket.onerror = () => log('WebSocket error');
-    socket.onclose = () => { setIsConnected(false); log('rosbridge putus'); };
+    socket.onerror = () => {
+      setIsReconnecting(false);
+      log('❌ Gagal terhubung ke rosbridge. Pastikan rosbridge sudah berjalan.');
+    };
+
+    socket.onclose = () => {
+      setIsConnected(false);
+      setIsReconnecting(false);
+      log('🔴 rosbridge putus');
+    };
+
     ws.current = socket;
 
-    // ── Control loop ────────────────────────────────────────────────────────
+    // ── Control loop (baru) ────────────────────────────────────────────────
     const timer = setInterval(() => {
       if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
 
@@ -319,7 +344,6 @@ const AutonomousROS2: React.FC = () => {
 
       const cur = rovPosRef.current;
 
-      // ROTATE (awal)
       if (phase === 'rotate') {
         const tYaw = targetYawRef.current;
         if (tYaw === null) { phaseRef.current = 'travel'; return; }
@@ -337,7 +361,6 @@ const AutonomousROS2: React.FC = () => {
         return;
       }
 
-      // ARRIVAL_ROTATE (orientasi akhir — Mode 1 only)
       if (phase === 'arrival_rotate') {
         const tYaw = targetYawRef.current;
         if (tYaw === null) return;
@@ -356,15 +379,13 @@ const AutonomousROS2: React.FC = () => {
         return;
       }
 
-      // TRAVEL
-      const dx     = target.rosX - cur.rosX;
-      const dy     = target.rosY - cur.rosY;
-      // Fix F: gunakan depth per waypoint, fallback ke depthRef (global slider)
+      const dx      = target.rosX - cur.rosX;
+      const dy      = target.rosY - cur.rosY;
       const targetZ = ('depth' in target && typeof (target as any).depth === 'number')
         ? (target as any).depth
         : depthRef.current;
-      const dz = targetZ - cur.z;
-      const distXY = Math.hypot(dx, dy);
+      const dz      = targetZ - cur.z;
+      const distXY  = Math.hypot(dx, dy);
 
       if (distXY < ARRIVAL_THRESHOLD && Math.abs(dz) < ARRIVAL_THRESHOLD) {
         sendVel(0, 0, 0, 0);
@@ -374,11 +395,9 @@ const AutonomousROS2: React.FC = () => {
 
         if (isMissionRef.current) {
           if (missionModeRef.current === 'waypoint') {
-            // Mode 1: show arrival orientation modal
             const currentIdx = seqIndexRef.current;
             setTimeout(() => showArrivalModalFor(goalId, currentIdx + 1, target.rosX, target.rosY), 300);
           } else {
-            // Mode 2: no arrival modal, just mark done and advance
             setWpStatus(prev => ({ ...prev, [goalId]: 'done' }));
             setTimeout(() => advanceSequential(), 300);
           }
@@ -388,14 +407,13 @@ const AutonomousROS2: React.FC = () => {
         return;
       }
 
-      // Yaw hold during travel
       const holdYaw = holdYawRef.current;
       const yawErr  = holdYaw !== null ? angleDiff(holdYaw, cur.yaw) : 0;
       const wz      = holdYaw !== null ? clamp(yawErr * KP_YAW, MAX_YAW_VEL) : 0;
+      const yawRad  = cur.yaw * (Math.PI / 180);
+      const localX  =  dx * Math.cos(yawRad) + dy * Math.sin(yawRad);
+      const localY  = -dx * Math.sin(yawRad) + dy * Math.cos(yawRad);
 
-      const yawRad = cur.yaw * (Math.PI / 180);
-      const localX =  dx * Math.cos(yawRad) + dy * Math.sin(yawRad);
-      const localY = -dx * Math.sin(yawRad) + dy * Math.cos(yawRad);
       sendVel(
         clamp(localX * KP_XY, MAX_VEL),
         clamp(localY * KP_XY, MAX_VEL),
@@ -404,7 +422,16 @@ const AutonomousROS2: React.FC = () => {
       );
     }, LOOP_HZ);
 
-    return () => { clearInterval(timer); socket.close(); };
+    timerRef.current = timer;
+  }, [sendVel, advanceSequential, showArrivalModalFor, log]);
+
+  // ── Connect saat pertama mount ─────────────────────────────────────────────
+  useEffect(() => {
+    connectBridge();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (ws.current) ws.current.close();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -430,7 +457,6 @@ const AutonomousROS2: React.FC = () => {
     log('🛑 Emergency stop!');
   }, [sendVel, log]);
 
-  // Mode 1 start
   const startSequentialMission = () => {
     if (goals.length === 0) { log('⚠️ Tidak ada waypoint!'); return; }
     const initStatus: Record<number, WaypointStatus> = {};
@@ -444,7 +470,6 @@ const AutonomousROS2: React.FC = () => {
     setTimeout(() => advanceSequential(), 0);
   };
 
-  // Mode 2 start
   const startPathMission = () => {
     if (pathGoals.length === 0) { log('⚠️ Tidak ada waypoint!'); return; }
     const initStatus: Record<number, WaypointStatus> = {};
@@ -461,7 +486,6 @@ const AutonomousROS2: React.FC = () => {
   const addGoal = (rosX: number, rosY: number) => {
     if (isMissionRunning) return;
     const id = Date.now();
-    // Fix F: simpan depth saat ini sebagai default per waypoint
     setGoals(prev => [...prev, { id, rosX, rosY, depth: targetDepth }]);
     setWpStatus(prev => ({ ...prev, [id]: 'pending' }));
     log(`📍 WP ditambah: X=${rosX.toFixed(2)} Y=${rosY.toFixed(2)} Z=${targetDepth.toFixed(1)}m`);
@@ -487,16 +511,12 @@ const AutonomousROS2: React.FC = () => {
     setRovPath([]);
   };
 
-  // ── [2] HANDLER UNTUK MISSION IO ───────────────────────────────────────────
   const handleMissionImport = useCallback((
     mode: MissionMode,
     waypoints: Goal[],
     importedPathGoals: PathGoal[],
   ) => {
-    // Reset misi yang sedang berjalan
     stopAll();
-
-    // Terapkan mode sesuai file
     setMissionMode(mode);
 
     if (mode === 'waypoint') {
@@ -570,11 +590,52 @@ const AutonomousROS2: React.FC = () => {
             </div>
           )}
         </div>
-        <div className={`px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 ${
-          isConnected ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-        }`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}/>
-          {isConnected ? 'BRIDGE ONLINE' : 'BRIDGE OFFLINE'}
+
+        {/* ── Bridge Status + Tombol Reconnect ── */}
+        <div className="flex items-center gap-3">
+          {/* Status badge */}
+          <div className={`px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 ${
+            isConnected
+              ? 'bg-green-500/20 text-green-400'
+              : isReconnecting
+              ? 'bg-yellow-500/20 text-yellow-400'
+              : 'bg-red-500/20 text-red-400'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${
+              isConnected
+                ? 'bg-green-400 animate-pulse'
+                : isReconnecting
+                ? 'bg-yellow-400 animate-ping'
+                : 'bg-red-400'
+            }`}/>
+            {isConnected ? 'BRIDGE ONLINE' : isReconnecting ? 'CONNECTING...' : 'BRIDGE OFFLINE'}
+          </div>
+
+          {/* Tombol Reconnect — selalu tampil, disabled saat sedang konek atau reconnecting */}
+          <button
+            onClick={() => {
+              if (!isMissionRunning) connectBridge();
+            }}
+            disabled={isConnected || isReconnecting || isMissionRunning}
+            title={
+              isMissionRunning
+                ? 'Hentikan misi terlebih dahulu'
+                : isConnected
+                ? 'Sudah terhubung'
+                : 'Reconnect ke rosbridge'
+            }
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border transition-all duration-200 ${
+              isConnected || isReconnecting || isMissionRunning
+                ? 'border-white/10 text-slate-600 cursor-not-allowed'
+                : 'border-blue-500/40 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400 active:scale-95 cursor-pointer'
+            }`}
+          >
+            <RefreshCw
+              size={12}
+              className={isReconnecting ? 'animate-spin' : ''}
+            />
+            Reconnect
+          </button>
         </div>
       </div>
 
@@ -662,7 +723,6 @@ const AutonomousROS2: React.FC = () => {
         <div className="col-span-4 flex flex-col gap-4">
           <DepthControl targetDepth={targetDepth} setTargetDepth={setTargetDepth} isDefault />
 
-          {/* ── [3] MISSION LOADER — pilih misi dari DB, langsung jalankan ────── */}
           <MissionLoader
             isMissionRunning={isMissionRunning}
             onLoad={handleMissionImport}
