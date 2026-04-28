@@ -24,6 +24,7 @@ import MissionControl from './views/Mission/MissionControl';
 import PingSonarView from './views/ping'; 
 import LogBrowser from './views/browser'; 
 import VideoStream from './views/video'; 
+import FirmwareView from './views/firmware/AutopilotFirmware';
 import VehicleSetup from './views/VehicleSetup/index';
 import { SystemInformation } from './views/SystemInformation';
 import BlueOSVersion from './views/BlueOSVersion';
@@ -146,6 +147,7 @@ function AppContent() {
               <Route path="/autonomous" element={<div className="p-1 h-full"><AutonomousROS2 /></div>} />
               <Route path="/setup" element={<VehicleSetup isDarkMode={isDarkMode} />} />
               <Route path="/params" element={<ParamsView isDarkMode={isDarkMode} />} /> 
+              <Route path="/firmware" element={<FirmwareView isDarkMode={isDarkMode} />} /> 
               <Route path="/mission" element={<MissionControl isDarkMode={isDarkMode} />} /> 
               <Route path="/ping" element={<PingSonarView isDarkMode={isDarkMode} />} />
               <Route path="/browser" element={<LogBrowser isDarkMode={isDarkMode} />} /> 

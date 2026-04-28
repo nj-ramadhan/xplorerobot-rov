@@ -30,7 +30,7 @@ const menus: MenuItem[] = [
   { path: '/ping',       title: 'Ping Sonar', subtitle: 'AC_SCAN', icon: Waves, desc: 'Manage detected Ping family sonar devices.' },
   { path: '/setup',      title: 'Vehicle Setup', subtitle: 'CALIBRATION', icon: Settings, desc: 'Sensor calibrations and motor tests.' },
   { path: '/params',     title: 'Autopilot Params', subtitle: 'CONFIG_INT', icon: Sliders, desc: 'Modify vehicle parameters in real-time.' },
-  // Autopilot Firmware dihapus sesuai permintaan versi sebelumnya
+  { path: '/firmware',     title: 'Autopilot Firmware', subtitle: 'CONFIG_INT', icon: Sliders, desc: 'Modify vehicle parameters in real-time.' },
   { path: '/browser',    title: 'Log Browser', subtitle: 'DATA_ANALYSIS', icon: FileSearch, desc: 'Browse Telemetry (.tlog) and Binary (.bin) logs.' },
   { path: '/system-info',title: 'System Info', subtitle: 'KERNEL_STAT', icon: Info, desc: 'Monitor system, processes, and kernel.' },
   { path: '/blueos',     title: 'Xplore Robot Version', subtitle: 'SYS_FIRMWARE', icon: ShieldCheck, desc: 'Manage system firmware and updates.' },
