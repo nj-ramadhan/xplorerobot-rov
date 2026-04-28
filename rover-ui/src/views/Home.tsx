@@ -6,13 +6,13 @@ import {
   Info, ShieldCheck, Users, LucideIcon 
 } from 'lucide-react';
 
+// Import Assets
 // @ts-ignore
 import rovModel from '../assets/rov-model.png';
 // @ts-ignore
 import exploreGif from '../assets/Logo XploreRobot.gif'; 
-
-// Added placeholder for bgTeam to prevent 'undefined' errors
-const bgTeam = "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=1000";
+// @ts-ignore
+import rovBg from '../assets/rov-bg.jpg'; // Import foto baru di sini
 
 interface MenuItem {
   path: string;
@@ -64,7 +64,7 @@ export const Home: React.FC<{ isDarkMode?: boolean; onCardClick?: () => void }> 
 
         <div className="w-full md:w-1/2 flex items-center justify-center relative hidden md:flex h-48">
           <img src={exploreGif} alt="Logo" className={`absolute w-48 opacity-0 group-hover:opacity-100 transition-all duration-500 ${isDarkMode ? 'invert' : ''}`} />
-          <img src={rovModel} alt="ROV" className="absolute w-72 z-20 transition-transform duration-700 group-hover:translate-x-12" />
+          <img src={rovModel} alt="ROV" className="absolute w-72 z-20 transition-transform duration-700 group-hover:translate-x-40" />
         </div>
       </div>
 
@@ -92,10 +92,10 @@ export const Home: React.FC<{ isDarkMode?: boolean; onCardClick?: () => void }> 
                 isDarkMode ? 'bg-slate-800/60 backdrop-blur-md group-hover:opacity-0' : 'bg-white group-hover:opacity-0'
               }`}></div>
 
-              {/* LAYER 2: Image Reveal */}
+              {/* LAYER 2: Image Reveal - Updated with rovBg */}
               <div 
                 className="absolute inset-0 bg-cover bg-center opacity-0 group-hover:opacity-40 transition-all duration-500 scale-110 group-hover:scale-100 z-0"
-                style={{ backgroundImage: `url(${bgTeam})` }}
+                style={{ backgroundImage: `url(${rovBg})` }} 
               ></div>
 
               {/* LAYER 3: Gradient Overlay */}
