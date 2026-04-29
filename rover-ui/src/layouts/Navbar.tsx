@@ -18,6 +18,25 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // --- LOGIC JAM REALTIME ---
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer); // Cleanup saat komponen unmount
+  }, []);
+
+  const formattedTime = time.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  // ---------------------------
+
   // Menutup dropdown kalau user klik di luar area navbar kanan
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
       ${isDarkMode ? 'bg-[#111827] border-white/10 text-white' : 'bg-white border-black/10 text-slate-900'}
     `}>
       
-<div>
+      <div>
         {/* Teks ROV */}
         <div className="flex flex-col border-l-2 pl-3 border-slate-300 dark:border-slate-700 transition-colors">
           <h1 className="text-sm font-black tracking-tighter uppercase flex items-center gap-2">
@@ -57,6 +76,15 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
       {/* --- BAGIAN KANAN: Ikon Interactive (Koneksi & Kontrol) --- */}
       <div className="flex items-center gap-4 md:gap-5 opacity-90" ref={menuRef}>
         
+        {/* JAM REALTIME - Area Kotak Merah */}
+        <div className="flex flex-col items-end mr-2 select-none border-r border-white/10 pr-4">
+          <span className="font-mono text-lg font-bold tracking-wider leading-none">
+            {formattedTime}
+          </span>
+          <span className="text-[8px] uppercase font-bold opacity-40 tracking-[0.2em] mt-1">
+          </span>
+        </div>
+
         {/* 1. Status Heartbeat */}
         <div className="relative">
           <button onClick={() => toggleMenu('status')} className="focus:outline-none hover:scale-110 transition-transform">
