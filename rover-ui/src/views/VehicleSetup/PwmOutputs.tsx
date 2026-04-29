@@ -1,136 +1,102 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// Tambahkan interface agar bisa menerima saklar 'isDarkMode' dari index.tsx
 interface PwmOutputsProps {
   isDarkMode?: boolean;
 }
 
 export default function PwmOutputs({ isDarkMode = true }: PwmOutputsProps) {
-  const [motorValues, setMotorValues] = useState([1500, 1644, 1500]);
-  const [armed, setArmed] = useState(false);
+  // State menyimpan data 8 channel PWM (Default 1500 = Netral)
+  const [motorValues, setMotorValues] = useState<number[]>(Array(8).fill(1500));
+  const [isArmed, setIsArmed] = useState(false);
 
-  const handleSliderChange = (index: number, val: number) => {
-    const newValues = [...motorValues];
-    newValues[index] = val;
-    setMotorValues(newValues);
-  };
+  useEffect(() => {
+    // 🔥 DINAMIS: Menggunakan hostname saat ini
+    const wsUrl = `ws://${window.location.hostname}:8001/ws/telemetry`;
+    const socket = new WebSocket(wsUrl);
 
-  // ==========================================
-  // LOGIKA TEMA BUNGLON
-  // ==========================================
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Menangkap data output PWM asli dari MAVLink SERVO_OUTPUT_RAW
+        if (data.type === 'SERVO_OUTPUT') {
+          setMotorValues([
+            data.ch1, data.ch2, data.ch3, data.ch4, 
+            data.ch5, data.ch6, data.ch7, data.ch8
+          ]);
+        }
+        
+        if (data.type === 'HEARTBEAT') {
+          setIsArmed(data.armed);
+        }
+      } catch (err) {
+        console.error("Gagal memproses data PWM:", err);
+      }
+    };
+
+    return () => socket.close();
+  }, []);
+
+  // Konfigurasi Tema
+  const cardBg = isDarkMode ? 'bg-[#111827]/60 border-white/10 backdrop-blur-xl shadow-lg' : 'bg-white border-slate-200 shadow-md';
+  const viewportBg = isDarkMode ? 'bg-black/40 border-white/10' : 'bg-slate-50 border-slate-200 shadow-inner';
   const titleColor = isDarkMode ? 'text-white' : 'text-slate-900';
   const labelColor = isDarkMode ? 'text-slate-400' : 'text-slate-600';
   const valueColor = isDarkMode ? 'text-slate-300' : 'text-slate-700';
-  const mutedColor = isDarkMode ? 'text-slate-500' : 'text-slate-500';
-  
-  // Background Cards (Putih solid untuk Light Mode)
-  const cardBg = isDarkMode 
-    ? 'bg-[#111827]/60 border-white/10 backdrop-blur-xl shadow-lg' 
-    : 'bg-white border-slate-200 shadow-md';
-    
-  // Background untuk Viewport (Lebih gelap dari card)
-  const viewportBg = isDarkMode
-    ? 'bg-black/40 border-white/10'
-    : 'bg-slate-50 border-slate-200 shadow-inner';
-
-  // Background untuk input angka slider
-  const inputBg = isDarkMode
-    ? 'bg-black/30 border-white/10 text-slate-300'
-    : 'bg-white border-slate-300 text-slate-800 shadow-sm';
-
-  // List Item Status
-  const listItemBorder = isDarkMode ? 'border-slate-800/50' : 'border-slate-100';
-  const listHoverBg = isDarkMode ? 'hover:bg-white/5' : 'hover:bg-slate-50';
 
   return (
-    <div className="p-2 w-full animate-in fade-in duration-500">
+    <div className="p-2 w-full animate-in fade-in duration-500 font-['Inter',sans-serif]">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Left Section: 3D Model Viewer & Controls */}
+        {/* Left Section: Visualizer */}
         <div className="col-span-1 lg:col-span-8 flex flex-col gap-8">
-          
-          {/* 3D Viewport */}
-          <div className={`border rounded-3xl p-6 min-h-[400px] flex flex-col items-center justify-center relative transition-colors duration-300 ${viewportBg}`}>
-            <p className={`font-mono text-sm tracking-widest uppercase transition-colors duration-300 ${mutedColor}`}>
-              [ 3D Model Viewport ]
-            </p>
+          <div className={`border rounded-3xl p-6 min-h-[350px] flex items-center justify-center transition-colors duration-300 ${viewportBg}`}>
+            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">Thruster Visualization Viewport</span>
           </div>
 
-          {/* Motor Test Controls */}
           <div className={`border rounded-3xl p-8 transition-colors duration-300 ${cardBg}`}>
-            <div className="flex justify-between items-center mb-8 border-b pb-6 border-slate-500/20">
-              <h3 className={`font-heading text-xl font-bold flex items-center gap-3 transition-colors duration-300 ${titleColor}`}>
-                <span className={`w-3 h-3 rounded-full animate-pulse ${armed ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-slate-400'}`}></span>
-                Motor Test
+            <div className="flex justify-between items-center mb-10 border-b pb-6 border-slate-500/10">
+              <h3 className={`font-heading text-xl font-black uppercase flex items-center gap-3 ${titleColor}`}>
+                <span className={`w-3 h-3 rounded-full ${isArmed ? 'bg-red-500 animate-pulse shadow-[0_0_10px_#ef4444]' : 'bg-slate-500'}`}></span>
+                Real-Time Thruster Load
               </h3>
-              <button 
-                onClick={() => setArmed(!armed)}
-                className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all border tracking-widest uppercase shadow-sm ${
-                  armed 
-                    ? 'bg-red-500/10 text-red-500 border-red-500/50 hover:bg-red-500/20' 
-                    : (isDarkMode ? 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200')
-                }`}
-              >
-                {armed ? 'Armed (System Live)' : 'System Disarmed'}
-              </button>
+              <span className={`text-[10px] font-mono font-bold px-4 py-1.5 rounded-full border transition-all ${isArmed ? 'text-red-500 border-red-500/30' : 'text-slate-500 border-slate-700'}`}>
+                {isArmed ? 'MOTORS ARMED' : 'MOTORS DISARMED'}
+              </span>
             </div>
 
-            <div className="space-y-8">
-              {motorValues.map((val, i) => (
-                <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                  <span className={`w-20 text-sm font-bold uppercase tracking-wider transition-colors duration-300 ${labelColor}`}>
-                    Motor {i + 1}
-                  </span>
-                  
-                  {/* Slider */}
-                  <input 
-                    type="range" 
-                    min="1100" 
-                    max="1900" 
-                    value={val} 
-                    disabled={!armed}
-                    onChange={(e) => handleSliderChange(i, Number(e.target.value))}
-                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer transition-all focus:outline-none 
-                      ${!armed ? 'opacity-40 cursor-not-allowed grayscale' : 'opacity-100'} 
-                      ${isDarkMode ? 'bg-slate-700 accent-blue-500' : 'bg-slate-200 accent-blue-600'}
-                    `}
-                  />
-                  
-                  {/* Output Value */}
-                  <span className={`w-24 text-center font-mono text-sm font-bold p-2.5 rounded-xl border transition-colors duration-300 ${
-                    !armed 
-                      ? (isDarkMode ? 'text-slate-500 border-slate-700/50 bg-black/20' : 'text-slate-400 border-slate-200 bg-slate-50')
-                      : (isDarkMode ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' : 'text-blue-700 border-blue-300 bg-blue-50')
-                  }`}>
-                    {val}
-                  </span>
+            <div className="grid grid-cols-1 gap-6">
+              {motorValues.slice(0, 6).map((val, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                    <span className={labelColor}>Thruster {i + 1}</span>
+                    <span className={isArmed ? 'text-blue-500' : 'text-slate-500'}>{val} PWM</span>
+                  </div>
+                  <div className={`w-full h-3 rounded-full overflow-hidden flex transition-colors ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`}>
+                    {/* Progress Bar: Menghitung persentase dari jangkauan 1100-1900 */}
+                    <div 
+                      style={{ width: `${((val - 1100) / 800) * 100}%` }}
+                      className={`h-full transition-all duration-150 ${isArmed ? 'bg-blue-600 shadow-[0_0_10px_#2563eb]' : 'bg-slate-600'}`}
+                    ></div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Right Section: Status */}
+        {/* Right Section: All Channels Raw */}
         <div className="col-span-1 lg:col-span-4">
-          <div className={`border rounded-3xl p-8 h-full transition-colors duration-300 ${cardBg}`}>
-            <h3 className={`text-[11px] font-bold uppercase tracking-widest mb-6 pb-4 border-b border-slate-500/20 transition-colors duration-300 ${labelColor}`}>
-              Channel Status
-            </h3>
-            
-            {/* Scrollable list area */}
-            <div className="space-y-1 h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-              {[...Array(15)].map((_, i) => (
-                <div key={i} className={`flex justify-between items-center py-3.5 border-b last:border-0 px-3 rounded-xl transition-colors duration-200 cursor-default ${listItemBorder} ${listHoverBg}`}>
-                  <span className={`text-xs font-bold uppercase tracking-wider transition-colors duration-300 ${labelColor}`}>
-                    Output {i + 1}
-                  </span>
-                  <span className={`text-sm font-mono font-bold transition-colors duration-300 ${valueColor}`}>
-                    1500
-                  </span>
+          <div className={`border rounded-3xl p-6 transition-colors duration-300 ${cardBg}`}>
+            <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-6 ${labelColor}`}>All Output Channels</h3>
+            <div className="space-y-1 h-[550px] overflow-y-auto pr-2 custom-scrollbar">
+              {motorValues.map((val, i) => (
+                <div key={i} className={`flex justify-between items-center py-3 border-b last:border-0 transition-colors ${isDarkMode ? 'border-white/5' : 'border-slate-100'}`}>
+                  <span className={`text-[11px] font-bold ${labelColor}`}>Channel {i + 1}</span>
+                  <span className={`text-xs font-mono font-bold ${isArmed ? 'text-blue-500' : valueColor}`}>{val}</span>
                 </div>
               ))}
             </div>
-            
           </div>
         </div>
 

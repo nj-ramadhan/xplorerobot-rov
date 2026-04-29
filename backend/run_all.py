@@ -17,9 +17,9 @@ try:
     print("3️⃣ Starting Terminal Server (Port 8002)...")
     processes.append(subprocess.Popen([sys.executable, "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8002"]))
 
-    # print("4️⃣ Starting ROS 2 Hardware Bridge (Port 8003)...")
-    # # ros2_bridge.py dijalankan langsung pakai python, bukan uvicorn
-    # processes.append(subprocess.Popen([sys.executable, "ros2_bridge.py"]))
+    print("4️⃣ Starting ROS 2 Hardware Bridge (Port 8003)...")
+    # ros2_bridge.py dijalankan langsung pakai python, bukan uvicorn
+    processes.append(subprocess.Popen([sys.executable, "ros2_bridge.py"]))
 
     print("\n✅ SEMUA SERVER BERHASIL DIJALANKAN BERBARENGAN!")
     print("💡 Biarkan terminal ini terbuka. Tekan Ctrl+C untuk mematikan semuanya sekaligus.\n")

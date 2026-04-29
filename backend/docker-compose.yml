@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres_db:
+    image: postgres:15
+    container_name: rov_database
+    restart: always
+    environment:
+      POSTGRES_USER: xplorerobot_user
+      POSTGRES_PASSWORD: xplorerobot
+      POSTGRES_DB: db_xplorerobot
+    ports:
+      - "5432:5432"
+    volumes:
+      - rov_db_data:/var/lib/postgresql/data
+
+volumes:
+  rov_db_data:

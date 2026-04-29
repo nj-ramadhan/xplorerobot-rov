@@ -1,14 +1,141 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Video, Settings, Radio, Plus, X, ChevronDown, ChevronUp, 
-  SlidersHorizontal, Edit2, Trash2, FileText, Camera, AlertCircle 
+  SlidersHorizontal, Edit2, Trash2, FileText, Camera, AlertCircle,
+  Wifi, WifiOff, RefreshCw, Maximize2
 } from 'lucide-react';
 
+// ============================================================
+// TIPE DATA
+// ============================================================
 interface VideoStreamProps {
   isDarkMode?: boolean;
 }
 
+interface RosMessage {
+  data: string; // base64 encoded image data
+  format?: string;
+}
+
+// ============================================================
+// HOOK: Koneksi ke ROS2 via Rosbridge WebSocket
+// ============================================================
+function useRosBridge(wsUrl: string, imageTopic: string) {
+  const [isConnected, setIsConnected] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [fps, setFps] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  
+  const wsRef = useRef<WebSocket | null>(null);
+  const fpsCounterRef = useRef(0);
+  const fpsTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+
+  const connect = useCallback(() => {
+    if (!mountedRef.current) return;
+    
+    try {
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        if (!mountedRef.current) return;
+        setIsConnected(true);
+        setError(null);
+
+        // Subscribe ke topic /xr_rov/image (sensor_msgs/CompressedImage)
+        // Rosbridge protocol: subscribe message
+        const subscribeMsg = {
+          op: 'subscribe',
+          topic: imageTopic,
+          type: 'sensor_msgs/CompressedImage',
+          throttle_rate: 100,    // minimal 100ms antar frame (~10fps max dari rosbridge)
+          queue_length: 1,        // hanya ambil frame terbaru
+          compression: 'none',
+        };
+        ws.send(JSON.stringify(subscribeMsg));
+
+        // FPS counter
+        fpsTimerRef.current = setInterval(() => {
+          if (!mountedRef.current) return;
+          setFps(fpsCounterRef.current);
+          fpsCounterRef.current = 0;
+        }, 1000);
+      };
+
+      ws.onmessage = (event) => {
+        if (!mountedRef.current) return;
+        try {
+          const msg = JSON.parse(event.data);
+          // msg.msg.data adalah base64 dari image bytes
+          if (msg.op === 'publish' && msg.msg?.data) {
+            const rosMsg: RosMessage = msg.msg;
+            const format = rosMsg.format || 'jpeg';
+            setImageSrc(`data:image/${format};base64,${rosMsg.data}`);
+            fpsCounterRef.current += 1;
+          }
+        } catch {
+          // abaikan pesan non-JSON
+        }
+      };
+
+      ws.onerror = () => {
+        if (!mountedRef.current) return;
+        setError('Gagal terhubung ke rosbridge WebSocket');
+        setIsConnected(false);
+      };
+
+      ws.onclose = () => {
+        if (!mountedRef.current) return;
+        setIsConnected(false);
+        setImageSrc(null);
+        if (fpsTimerRef.current) clearInterval(fpsTimerRef.current);
+        // Auto-reconnect setelah 3 detik
+        reconnectTimerRef.current = setTimeout(() => {
+          if (mountedRef.current) connect();
+        }, 3000);
+      };
+    } catch (err) {
+      setError('URL WebSocket tidak valid');
+    }
+  }, [wsUrl, imageTopic]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    connect();
+    return () => {
+      mountedRef.current = false;
+      if (wsRef.current) wsRef.current.close();
+      if (fpsTimerRef.current) clearInterval(fpsTimerRef.current);
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+    };
+  }, [connect]);
+
+  const reconnect = () => {
+    if (wsRef.current) wsRef.current.close();
+    if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+    connect();
+  };
+
+  return { isConnected, imageSrc, fps, error, reconnect };
+}
+
+// ============================================================
+// KOMPONEN UTAMA
+// ============================================================
 const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
+  // -- State: Konfigurasi koneksi ROS --
+  // Sesuaikan dengan IP komputer yang menjalankan ROS2 Anda
+  const [rosbridgeUrl, setRosbridgeUrl] = useState('ws://localhost:9090');
+  // Gunakan /xr_rov/image/compressed jika ada, atau /xr_rov/image
+  // Untuk CompressedImage langsung dari topic /xr_rov/image, tipe harus sensor_msgs/CompressedImage
+  // Jika topic Anda sensor_msgs/Image (raw), perlu web_video_server (lihat catatan di bawah)
+  const [imageTopic, setImageTopic] = useState('/xr_rov/image/compressed');
+  const [useWebVideoServer, setUseWebVideoServer] = useState(false);
+  const [webVideoUrl, setWebVideoUrl] = useState('http://localhost:8080/stream?topic=/xr_rov/image');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   const [endpoints, setEndpoints] = useState([
     { id: 1, type: 'UDP', address: 'udp://192.168.2.1:5600' }
   ]);
@@ -16,6 +143,13 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDeviceControlsOpen, setIsDeviceControlsOpen] = useState(false);
   const [expandedSourceId, setExpandedSourceId] = useState<number | null>(null);
+  const [showRosConfig, setShowRosConfig] = useState(false);
+
+  // -- Hook koneksi rosbridge --
+  const { isConnected, imageSrc, fps, error, reconnect } = useRosBridge(
+    rosbridgeUrl,
+    imageTopic
+  );
 
   const addEndpoint = () => {
     const newId = endpoints.length ? endpoints[endpoints.length - 1].id + 1 : 1;
@@ -24,23 +158,16 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
   const removeEndpoint = (id: number) => {
     setEndpoints(endpoints.filter(ep => ep.id !== id));
   };
-  const toggleSource = (id: number) => {
-    setExpandedSourceId(expandedSourceId === id ? null : id);
-  };
 
   const cameraSources = [
-    { id: 1, name: "Fake source", source: "ball", format: "960 x 720 px @ 10 fps", encoding: "H264", endpoint: "udp://192.168.2.1:5602", status: "Running", isActive: true, hasPreview: true },
-    { id: 2, name: "H264 USB Camera", source: "/dev/video2", format: "1920 x 1080 px @ 30 fps", encoding: "H264", endpoint: "udp://192.168.2.1:5600", status: "Running", isActive: true, hasPreview: true },
-    { id: 3, name: "Redirect source", source: "Redirect", format: "-", encoding: "-", endpoint: "-", status: "Stopped", isActive: false, hasPreview: false }
+    { id: 1, name: "ROV Camera (ROS2)", source: "/xr_rov/image", format: "Live via Rosbridge", encoding: "JPEG", endpoint: rosbridgeUrl, status: isConnected ? "Running" : "Connecting...", isActive: isConnected },
+    { id: 2, name: "H264 USB Camera", source: "/dev/video2", format: "1920 x 1080 px @ 30 fps", encoding: "H264", endpoint: "udp://192.168.2.1:5600", status: "Stopped", isActive: false },
   ];
 
-  // ==========================================
-  // LOGIKA WARNA KONTRAS TINGGI
-  // ==========================================
+  // -- Warna tema --
   const titleText = isDarkMode ? 'text-white' : 'text-slate-900';
   const subText = isDarkMode ? 'text-slate-400' : 'text-slate-600';
   const mutedText = isDarkMode ? 'text-slate-500' : 'text-slate-500';
-  
   const cardBg = isDarkMode ? 'bg-[#111827]/60 border-white/10' : 'bg-white border-slate-200 shadow-xl';
   const innerCardBg = isDarkMode ? 'bg-[#111827]/60 border-white/10 hover:bg-[#111827]/80' : 'bg-slate-50 border-slate-200 hover:bg-slate-100';
   const inputBg = isDarkMode ? 'bg-[#0b111a] border-white/10 text-slate-200' : 'bg-white border-slate-300 text-slate-900 shadow-sm';
@@ -59,38 +186,116 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
           <div>
             <h1 className={`text-3xl md:text-4xl font-black tracking-tight uppercase drop-shadow-sm ${titleText}`}>Video Streams</h1>
             <p className={`font-mono text-xs mt-1 tracking-widest uppercase drop-shadow-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-              Manage your video devices and video streams
+              ROV Live Camera • ROS2 Rosbridge
             </p>
+          </div>
+          {/* Status koneksi */}
+          <div className={`ml-auto flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border ${
+            isConnected 
+              ? 'bg-green-500/10 border-green-500/30 text-green-400' 
+              : 'bg-red-500/10 border-red-500/30 text-red-400'
+          }`}>
+            {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
+            {isConnected ? 'ROS2 Connected' : 'Disconnected'}
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          
+
           {/* ================= LEFT COLUMN ================= */}
           <div className="flex flex-col gap-6">
-            
-            {/* 1. VIDEO PLAYER CARD */}
+
+            {/* ===== VIDEO PLAYER CARD ===== */}
             <div className={`border rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-300 ${cardBg}`}>
-              <div className="aspect-video bg-black flex items-center justify-center relative group overflow-hidden">
+              
+              {/* Viewport kamera */}
+              <div className={`relative bg-black group ${isFullscreen ? 'fixed inset-0 z-50' : 'aspect-video'}`}>
+                
+                {/* Badge LIVE */}
                 <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase animate-pulse text-white z-10 shadow-lg shadow-red-600/20">
                   <Radio size={12} /> Live
                 </div>
-                <Video size={64} className="text-white/20" />
 
-                {/* OVERLAY SETTINGS OSD */}
+                {/* FPS Badge */}
+                {isConnected && (
+                  <div className="absolute top-4 left-20 flex items-center gap-1 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-[10px] font-mono text-green-400 z-10 border border-green-500/20">
+                    {fps} fps
+                  </div>
+                )}
+
+                {/* Fullscreen button */}
+                <button
+                  onClick={() => setIsFullscreen(!isFullscreen)}
+                  className="absolute top-4 right-16 z-10 p-2 bg-black/40 backdrop-blur hover:bg-black/70 rounded-lg text-white/70 hover:text-white transition-all"
+                >
+                  <Maximize2 size={16} />
+                </button>
+
+                {/* Reconnect button */}
+                <button
+                  onClick={reconnect}
+                  title="Reconnect ke ROS2"
+                  className="absolute top-4 right-4 z-10 p-2 bg-black/40 backdrop-blur hover:bg-black/70 rounded-lg text-white/70 hover:text-white transition-all"
+                >
+                  <RefreshCw size={16} />
+                </button>
+
+                {/* ===== GAMBAR KAMERA ROV ===== */}
+                {useWebVideoServer ? (
+                  // Mode: web_video_server (untuk raw sensor_msgs/Image)
+                  <img
+                    src={webVideoUrl}
+                    alt="ROV Camera"
+                    className="w-full h-full object-contain"
+                    onError={() => {}} 
+                  />
+                ) : imageSrc ? (
+                  // Mode: rosbridge CompressedImage (base64)
+                  <img
+                    src={imageSrc}
+                    alt="ROV Camera Live"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  // Placeholder saat belum ada gambar
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                    <Camera size={64} className="text-white/20" />
+                    <div className="text-center">
+                      <p className="text-white/40 text-sm font-medium">
+                        {error ?? (isConnected ? 'Menunggu frame dari /xr_rov/image...' : 'Menghubungkan ke ROS2...')}
+                      </p>
+                      {!isConnected && (
+                        <p className="text-white/25 text-xs mt-1 font-mono">{rosbridgeUrl}</p>
+                      )}
+                    </div>
+                    {error && (
+                      <button
+                        onClick={reconnect}
+                        className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
+                      >
+                        <RefreshCw size={12} /> Coba Lagi
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* OSD Settings overlay */}
                 {isSettingsOpen && (
                   <div className="absolute top-0 right-0 bottom-0 w-64 bg-black/80 backdrop-blur-md border-l border-white/10 p-4 flex flex-col z-20 animate-in slide-in-from-right-8 duration-300">
                     <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
                       <span className="font-bold text-white flex items-center gap-2"><Settings size={16} className="text-blue-400" /> Settings</span>
-                      <button onClick={() => setIsSettingsOpen(false)} className="text-[10px] uppercase font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-white transition-colors">Close</button>
+                      <button onClick={() => setIsSettingsOpen(false)} className="text-[10px] uppercase font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-white transition-colors">Tutup</button>
                     </div>
                     <div className="space-y-5 text-sm flex-1">
-                      <div className="flex justify-between items-center gap-2">
-                        <label className="text-slate-300 text-xs font-medium">Camera</label>
-                        <select className="bg-black/50 border border-white/20 rounded p-1.5 text-xs text-white outline-none w-full"><option>Fake source</option><option>H264 USB Camera</option></select>
+                      <div className="space-y-2">
+                        <label className="text-slate-300 text-xs font-medium">Sumber Kamera</label>
+                        <select className="bg-black/50 border border-white/20 rounded p-1.5 text-xs text-white outline-none w-full">
+                          <option>ROV Camera (ROS2)</option>
+                          <option>H264 USB Camera</option>
+                        </select>
                       </div>
                       <div className="flex justify-between items-center">
-                        <label className="text-slate-300 text-xs font-medium">Video Grid Lines</label>
+                        <label className="text-slate-300 text-xs font-medium">Grid Lines</label>
                         <input type="checkbox" className="w-8 h-4 accent-blue-500 rounded cursor-pointer" />
                       </div>
                     </div>
@@ -98,186 +303,207 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                 )}
               </div>
 
+              {/* Info bawah video */}
               <div className={`p-6 flex flex-col gap-4 border-t relative z-0 ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-bold text-blue-600 text-lg">H264 USB Camera</h3>
-                    <p className={`text-xs font-mono ${mutedText}`}>/dev/video2 | 1080p 30fps</p>
+                    <h3 className="font-bold text-blue-600 text-lg">ROV Camera</h3>
+                    <p className={`text-xs font-mono ${mutedText}`}>
+                      {imageTopic} | {isConnected ? `${fps} fps` : 'Offline'}
+                    </p>
                   </div>
-                  <button onClick={() => setIsSettingsOpen(!isSettingsOpen)} className={`p-3 rounded-xl transition-all shadow-lg ${isSettingsOpen ? 'bg-blue-700 shadow-blue-700/20 text-white' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/20 text-white'}`}>
+                  <button
+                    onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                    className={`p-3 rounded-xl transition-all shadow-lg ${isSettingsOpen ? 'bg-blue-700 shadow-blue-700/20 text-white' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/20 text-white'}`}
+                  >
                     <Settings size={20} />
                   </button>
                 </div>
-                
-                {/* TOMBOL DEVICE CONTROLS */}
+
+                {/* Tombol-tombol */}
                 <div className="flex gap-3">
-                  <button 
+                  <button
                     onClick={() => setIsDeviceControlsOpen(true)}
                     className={`flex-1 border py-3 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 ${isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300' : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700 shadow-sm'}`}
                   >
-                    <SlidersHorizontal size={16} className="text-blue-500"/> Device Controls
+                    <SlidersHorizontal size={14} /> Device Controls
                   </button>
-                  <button className={`flex-1 border py-3 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 ${isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300' : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700 shadow-sm'}`}>
-                    <Plus size={16} className="text-blue-500"/> Add Stream
+                  <button
+                    onClick={() => setShowRosConfig(!showRosConfig)}
+                    className={`flex-1 border py-3 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 ${
+                      showRosConfig
+                        ? 'bg-blue-600 border-blue-600 text-white'
+                        : isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300' : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700 shadow-sm'
+                    }`}
+                  >
+                    <Wifi size={14} /> ROS Config
                   </button>
                 </div>
+
+                {/* ===== PANEL KONFIGURASI ROS2 ===== */}
+                {showRosConfig && (
+                  <div className={`border rounded-2xl p-5 space-y-4 animate-in slide-in-from-top-2 duration-200 ${isDarkMode ? 'bg-[#0b111a] border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+                    <h4 className={`text-xs font-bold uppercase tracking-widest ${mutedText}`}>🔗 Konfigurasi ROS2 Rosbridge</h4>
+
+                    <div className="space-y-2">
+                      <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>WebSocket URL Rosbridge</label>
+                      <input
+                        type="text"
+                        value={rosbridgeUrl}
+                        onChange={e => setRosbridgeUrl(e.target.value)}
+                        placeholder="ws://localhost:9090"
+                        className={`w-full rounded-xl p-3 text-sm font-mono outline-none border transition-all ${inputBg}`}
+                      />
+                      <p className={`text-[10px] ${mutedText}`}>
+                        Jalankan: <code className="bg-black/30 px-1 rounded">ros2 launch rosbridge_server rosbridge_websocket_launch.xml</code>
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>Topic Gambar ROS2</label>
+                      <input
+                        type="text"
+                        value={imageTopic}
+                        onChange={e => setImageTopic(e.target.value)}
+                        placeholder="/xr_rov/image/compressed"
+                        className={`w-full rounded-xl p-3 text-sm font-mono outline-none border transition-all ${inputBg}`}
+                      />
+                      <p className={`text-[10px] ${mutedText}`}>
+                        Gunakan <code className="bg-black/30 px-1 rounded">/xr_rov/image/compressed</code> (sensor_msgs/CompressedImage) untuk efisiensi. Jika hanya ada <code className="bg-black/30 px-1 rounded">/xr_rov/image</code> (raw), aktifkan mode web_video_server di bawah.
+                      </p>
+                    </div>
+
+                    {/* Mode web_video_server */}
+                    <div className={`border rounded-xl p-4 space-y-3 ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'}`}>
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={useWebVideoServer}
+                          onChange={e => setUseWebVideoServer(e.target.checked)}
+                          className="w-4 h-4 accent-blue-600"
+                        />
+                        <span className={`text-sm font-medium ${titleText}`}>
+                          Gunakan web_video_server (untuk raw Image)
+                        </span>
+                      </label>
+                      {useWebVideoServer && (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={webVideoUrl}
+                            onChange={e => setWebVideoUrl(e.target.value)}
+                            placeholder="http://localhost:8080/stream?topic=/xr_rov/image"
+                            className={`w-full rounded-xl p-3 text-sm font-mono outline-none border transition-all ${inputBg}`}
+                          />
+                          <p className={`text-[10px] ${mutedText}`}>
+                            Install: <code className="bg-black/30 px-1 rounded">sudo apt install ros-humble-web-video-server</code><br/>
+                            Jalankan: <code className="bg-black/30 px-1 rounded">ros2 run web_video_server web_video_server</code>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={reconnect}
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white text-sm transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
+                    >
+                      <RefreshCw size={14} /> Terapkan & Reconnect
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* 2. CAMERA SOURCES LIST */}
-            <div className="space-y-3">
-              <h2 className={`text-sm font-bold uppercase tracking-widest flex items-center gap-2 ml-2 mb-4 ${mutedText}`}>
-                <Camera size={16} /> Detected Sources
-              </h2>
-              
-              {cameraSources.map((cam) => {
-                const isExpanded = expandedSourceId === cam.id;
-                return (
-                  <div key={cam.id} className={`border rounded-2xl overflow-hidden transition-colors ${innerCardBg}`}>
-                    <div 
-                      className="p-4 flex justify-between items-center cursor-pointer select-none"
-                      onClick={() => toggleSource(cam.id)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${cam.isActive ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-slate-400'}`}></span>
-                        <h3 className={`font-bold text-base ${titleText}`}>{cam.name}</h3>
-                        <span className={`text-xs font-mono hidden sm:inline-block ${mutedText}`}>({cam.source})</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-4">
-                        {cam.isActive && !isExpanded && (
-                          <span className="text-[10px] uppercase font-bold tracking-wider text-green-600 bg-green-100 border border-green-200 px-2 py-1 rounded">
-                            Running
-                          </span>
-                        )}
-                        <button className={`${mutedText} hover:text-blue-500 transition-colors`}>
-                          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {isExpanded && (
-                      <div className={`p-4 pt-0 border-t flex flex-col sm:flex-row gap-5 animate-in slide-in-from-top-2 duration-300 ${isDarkMode ? 'border-white/5' : 'border-slate-200'}`}>
-                        <div className="w-full sm:w-40 aspect-video mt-4 bg-black rounded-lg border border-slate-700 flex items-center justify-center relative overflow-hidden shrink-0">
-                          {cam.hasPreview ? (
-                            <Video size={32} className="text-white/20" />
-                          ) : (
-                            <span className="text-[10px] text-slate-500 text-center px-4 uppercase tracking-wider border border-slate-700 border-dashed p-2 rounded">Preview not available</span>
-                          )}
-                        </div>
-
-                        <div className="flex-1 flex flex-col justify-between mt-4">
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="grid grid-cols-1 gap-y-2 text-xs">
-                              <div className="flex gap-2"><span className={`w-16 ${mutedText}`}>Format:</span><span className={`font-mono ${titleText}`}>{cam.format}</span></div>
-                              <div className="flex gap-2"><span className={`w-16 ${mutedText}`}>Encoding:</span><span className={`font-mono ${titleText}`}>{cam.encoding}</span></div>
-                              <div className="flex gap-2"><span className={`w-16 ${mutedText}`}>Endpoint:</span><span className={`font-mono truncate ${titleText}`}>{cam.endpoint}</span></div>
-                            </div>
-                            
-                            <div className="flex gap-2 shrink-0">
-                              <button className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors shadow-sm"><Edit2 size={14} /></button>
-                              <button className="p-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors shadow-sm"><Trash2 size={14} /></button>
-                              <button className={`p-2 rounded-lg transition-colors flex items-center gap-1 text-[10px] font-bold shadow-sm ${isDarkMode ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700'}`}><FileText size={12}/> SDP</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            {/* Tombol Cancel/Create */}
+            <div className={`flex gap-4 mt-2 pt-6 border-t ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
+              <button className={`flex-1 py-4 rounded-2xl font-bold uppercase tracking-widest text-sm transition-all ${isDarkMode ? 'bg-white/5 hover:bg-white/10 text-slate-300' : 'bg-slate-200 hover:bg-slate-300 text-slate-700 shadow-sm'}`}>Cancel</button>
+              <button className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black text-white uppercase tracking-widest text-sm transition-all shadow-lg shadow-blue-600/30">Save Config</button>
             </div>
           </div>
 
-          {/* ================= RIGHT COLUMN ================= */}
-          <div className={`border rounded-3xl p-8 flex flex-col justify-between backdrop-blur-xl sticky top-28 ${cardBg}`}>
-            <div className="space-y-5">
-              <h3 className={`font-bold text-xl flex items-center gap-3 mb-6 ${titleText}`}>
-                <Settings size={24} className="text-blue-500" /> Stream creation
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>Stream nickname</label>
-                  <div className="relative">
-                    <input type="text" defaultValue="Stream ball" className={`w-full rounded-xl p-3 text-sm outline-none transition-all ${inputBg}`} />
-                    <span className={`absolute right-3 top-3.5 text-[10px] ${mutedText}`}>11 / 100</span>
+          {/* ================= RIGHT COLUMN: Camera Sources ================= */}
+          <div className="flex flex-col gap-4">
+            <h2 className={`text-xs uppercase font-bold tracking-widest ${mutedText}`}>Camera Sources</h2>
+            {cameraSources.map(src => (
+              <div
+                key={src.id}
+                className={`border rounded-2xl p-4 transition-all cursor-pointer ${innerCardBg} ${src.isActive ? 'border-blue-500/30' : ''}`}
+                onClick={() => setExpandedSourceId(expandedSourceId === src.id ? null : src.id)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-xl ${src.isActive ? 'bg-blue-500/20' : isDarkMode ? 'bg-white/5' : 'bg-slate-200'}`}>
+                    <Camera size={18} className={src.isActive ? 'text-blue-400' : mutedText} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-semibold text-sm truncate ${titleText}`}>{src.name}</p>
+                    <p className={`text-xs font-mono truncate ${mutedText}`}>{src.source}</p>
+                  </div>
+                  <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                    src.isActive
+                      ? 'bg-green-500/15 text-green-400'
+                      : isDarkMode ? 'bg-white/5 text-slate-500' : 'bg-slate-200 text-slate-500'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${src.isActive ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`} />
+                    {src.status}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>Encoding</label>
-                  <select className={`w-full rounded-xl p-3 text-sm outline-none appearance-none transition-all ${inputBg}`}>
-                    <option>H264</option><option>MJPG</option><option>YUYV</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>Size & Framerate</label>
-                  <select className={`w-full rounded-xl p-3 text-sm outline-none appearance-none mb-2 transition-all ${inputBg}`}>
-                    <option>1920 x 1080</option><option>1280 x 720</option>
-                  </select>
-                  <select className={`w-full rounded-xl p-3 text-sm outline-none appearance-none transition-all ${inputBg}`}>
-                    <option>30 FPS</option><option>60 FPS</option>
-                  </select>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  {endpoints.map((ep, index) => (
-                    <div key={ep.id} className="flex gap-3 items-end">
-                      <div className="w-1/3 space-y-2">
-                        {index === 0 && <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>Type</label>}
-                        <select className={`w-full rounded-xl p-3 text-sm outline-none appearance-none transition-all ${inputBg}`}><option value="UDP">UDP</option><option value="RTSP">RTSP</option></select>
+                {expandedSourceId === src.id && (
+                  <div className={`mt-4 pt-4 border-t space-y-2 animate-in slide-in-from-top-1 duration-150 ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <p className={`${mutedText} uppercase tracking-wider text-[10px]`}>Format</p>
+                        <p className={`font-mono ${titleText}`}>{src.format}</p>
                       </div>
-                      <div className="flex-1 space-y-2">
-                        {index === 0 && <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>Endpoint</label>}
-                        <div className="flex items-center gap-2">
-                          <input type="text" defaultValue={ep.address} className={`w-full rounded-xl p-3 text-sm font-mono outline-none transition-all ${inputBg}`} />
-                          <button onClick={() => removeEndpoint(ep.id)} className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-white/5 text-slate-400 hover:text-white' : 'hover:bg-red-100 text-slate-500 hover:text-red-600'}`}><X size={20} /></button>
-                          {index === endpoints.length - 1 && <button onClick={addEndpoint} className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-blue-500/20 text-blue-500' : 'hover:bg-blue-100 text-blue-600'}`}><Plus size={20} /></button>}
-                        </div>
+                      <div>
+                        <p className={`${mutedText} uppercase tracking-wider text-[10px]`}>Encoding</p>
+                        <p className={`font-mono ${titleText}`}>{src.encoding}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className={`${mutedText} uppercase tracking-wider text-[10px]`}>Endpoint</p>
+                        <p className={`font-mono truncate ${titleText}`}>{src.endpoint}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                <div className={`border rounded-xl overflow-hidden mt-4 ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
-                  <button onClick={() => setShowExtraConfig(!showExtraConfig)} className={`w-full p-4 flex justify-between items-center transition-colors text-sm font-bold ${titleText} ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-50 hover:bg-slate-100'}`}>
-                    Extra configuration {showExtraConfig ? <ChevronUp size={18} className={mutedText}/> : <ChevronDown size={18} className={mutedText}/>}
-                  </button>
-                  {showExtraConfig && (
-                    <div className={`p-4 space-y-4 ${isDarkMode ? 'bg-[#0b111a]' : 'bg-white'}`}>
-                      <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4 accent-blue-600" /><span className={`text-sm font-medium ${titleText}`}>Thermal camera</span></label>
-                      <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-4 h-4 accent-blue-600" /><span className={`text-sm font-medium ${titleText}`}>Disable Mavlink</span></label>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-            </div>
-            <div className={`flex gap-4 mt-8 pt-6 border-t ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
-              <button className={`flex-1 py-4 rounded-2xl font-bold uppercase tracking-widest text-sm transition-all ${isDarkMode ? 'bg-white/5 hover:bg-white/10 text-slate-300' : 'bg-slate-200 hover:bg-slate-300 text-slate-700 shadow-sm'}`}>Cancel</button>
-              <button className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black text-white uppercase tracking-widest text-sm transition-all shadow-lg shadow-blue-600/30">Create</button>
+            ))}
+
+            {/* Panduan Setup */}
+            <div className={`border rounded-2xl p-5 mt-4 space-y-3 ${isDarkMode ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-50 border-blue-200'}`}>
+              <h3 className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                <FileText size={14} /> Panduan Cepat
+              </h3>
+              <div className={`text-xs space-y-2 font-mono ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                <p className="font-bold text-blue-400">Terminal 1 – Simulasi ROV:</p>
+                <p className="pl-3 border-l border-blue-500/30">ros2 launch xr_rov_description world_launch.py spawn:=True</p>
+                <p className="font-bold text-blue-400 mt-2">Terminal 2 – Kontroler:</p>
+                <p className="pl-3 border-l border-blue-500/30">ros2 launch xr_rov_control cascaded_pids_launch.py sliders:=false</p>
+                <p className="font-bold text-blue-400 mt-2">Terminal 3 – WebSocket:</p>
+                <p className="pl-3 border-l border-blue-500/30">ros2 launch rosbridge_server rosbridge_websocket_launch.xml</p>
+                <p className="font-bold text-green-400 mt-2">Opsional – Jika topic raw Image:</p>
+                <p className="pl-3 border-l border-green-500/30">ros2 run web_video_server web_video_server</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ================= MODAL DRAWER: DEVICE CONTROLS ================= */}
+        {/* ===== DRAWER: DEVICE CONTROLS ===== */}
         {isDeviceControlsOpen && (
           <div className={`fixed inset-y-0 right-0 w-full max-w-md border-l shadow-2xl z-50 flex flex-col animate-in slide-in-from-right-8 duration-300 ${drawerBg}`}>
-            
             <div className={`p-6 flex justify-between items-center ${drawerHeaderBg}`}>
               <h2 className={`text-lg font-bold flex items-center gap-2 ${titleText}`}>
-                <SlidersHorizontal size={20} className="text-blue-500"/> Device Controls
+                <SlidersHorizontal size={20} className="text-blue-500" /> Device Controls
               </h2>
               <button onClick={() => setIsDeviceControlsOpen(false)} className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-white/10 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-900'}`}>
                 <X size={24} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-              <div className={`border rounded-xl p-4 flex gap-3 text-sm mb-4 shadow-sm ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-200' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+              <div className={`border rounded-xl p-4 flex gap-3 text-sm ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-200' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
                 <AlertCircle size={20} className="text-blue-500 shrink-0" />
-                <p>These settings are applied directly to the camera hardware (UVC) and do not consume CPU resources.</p>
+                <p>Pengaturan ini diterapkan langsung ke hardware kamera (UVC) dan tidak membebani CPU.</p>
               </div>
 
               {[
@@ -312,7 +538,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
             </div>
 
             <div className={`p-6 border-t flex gap-4 ${drawerHeaderBg}`}>
-              <button onClick={() => setIsDeviceControlsOpen(false)} className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all shadow-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10 text-slate-300' : 'bg-slate-200 hover:bg-slate-300 text-slate-800'}`}>Close</button>
+              <button onClick={() => setIsDeviceControlsOpen(false)} className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${isDarkMode ? 'bg-white/5 hover:bg-white/10 text-slate-300' : 'bg-slate-200 hover:bg-slate-300 text-slate-800'}`}>Tutup</button>
               <button className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white text-sm transition-all shadow-lg shadow-blue-600/30">Restore Defaults</button>
             </div>
           </div>
