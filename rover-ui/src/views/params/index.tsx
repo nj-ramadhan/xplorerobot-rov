@@ -110,26 +110,28 @@ const ParamsView: React.FC<ParamsViewProps> = ({ isDarkMode = true }) => {
 
   return (
     <div className="animate-in fade-in duration-500 pb-10 mt-2 font-['Inter',sans-serif]">
-      <div className="max-w-7xl mx-auto w-full space-y-8">
+      {/* Mengubah max-w-7xl menjadi max-w-5xl agar tabel lebih compact */}
+      <div className="max-w-5xl mx-auto w-full space-y-8">
         
-        {/* ================= STATUS (Back Button Removed) ================= */}
-        <div className="flex justify-end">
-          <div className={`flex items-center gap-3 px-4 py-2 rounded-full border shadow-sm ${isDarkMode ? 'bg-black/40 border-emerald-500/20 backdrop-blur-md' : 'bg-emerald-50 border-emerald-200'}`}>
+        {/* ================= HEADER & STATUS DISATUKAN ================= */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+          {/* Bagian Kiri: Icon & Judul */}
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 text-white">
+              <Cpu size={32} />
+            </div>
+            <div>
+              <h1 className={`font-heading text-3xl md:text-4xl font-black tracking-tight uppercase drop-shadow-sm transition-colors duration-300 ${titleText}`}>System Parameters</h1>
+              <p className={`font-mono text-xs mt-1 tracking-widest uppercase font-bold drop-shadow-sm transition-colors duration-300 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                Configure vehicle flight controller settings
+              </p>
+            </div>
+          </div>
+
+          {/* Bagian Kanan: Status Connected (sekarang sejajar dengan judul) */}
+          <div className={`flex items-center gap-3 px-4 py-2 rounded-full border shadow-sm w-fit ${isDarkMode ? 'bg-black/40 border-emerald-500/20 backdrop-blur-md' : 'bg-emerald-50 border-emerald-200'}`}>
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
             <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest drop-shadow-sm">Connected | SITL</span>
-          </div>
-        </div>
-
-        {/* ================= HEADER ================= */}
-        <div className="flex items-center gap-5">
-          <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 text-white">
-            <Cpu size={32} />
-          </div>
-          <div>
-            <h1 className={`font-heading text-3xl md:text-4xl font-black tracking-tight uppercase drop-shadow-sm transition-colors duration-300 ${titleText}`}>System Parameters</h1>
-            <p className={`font-mono text-xs mt-1 tracking-widest uppercase font-bold drop-shadow-sm transition-colors duration-300 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-              Configure vehicle flight controller settings
-            </p>
           </div>
         </div>
 
