@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft,
@@ -10,18 +10,16 @@ import {
   Gamepad2,
   Compass,
   Server,
-  Crosshair,
-  Users
+  Crosshair
 } from 'lucide-react';
 
 const System: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'capabilities' | 'architecture'>('capabilities');
 
   return (
     <div className="bg-[#0b111a] min-h-screen text-slate-300 font-sans antialiased selection:bg-blue-500/30 selection:text-white overflow-x-hidden">
       
-      {/* NAVBAR (Sesuai Referensi image_b31023) */}
+      {/* NAVBAR: Bersih, hanya tombol Back, Judul, dan Launch GCS */}
       <nav className="border-b border-white/5 px-6 py-4 bg-[#060b19]/90 backdrop-blur-xl sticky top-0 z-50 flex items-center justify-between">
         
         {/* Kiri: Back Button & Judul */}
@@ -40,36 +38,6 @@ const System: React.FC = () => {
           </div>
         </div>
 
-        {/* Tengah: Toggle Switch / Pill */}
-        <div className="hidden md:flex items-center bg-[#111827] rounded-full p-1 border border-white/5 shadow-inner">
-          <button 
-            onClick={() => {
-              setActiveTab('capabilities');
-              document.getElementById('capabilities')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className={`px-6 py-1.5 rounded-full text-sm font-bold transition-all ${
-              activeTab === 'capabilities' 
-                ? 'bg-[#064e3b]/40 text-teal-400 border border-teal-500/30' // Warna nyamain referensi 6-DOF
-                : 'text-slate-400 hover:text-slate-200 border border-transparent'
-            }`}
-          >
-            Capabilities
-          </button>
-          <button 
-            onClick={() => {
-              setActiveTab('architecture');
-              document.getElementById('architecture')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className={`px-6 py-1.5 rounded-full text-sm font-bold transition-all ${
-              activeTab === 'architecture' 
-                ? 'bg-[#064e3b]/40 text-teal-400 border border-teal-500/30'
-                : 'text-slate-400 hover:text-slate-200 border border-transparent'
-            }`}
-          >
-            Architecture
-          </button>
-        </div>
-
         {/* Kanan: Launch Button */}
         <button 
           onClick={() => navigate('/home')} 
@@ -81,7 +49,7 @@ const System: React.FC = () => {
 
       <main className="max-w-6xl mx-auto px-6 pb-32">
         
-        {/* HERO SECTION (Sesuai Referensi image_b30d1b) */}
+        {/* HERO SECTION */}
         <div className="py-20 lg:py-28 flex flex-col lg:flex-row items-center gap-16">
           
           {/* Bagian Kiri: Teks & Tombol */}
@@ -95,40 +63,32 @@ const System: React.FC = () => {
               Sistem ini dibangun atas integrasi kontrol otonom, telemetri real-time, dan respon latensi rendah.
             </p>
             
-            {/* Action Buttons */}
+            {/* Action Buttons: Sisa 1 Tombol Dokumentasi */}
             <div className="flex flex-wrap items-center gap-4 pt-4">
               <button 
-                onClick={() => navigate('/home')}
+                onClick={() => navigate('/documentasi')}
                 className="px-8 py-3.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20"
               >
-                Buka Dashboard
-              </button>
-              {/* Tombol Baru untuk Dokumentasi Tim */}
-              <button 
-                onClick={() => navigate('/kami')}
-                className="px-8 py-3.5 bg-white/5 text-slate-200 border border-white/10 rounded-lg font-bold hover:bg-white/10 transition-colors flex items-center gap-2"
-              >
-                <Users size={18} className="text-cyan-400" /> Dokumentasi Tim
+                Dokumentasi
               </button>
             </div>
           </div>
 
-          {/* Bagian Kanan: Overlapping Visuals persis referensi gambar */}
+          {/* Bagian Kanan: Overlapping Visuals */}
           <div className="w-full lg:w-1/2 relative min-h-[400px] flex items-center justify-center">
             
-            {/* Visual Box Belakang (Wifi Icon) */}
+            {/* Visual Box Belakang */}
             <div className="absolute right-0 top-0 w-64 h-64 bg-[#0f172a] rounded-2xl border border-white/5 flex items-center justify-center overflow-hidden shadow-sm">
-               {/* Grid Pattern */}
                <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #3b82f6 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
                <Wifi size={80} className="text-slate-700/50" />
             </div>
 
-            {/* Visual Box Depan (Activity Icon) */}
+            {/* Visual Box Depan */}
             <div className="absolute left-8 bottom-4 w-56 h-56 bg-[#0f172a] rounded-2xl border border-white/5 flex items-center justify-center overflow-hidden shadow-2xl">
                <Activity size={80} className="text-blue-500/80" />
             </div>
 
-            {/* Floating Card Atas (System Status) */}
+            {/* Floating Card Atas */}
             <div className="absolute top-12 right-48 bg-[#1e293b] p-3 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] border border-white/5 flex items-center gap-3">
               <div className="w-8 h-8 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500">
                 <CheckCircle2 size={16} />
@@ -139,7 +99,7 @@ const System: React.FC = () => {
               </div>
             </div>
 
-            {/* Floating Card Bawah (Telemetri Link) */}
+            {/* Floating Card Bawah */}
             <div className="absolute bottom-16 left-0 bg-[#1e293b] p-3 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] border border-white/5 flex items-center gap-3">
               <div className="w-8 h-8 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500">
                 <Radio size={16} />
@@ -155,7 +115,7 @@ const System: React.FC = () => {
         {/* ---------------------------------------------------- */}
         {/* CAPABILITIES SECTION (3 Kolom Berjajar) */}
         {/* ---------------------------------------------------- */}
-        <div id="capabilities" className="py-16 border-y border-white/5 mb-24 scroll-mt-24">
+        <div id="capabilities" className="py-16 border-y border-white/5 mb-24">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-8">
             <div className="space-y-4 lg:pr-8 relative">
               <span className="text-5xl font-black text-slate-800/40 absolute -top-6 -left-2 z-0 pointer-events-none">01</span>
@@ -198,7 +158,7 @@ const System: React.FC = () => {
         {/* ---------------------------------------------------- */}
         {/* DETAILED ARCHITECTURE SECTION (SCROLL ZIG-ZAG) */}
         {/* ---------------------------------------------------- */}
-        <div id="architecture" className="pt-8 scroll-mt-24">
+        <div id="architecture" className="pt-8">
           <div className="text-center mb-24">
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">Arsitektur Sistem Internal</h2>
             <p className="text-slate-400 max-w-2xl mx-auto">
