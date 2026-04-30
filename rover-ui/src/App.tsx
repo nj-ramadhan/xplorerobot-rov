@@ -12,8 +12,9 @@ import { Navbar } from './layouts/Navbar';
 
 // Import Views (Gabungan semua modul)
 import Landing from './views/landing/Landing';
-import System from './views/landing/system';
 import Data from './views/landing/data';
+import System from './views/landing/system';
+import Documentasi from './views/landing/documentasi'; // <-- TAMBAHAN BARU 1: Import Documentasi
 import { Home } from './views/Home';
 import { Dashboard } from './views/Dashboard';
 import { Manual } from './views/manual';
@@ -56,10 +57,12 @@ function AppContent() {
   const [isDetailMode, setIsDetailMode] = useState(false);
   const ws = useRef<WebSocket | null>(null);
 
+  // <-- TAMBAHAN BARU 2: Daftarin path /documentasi supaya masuk halaman publik
   const isPublicPage =
     location.pathname === '/' ||
     location.pathname === '/system' ||
-    location.pathname === '/data';
+    location.pathname === '/data' ||
+    location.pathname === '/documentasi'; 
 
   const [telemetry, setTelemetry] = useState<TelemetryData>({
     depth: 0.0,
@@ -123,7 +126,7 @@ function AppContent() {
     }
   };
 
-  // ── Halaman Publik (Landing, System, Data) ──
+  // ── Halaman Publik (Landing, System, Data, Documentasi) ──
   // Tetap pakai Routes biasa karena halaman ini tidak butuh persistensi
   if (isPublicPage) {
     return (
@@ -131,6 +134,8 @@ function AppContent() {
         <Route path="/" element={<Landing />} />
         <Route path="/system" element={<System />} />
         <Route path="/data" element={<Data />} />
+        {/* <-- TAMBAHAN BARU 3: Bikin rute untuk buka filenya */}
+        <Route path="/documentasi" element={<Documentasi />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     );
