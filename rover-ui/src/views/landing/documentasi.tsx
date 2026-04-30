@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, MonitorPlay, Terminal, Image as ImageIcon, 
   CheckCircle2, Settings, DownloadCloud, Box, Flag,
-  Cpu, Activity, Navigation, mousePointer as Mouse, 
+  Cpu, Activity, Navigation, MousePointer as Mouse, Crosshair,
   Gamepad2, Layers, Map as MapIcon, Link as LinkIcon
 } from 'lucide-react';
 
