@@ -29,7 +29,8 @@ export const menuGroups = [
   {
     title: "AUTOPILOT",
     items: [
-      { title: "Autopilot Firmware", icon: Cpu, path: "/manual" }, 
+      { title: "Firmware Mavlink", icon: Cpu, path: "/manual" }, 
+      { title: "Autopilot Firmware", icon: Cpu, path: "/firmware" }, 
       { title: "Autopilot Parameters", icon: SlidersHorizontal, path: "/params" }, 
     ]
   },

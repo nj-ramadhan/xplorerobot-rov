@@ -177,7 +177,7 @@ const Data: React.FC = () => {
       <main className="relative z-10 w-full pt-12 pb-32 flex flex-col items-center">
         
         {/* ========================================= */}
-        {/* PAGE 1: 6-DOF (NEW DJI MAVIC STYLE HERO)  */}
+        {/* PAGE 1: 6-DOF                             */}
         {/* ========================================= */}
         {currentPage === 1 && (
           <div className="animate-fade w-full flex flex-col items-center">
@@ -287,7 +287,7 @@ const Data: React.FC = () => {
               </div>
             </div>
 
-            {/* SEKSI: KENAPA 6-DOF PENTING? */}
+            {/* SEKSI: KENAPA 6-DOF PENTING? (RESTORED) */}
             <div className="w-full mt-32 bg-[#050B14] py-24 relative overflow-hidden shadow-inner z-10 border-t border-white/5">
                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500/5 blur-[120px] rounded-full"></div>
                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2563EB]/5 blur-[100px] rounded-full"></div>
@@ -318,7 +318,7 @@ const Data: React.FC = () => {
                      <h2 className="text-4xl lg:text-5xl font-heading font-bold text-white mb-6 leading-tight uppercase">
                        Kenapa <span className="text-cyan-400">6-DOF</span> Penting?
                      </h2>
-                     <p className="text-slate-300 font-light leading-relaxed text-base font-sans">
+                     <p className="text-slate-300 font-light leading-relaxed text-base font-sans text-justify">
                        Penguasaan konsep 6-DOF mutlak diperlukan dalam merancang sistem kendali dan algoritma telemetri. Tanpa pemahaman ini, matriks alokasi thruster tidak dapat disusun dengan benar, yang berakibat ROV tidak bisa bermanuver stabil di bawah air.
                      </p>
                    </div>
@@ -406,12 +406,12 @@ const Data: React.FC = () => {
                   </div>
                 </div>
 
-                {/* PENJELASAN TAMBAHAN DARI USER (DITARUH DI SINI) */}
-                <div className="mb-12 space-y-6 text-slate-300 font-light leading-relaxed font-sans text-[15px] text-justify">
-                  <p>
+                {/* PENJELASAN TAMBAHAN DARI USER (DI ATAS CARD PEMBAGIAN KELOMPOK) */}
+                <div className="mb-12 space-y-6 text-slate-300 font-light leading-relaxed font-sans text-[15px]">
+                  <p className="text-justify">
                     Meskipun secara teori terdapat enam derajat kebebasan, pada konfigurasi enam thruster standar biasanya tidak semua DOF dapat dikontrol secara aktif, khususnya gerakan roll (miring kiri-kanan). Hal ini disebabkan oleh keterbatasan distribusi thruster yang tidak memberikan momen langsung terhadap sumbu roll. Akibatnya, roll sering kali dikendalikan secara pasif melalui desain mekanik, seperti penempatan pusat massa yang lebih rendah dibandingkan pusat apung agar ROV tetap stabil di dalam air. Dengan kata lain, ROV dengan enam thruster umumnya mampu mengontrol lima DOF secara aktif, sementara satu DOF sisanya bergantung pada stabilitas alami sistem.
                   </p>
-                  <p>
+                  <p className="text-justify">
                     Dalam implementasi sistem kontrol, hubungan antara gaya yang dihasilkan thruster dan gerakan ROV biasanya dimodelkan dalam bentuk matriks alokasi (allocation matrix), yang memetakan kontribusi masing-masing thruster terhadap setiap DOF. Pendekatan ini memungkinkan penggunaan algoritma kontrol seperti PID untuk mengatur kecepatan dan stabilitas gerakan secara presisi. Namun, dalam praktiknya terdapat tantangan seperti coupling antar gerakan, di mana satu aksi thruster dapat memengaruhi lebih dari satu DOF, serta gangguan eksternal seperti arus laut yang dapat mengganggu kestabilan. Oleh karena itu, desain posisi thruster yang simetris, penggunaan sensor seperti IMU dan depth sensor, serta tuning kontrol yang baik menjadi kunci agar ROV dapat bergerak secara stabil, presisi, dan responsif di lingkungan bawah air yang dinamis.
                   </p>
                 </div>
@@ -530,8 +530,11 @@ const Data: React.FC = () => {
                       <div>
                         <h3 className="text-2xl font-bold text-[#2563EB] mb-3 font-heading uppercase">Matriks Konfigurasi (T)</h3>
                         <p className="text-slate-300 font-light leading-relaxed mb-3 font-sans text-sm">Gaya dari motor digabungkan menggunakan <strong>Matriks Alokasi (T)</strong>.</p>
-                        <div className="flex justify-center text-2xl font-mono text-white bg-[#030914] rounded-lg py-4 border border-white/5 w-full">
-                          <span className="text-cyan-400">τ</span> <span className="mx-4">=</span> <span className="text-[#2563EB]">T</span> <span className="mx-4">×</span> <span className="text-slate-400">u</span>
+                        <div className="flex justify-center text-2xl font-mono text-white bg-[#030914] rounded-lg py-4 border border-white/5 w-full flex-col items-center">
+                          <div className="mb-2"><span className="text-cyan-400">τ</span> <span className="mx-4">=</span> <span className="text-[#2563EB]">T</span> <span className="mx-4">×</span> <span className="text-slate-400">u</span></div>
+                          <div className="text-xs text-slate-500 mt-2 border-t border-white/10 pt-2 w-full text-center">
+                            * Dimana <strong>u</strong> adalah vektor gaya dari masing-masing thruster (u1 ... u6)
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -548,9 +551,13 @@ const Data: React.FC = () => {
                           <span className="text-cyan-400 font-mono font-bold text-lg">Surge (u)</span>
                           <span className="text-[10px] uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3 py-1 rounded-sm">Maju/Mundur</span>
                         </div>
-                        <p className="text-slate-300 font-light leading-relaxed text-sm font-sans">
+                        <p className="text-slate-300 font-light leading-relaxed text-sm font-sans mb-3">
                           Dikontrol oleh <strong className="text-white">Thruster 1, 2, 3, dan 4</strong>. Keempat thruster ini akan berputar bersamaan untuk menyemburkan air ke belakang (untuk maju) atau ke depan (untuk mundur).
                         </p>
+                        <div className="mt-4 bg-[#111C2E]/50 border border-[#1E3A8A]/30 p-3 rounded-md font-mono text-xs text-slate-300">
+                          <div className="text-cyan-400 font-bold mb-1 flex items-center gap-2">Persamaan Kinematika:</div>
+                          <p>X = (u1 + u2 + u3 + u4) · cos(45°)</p>
+                        </div>
                       </div>
 
                       <div className="bg-[#030914] border border-white/5 rounded-lg p-6 shadow-md">
@@ -558,9 +565,14 @@ const Data: React.FC = () => {
                           <span className="text-[#2563EB] font-mono font-bold text-lg">Roll (p)</span>
                           <span className="text-[10px] uppercase tracking-wider bg-[#2563EB]/20 text-[#60A5FA] border border-[#2563EB]/50 px-3 py-1 rounded-sm">Miring Kanan/Kiri</span>
                         </div>
-                        <p className="text-slate-300 font-light leading-relaxed text-sm font-sans">
+                        <p className="text-slate-300 font-light leading-relaxed text-sm font-sans mb-3">
                           Dikontrol oleh <strong className="text-white">Thruster 5 dan 6</strong> secara diferensial (berlawanan). Jika Thruster 5 mendorong ke atas dan Thruster 6 mendorong ke bawah, ROV akan miring/mengguling ke satu sisi.
                         </p>
+                        <div className="mt-4 bg-[#111C2E]/50 border border-[#1E3A8A]/30 p-3 rounded-md font-mono text-xs text-slate-300">
+                          <div className="text-[#2563EB] font-bold mb-1 flex items-center gap-2">Persamaan Kinematika:</div>
+                          <p>K = (u5 - u6) · d_y</p>
+                          <p className="text-[10px] text-slate-500 mt-1">*d_y = jarak thruster ke sumbu tengah Y</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -576,9 +588,13 @@ const Data: React.FC = () => {
                           <span className="text-cyan-400 font-mono font-bold text-lg">Sway (v)</span>
                           <span className="text-[10px] uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3 py-1 rounded-sm">Geser Kanan/Kiri</span>
                         </div>
-                        <p className="text-slate-300 font-light leading-relaxed text-sm font-sans">
+                        <p className="text-slate-300 font-light leading-relaxed text-sm font-sans mb-3">
                           Dikontrol oleh <strong className="text-white">Thruster 1, 2, 3, dan 4</strong>. Karena posisinya menyudut (<em className="text-cyan-400">vectored</em>), jika Thruster 1 & 4 mendorong ke satu arah sementara Thruster 2 & 3 merespons untuk menyeimbangkan, ROV bisa bergeser ke samping tanpa harus berputar.
                         </p>
+                        <div className="mt-4 bg-[#111C2E]/50 border border-[#1E3A8A]/30 p-3 rounded-md font-mono text-xs text-slate-300">
+                          <div className="text-cyan-400 font-bold mb-1 flex items-center gap-2">Persamaan Kinematika:</div>
+                          <p>Y = (-u1 + u2 + u3 - u4) · sin(45°)</p>
+                        </div>
                       </div>
 
                       <div className="bg-[#030914] border border-white/5 rounded-lg p-6 shadow-md">
@@ -586,12 +602,16 @@ const Data: React.FC = () => {
                           <span className="text-[#2563EB] font-mono font-bold text-lg">Pitch (q)</span>
                           <span className="text-[10px] uppercase tracking-wider bg-[#2563EB]/20 text-[#60A5FA] border border-[#2563EB]/50 px-3 py-1 rounded-sm">Tengadah/Nunduk</span>
                         </div>
-                        <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-md p-4 relative overflow-hidden mt-2">
+                        <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-md p-4 relative overflow-hidden mt-2 mb-3">
                           <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-400"></div>
                           <p className="text-sm text-slate-300 font-light leading-relaxed pl-2 font-sans">
                             <strong className="text-cyan-400 block mb-1">Perhatian khusus untuk simulasi:</strong>
                             ROV dengan konfigurasi ini bersifat <em className="text-white">underactuated</em> pada sumbu Pitch. Artinya, posisi Thruster 5 dan 6 yang persis di tengah sumbu X membuat mereka <strong className="text-white">tidak bisa</strong> menghasilkan gaya aktif untuk menundukkan atau menengadahkan ROV. Kestabilan Pitch didapatkan secara <em className="text-white">pasif</em>. Di parameter Gazebo, keseimbangan ini dicapai dengan memastikan titik <em className="text-white">Center of Buoyancy</em> (pusat gaya apung) diatur lebih tinggi daripada <em className="text-white">Center of Mass/Gravity</em> (titik berat).
                           </p>
+                        </div>
+                        <div className="mt-4 bg-[#111C2E]/50 border border-[#1E3A8A]/30 p-3 rounded-md font-mono text-xs text-slate-300">
+                          <div className="text-[#2563EB] font-bold mb-1 flex items-center gap-2">Persamaan Kinematika:</div>
+                          <p>M = 0 (Sumbu pasif, bergantung pada gaya apung & gravitasi)</p>
                         </div>
                       </div>
                     </div>
@@ -608,9 +628,13 @@ const Data: React.FC = () => {
                           <span className="text-cyan-400 font-mono font-bold text-lg">Heave (w)</span>
                           <span className="text-[10px] uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3 py-1 rounded-sm">Naik/Turun</span>
                         </div>
-                        <p className="text-slate-300 font-light leading-relaxed text-sm font-sans">
+                        <p className="text-slate-300 font-light leading-relaxed text-sm font-sans mb-3">
                           Dikontrol oleh <strong className="text-white">Thruster 5 dan 6</strong>. Keduanya akan berputar searah bersamaan untuk mengangkat ROV ke permukaan atau menekannya ke dasar air.
                         </p>
+                        <div className="mt-4 bg-[#111C2E]/50 border border-[#1E3A8A]/30 p-3 rounded-md font-mono text-xs text-slate-300">
+                          <div className="text-cyan-400 font-bold mb-1 flex items-center gap-2">Persamaan Kinematika:</div>
+                          <p>Z = u5 + u6</p>
+                        </div>
                       </div>
 
                       <div className="bg-[#030914] border border-white/5 rounded-lg p-6 shadow-md">
@@ -618,9 +642,14 @@ const Data: React.FC = () => {
                           <span className="text-[#2563EB] font-mono font-bold text-lg">Yaw (r)</span>
                           <span className="text-[10px] uppercase tracking-wider bg-[#2563EB]/20 text-[#60A5FA] border border-[#2563EB]/50 px-3 py-1 rounded-sm">Belok Kanan/Kiri</span>
                         </div>
-                        <p className="text-slate-300 font-light leading-relaxed text-sm font-sans">
+                        <p className="text-slate-300 font-light leading-relaxed text-sm font-sans mb-3">
                           Dikontrol oleh <strong className="text-white">Thruster 1, 2, 3, dan 4</strong>. Sistem akan menciptakan momen putar (torsi) pada sumbu Z. Misalnya, Thruster 1 & 3 mendorong maju, sedangkan Thruster 2 & 4 mendorong mundur, maka badan ROV akan berputar di tempat.
                         </p>
+                        <div className="mt-4 bg-[#111C2E]/50 border border-[#1E3A8A]/30 p-3 rounded-md font-mono text-xs text-slate-300">
+                          <div className="text-[#2563EB] font-bold mb-1 flex items-center gap-2">Persamaan Kinematika:</div>
+                          <p>N = (-u1 + u2 - u3 + u4) · L</p>
+                          <p className="text-[10px] text-slate-500 mt-1">*L = jarak lengan torsi thruster dari pusat massa</p>
+                        </div>
                       </div>
                     </div>
                   </div>

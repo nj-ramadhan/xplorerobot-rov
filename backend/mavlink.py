@@ -1,9 +1,10 @@
 """
-mavlink.py — WebSocket Bridge untuk MAVLink / ROV
+mavlink.py — WebSocket Bridge untuk MAVLink / ROV (Pixhawk / ArduSub)
 Jalankan TERPISAH: uvicorn mavlink:app --host 0.0.0.0 --port 8001 --reload
 
-CATATAN: File ini hanya dijalankan kalau ROV / SITL sudah aktif.
-         Kalau ROV belum nyala, tidak perlu jalankan file ini.
+CATATAN: 
+File ini menghubungkan sistem kontrol dasar robot (Pixhawk).
+Untuk hardware asli, ubah MAVLINK_ADDRESS ke port Serial atau IP Companion Computer.
 """
 
 from fastapi import FastAPI, WebSocket
@@ -16,14 +17,15 @@ import json
 # KONEKSI MAVLINK
 # Ganti alamat sesuai koneksi ROV kamu:
 #   SITL lokal  : tcp:127.0.0.1:5762
-#   Serial       : /dev/ttyUSB0  (Linux) atau COM3 (Windows)
-#   UDP          : udp:0.0.0.0:14550
+#   Serial asli : /dev/ttyACM0 atau /dev/ttyUSB0 (Colok langsung Pixhawk ke Raspberry Pi)
+#   UDP BlueOS  : udp:192.168.2.1:14550
 # ══════════════════════════════════════════════════════════════════════════════
 
 MAVLINK_ADDRESS = "tcp:127.0.0.1:5762"
 
-print(f"🔄 Menghubungkan ke ROV di {MAVLINK_ADDRESS} ...")
+print(f"🔄 Menghubungkan ke ROV Pixhawk di {MAVLINK_ADDRESS} ...")
 master = mavutil.mavlink_connection(MAVLINK_ADDRESS)
+master.wait_heartbeat() # Pastikan sistem merespons sebelum lanjut
 print("✅ MAVLink terhubung!")
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -47,7 +49,7 @@ app.add_middleware(
 @app.websocket("/ws/telemetry")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    print("🚀 Frontend terhubung via WebSocket!")
+    print("🚀 Frontend React terhubung ke Telemetry MAVLink!")
 
     async def receive_from_web():
         """Terima perintah dari frontend (arm, disarm, rc, dll)."""
@@ -59,11 +61,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 if action == "arm":
                     master.arducopter_arm()
-                    print("⚙️  ARM")
+                    print("⚙️  ARM COMMAND SENT")
 
                 elif action == "disarm":
                     master.arducopter_disarm()
-                    print("🛑 DISARM")
+                    print("🛑 DISARM COMMAND SENT")
 
                 elif action == "get_params":
                     master.mav.param_request_list_send(
@@ -83,12 +85,14 @@ async def websocket_endpoint(websocket: WebSocket):
             pass
 
     async def send_to_web():
-        """Kirim data telemetry ROV ke frontend."""
+        """Kirim data telemetry ROV ke frontend secara real-time."""
         try:
             while True:
                 msg = master.recv_match(blocking=False)
                 while msg:
                     t = msg.get_type()
+                    
+                    # 1. Data Kemiringan (Roll, Pitch, Yaw)
                     if t == "ATTITUDE":
                         await websocket.send_json({
                             "type":  "ATTITUDE",
@@ -96,13 +100,43 @@ async def websocket_endpoint(websocket: WebSocket):
                             "pitch": round(msg.pitch, 2),
                             "yaw":   round(msg.yaw,   2),
                         })
+                        
+                    # 2. Data Kedalaman (Depth) dan Arah Kompas (Heading)
+                    elif t == "VFR_HUD":
+                        await websocket.send_json({
+                            "type":  "VFR_HUD",
+                            "depth": round(msg.alt, 2), # alt merepresentasikan depth meter
+                            "heading": msg.heading
+                        })
+                        
+                    # 3. Data Baterai (Voltage)
+                    elif t == "SYS_STATUS":
+                        await websocket.send_json({
+                            "type":  "BATTERY",
+                            "voltage": round(msg.voltage_battery / 1000.0, 2) # Ubah milivolt ke Volt
+                        })
+                        
+                    # 4. Status Sistem (Armed/Disarm & Mode Navigasi)
+                    elif t == "HEARTBEAT":
+                        is_armed = msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED
+                        mode_name = mavutil.mode_string_v10(msg)
+                        await websocket.send_json({
+                            "type":  "HEARTBEAT",
+                            "armed": bool(is_armed),
+                            "mode":  mode_name
+                        })
+                        
+                    # 5. Data Parameter (Kalibrasi dll)
                     elif t == "PARAM_VALUE":
                         await websocket.send_json({
                             "type":  "PARAM",
                             "name":  msg.param_id,
                             "value": msg.param_value,
                         })
+                        
                     msg = master.recv_match(blocking=False)
+                
+                # Jeda kecil agar CPU tidak overload
                 await asyncio.sleep(0.05)
         except Exception:
             pass

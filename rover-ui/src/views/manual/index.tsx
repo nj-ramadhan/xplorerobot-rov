@@ -186,7 +186,7 @@ export const Manual: React.FC<ManualProps> = ({ telemetry, isArmed, toggleArm, s
           </p>
         </div>
 
-        <div className="flex gap-4 font-mono text-[10px]">
+        <div className="flex gap-4 font-mono text-[10px] items-center">
           <div className={`px-3 py-1.5 rounded border transition-colors duration-300 ${boxBg}`}>
             <span className={`block font-bold transition-colors duration-300 ${mutedColor}`}>MISSION_CLOCK</span>
             <span className={`text-sm font-bold transition-colors duration-300 ${textColor}`}>{formatTime(missionTime)}</span>
@@ -196,12 +196,27 @@ export const Manual: React.FC<ManualProps> = ({ telemetry, isArmed, toggleArm, s
             <span className="text-purple-500 text-sm font-bold drop-shadow-sm">{telemetry.pitch}°</span>
           </div>
           
+          {/* ========================================== */}
+          {/* TOMBOL REFRESH HALAMAN BARU                */}
+          {/* ========================================== */}
+          <button 
+            onClick={() => window.location.reload()}
+            className={`px-4 py-2 rounded font-bold transition-all border shadow-sm flex items-center gap-2 ${
+              isDarkMode 
+                ? 'bg-slate-800 text-slate-400 border-white/5 hover:bg-slate-700 hover:text-white' 
+                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'
+            }`}
+            title="Muat Ulang Halaman"
+          >
+            🔄 REFRESH
+          </button>
+          
           <button 
             onClick={toggleArm}
             className={`px-6 py-2 rounded font-bold transition-all border shadow-sm ${
               isArmed 
                 ? (isDarkMode ? 'bg-red-500/20 text-red-500 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-red-100 text-red-600 border-red-300')
-                : (isDarkMode ? 'bg-slate-800 text-slate-400 border-white/5' : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200')
+                : (isDarkMode ? 'bg-slate-800 text-slate-400 border-white/5 hover:bg-slate-700 hover:text-white' : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200')
             }`}
           >
             {isArmed ? '🛑 DISARM MOTORS' : '⚙️ ARM VEHICLE'}

@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Cpu, Activity, Navigation, Target, Radio, Video, 
-  Waves, Settings, Sliders, HardDrive, FileSearch, 
+  Waves, Settings, Sliders, FileSearch, 
   Info, ShieldCheck, Users, LucideIcon 
 } from 'lucide-react';
 
@@ -32,11 +32,11 @@ const menus: MenuItem[] = [
   { path: '/ping',       title: 'Ping Sonar', subtitle: 'AC_SCAN', icon: Waves, desc: 'Manage detected Ping family sonar devices.' },
   { path: '/setup',      title: 'Vehicle Setup', subtitle: 'CALIBRATION', icon: Settings, desc: 'Sensor calibrations and motor tests.' },
   { path: '/params',     title: 'Autopilot Params', subtitle: 'CONFIG_INT', icon: Sliders, desc: 'Modify vehicle parameters in real-time.' },
-  { path: '/simulation', title: 'Firmware Update', subtitle: 'SYS_UPDATE', icon: HardDrive, desc: 'Update flight controller firmware.' },
+  { path: '/firmware',     title: 'Autopilot Firmware', subtitle: 'CONFIG_INT', icon: Sliders, desc: 'Modify vehicle parameters in real-time.' },
   { path: '/browser',    title: 'Log Browser', subtitle: 'DATA_ANALYSIS', icon: FileSearch, desc: 'Browse Telemetry (.tlog) and Binary (.bin) logs.' },
   { path: '/system-info',title: 'System Info', subtitle: 'KERNEL_STAT', icon: Info, desc: 'Monitor system, processes, and kernel.' },
-  { path: '/blueos',     title: 'System Version', subtitle: 'REPO_MGMT', icon: ShieldCheck, desc: 'Manage system firmware and updates.' },
-  { path: '/kami',       title: 'Team Archive', subtitle: 'TEAM_ARCHIVE', icon: Users, desc: 'Documentation about the development team.' },
+  { path: '/blueos',     title: 'Xplore Robot Version', subtitle: 'SYS_FIRMWARE', icon: ShieldCheck, desc: 'Manage system firmware and updates.' },
+  { path: '/kami',       title: 'Dokumentasi Team', subtitle: 'TEAM_ARCHIVE', icon: Users, desc: 'Informasi dan dokumentasi tentang tim pengembang.' },
 ];
 
 export const Home: React.FC<{ isDarkMode?: boolean; onCardClick?: () => void }> = ({ isDarkMode = true, onCardClick }) => {

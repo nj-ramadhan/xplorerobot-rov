@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom'; // 🔥 Tambahan jurus sakti portal!
+import { createPortal } from 'react-dom'; 
 import { AutoSliderPanel } from '../components/manual-control/AutoSliderPanel';
 import { KeyboardPanel } from '../components/manual-control/KeyboardPanel';
 import { ThrusterMatrixPanel } from '../components/manual-control/ThrusterMatrixPanel';
@@ -7,12 +7,11 @@ import { PreFlightChecklist } from '../components/manual-control/PreFlightCheckl
 
 // ── Konstanta ────────────────────────────────────────────────────────────────
 const WS_URL        = 'ws://localhost:9090';
-const TOPIC_PREFIX  = '/xr_rov';          // FIX: dulu /bluerov2, sekarang /xr_rov
-const LOOP_HZ       = 100;                // ms per tick (10 Hz)
+const TOPIC_PREFIX  = '/xr_rov';          
+const LOOP_HZ       = 100;                
 const THRUSTER_TYPE = 'std_msgs/msg/Float64';
 const THRUSTER_COUNT = 6;
 
-// Tambahkan interface untuk menerima saklar isDarkMode
 interface ManualROS2Props {
   isDarkMode?: boolean;
 }
@@ -98,7 +97,7 @@ export const ManualROS2: React.FC<ManualROS2Props> = ({ isDarkMode = true }) => 
       clearInterval(interval);
       socket.close();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); 
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleFinishChecklist = () => {
@@ -135,7 +134,6 @@ export const ManualROS2: React.FC<ManualROS2Props> = ({ isDarkMode = true }) => 
   const mutedColor = isDarkMode ? 'text-slate-500' : 'text-slate-500';
   const borderColor = isDarkMode ? 'border-white/10' : 'border-slate-200';
   
-  // Status label warna disesuaikan agar kontras di Light Mode
   const statusLabel = {
     connecting: { text: 'Menunggu Koneksi...', dot: 'bg-yellow-400 animate-pulse', color: isDarkMode ? 'text-yellow-400' : 'text-yellow-600' },
     online:     { text: 'Terhubung ke ROS2 Gazebo', dot: 'bg-green-400 animate-pulse', color: isDarkMode ? 'text-green-400' : 'text-emerald-600' },
@@ -146,10 +144,6 @@ export const ManualROS2: React.FC<ManualROS2Props> = ({ isDarkMode = true }) => 
   return (
     <div className={`space-y-6 animate-in fade-in duration-700 p-8 relative font-['Inter',sans-serif] ${textColor}`}>
 
-      {/* =========================================================
-          MODAL PRE-FLIGHT CHECKLIST DENGAN PORTAL
-          Pasti muncul di paling depan layar, menutupi segalanya!
-          ========================================================= */}
       {showChecklist && createPortal(
         <PreFlightChecklist onFinish={handleFinishChecklist} isDarkMode={isDarkMode} />,
         document.body
@@ -169,16 +163,34 @@ export const ManualROS2: React.FC<ManualROS2Props> = ({ isDarkMode = true }) => 
             </p>
           </div>
         </div>
-        <button
-          onClick={resetAll}
-          className={`px-6 py-2 rounded font-bold transition-all uppercase text-xs tracking-tighter shadow-sm border ${
-            isDarkMode 
-              ? 'bg-red-500/20 text-red-500 border-red-500/50 hover:bg-red-500/30' 
-              : 'bg-red-100 text-red-600 border-red-200 hover:bg-red-200'
-          }`}
-        >
-          🛑 Emergency Stop All
-        </button>
+
+        {/* --- KUMPULAN TOMBOL KANAN ATAS --- */}
+        <div className="flex items-center gap-3">
+          {/* Tombol Refresh */}
+          <button 
+            onClick={() => window.location.reload()}
+            className={`px-4 py-2 rounded font-bold transition-all border shadow-sm text-xs uppercase tracking-tighter ${
+              isDarkMode 
+                ? 'bg-slate-800 text-slate-300 border-white/5 hover:bg-slate-700 hover:text-white' 
+                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'
+            }`}
+            title="Muat Ulang Halaman"
+          >
+            🔄 REFRESH
+          </button>
+
+          {/* Tombol Emergency Stop */}
+          <button
+            onClick={resetAll}
+            className={`px-6 py-2 rounded font-bold transition-all uppercase text-xs tracking-tighter shadow-sm border ${
+              isDarkMode 
+                ? 'bg-red-500/20 text-red-500 border-red-500/50 hover:bg-red-500/30' 
+                : 'bg-red-100 text-red-600 border-red-200 hover:bg-red-200'
+            }`}
+          >
+            🛑 Emergency Stop All
+          </button>
+        </div>
       </div>
 
       {/* Tab mode */}

@@ -1,50 +1,73 @@
-import React, { useState } from 'react';
-import { Radio, Eye, Settings2, Info, Activity } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Radio, Eye, Settings2, Info, Activity, Wifi, WifiOff } from 'lucide-react';
 
 interface PingSonarProps {
   isDarkMode?: boolean;
 }
 
-// PERBAIKAN: Default diubah jadi true agar sinkron saat web pertama dibuka di Dashboad
 const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
   const [mavlinkEnabled, setMavlinkEnabled] = useState(true);
+  
+  // ==========================================
+  // STATE BARU: LOGIKA WEBSOCKET HARDWARE (ROS 2)
+  // ==========================================
+  const [wsConnected, setWsConnected] = useState(false);
+  const [sonarDistance, setSonarDistance] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Menghubungkan langsung ke Port 8003 (ros2_bridge.py)
+    const socket = new WebSocket('ws://localhost:8003/ws/hardware');
+
+    socket.onopen = () => {
+      setWsConnected(true);
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "SENSOR_SONAR") {
+          // Mengupdate state dengan jarak asli dari ROS 2
+          setSonarDistance(data.distance_meter);
+        }
+      } catch (error) {
+        console.error("Error parsing sonar data:", error);
+      }
+    };
+
+    socket.onclose = () => {
+      setWsConnected(false);
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
 
   // ==========================================
   // LOGIKA TEMA: OTOMATIS MENYESUAIKAN DARK/LIGHT MODE
   // ==========================================
   
-  // Warna Teks
-  const titleColor = isDarkMode ? 'text-white' : 'text-slate-950'; // Lebih pekat di Light mode
-  const subTextColor = isDarkMode ? 'text-slate-300' : 'text-slate-700'; // Lebih pekat di Light mode
-  const labelColor = isDarkMode ? 'text-slate-400' : 'text-slate-600'; // Lebih pekat di Light mode
-  const valueColor = isDarkMode ? 'text-white' : 'text-slate-900'; // Lebih pekat di Light mode
+  const titleColor = isDarkMode ? 'text-white' : 'text-slate-950';
+  const subTextColor = isDarkMode ? 'text-slate-300' : 'text-slate-700';
+  const labelColor = isDarkMode ? 'text-slate-400' : 'text-slate-600';
+  const valueColor = isDarkMode ? 'text-white' : 'text-slate-900';
 
-  // ==========================================
-  // LOGIKA LATAR BELAKANG (PERBAIKAN UTAMA)
-  // ==========================================
-  
-  // 1. Kartu Utama (Ping1D & Ping360)
-  // DIUBAH BULK: Saat isDarkMode = false, warnanya murni 'bg-white' (Solid Putih)
   const cardBg = isDarkMode 
     ? 'bg-[#111827]/60 border-white/10 backdrop-blur-xl shadow-2xl' 
-    : 'bg-white border-slate-200 shadow-xl'; // Putih Bersih
+    : 'bg-white border-slate-200 shadow-xl'; 
     
-  // 2. Kotak Info Biru di Atas
   const infoBg = isDarkMode 
     ? 'bg-[#111827]/40 border-white/5 backdrop-blur-xl shadow-lg' 
     : 'bg-blue-50 border-blue-200 shadow-sm'; 
     
-  // 3. Bagian Header Kartu (Yang ada logo bulat)
   const cardHeaderBg = isDarkMode 
     ? 'border-white/10 bg-white/5' 
-    : 'border-slate-200 bg-slate-50'; // Sedikit abu-abu untuk memisahkan header
+    : 'border-slate-200 bg-slate-50';
     
-  // 4. Kotak Data Kecil (FW Version, ID)
   const innerBoxBg = isDarkMode 
     ? 'bg-black/40 border-white/10' 
-    : 'bg-slate-100 border-slate-200 shadow-inner'; // Sedikit lebih gelap dari bg-white
+    : 'bg-slate-100 border-slate-200 shadow-inner';
     
-  // 5. Kotak Interaktif (System Port)
   const interactiveBoxBg = isDarkMode 
     ? 'bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/30 text-blue-400' 
     : 'bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700 shadow-sm';
@@ -99,16 +122,35 @@ const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
                   <Radio className={`w-10 h-10 ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`} />
                </div>
                <h2 className={`font-heading text-2xl font-black tracking-tighter uppercase transition-colors duration-300 ${titleColor}`}>Ping1D</h2>
-               <span className={`text-[10px] font-mono font-bold px-3 py-0.5 rounded-full mt-2 animate-pulse ${isDarkMode ? 'text-emerald-400 bg-emerald-500/20 border border-emerald-500/30' : 'text-emerald-900 bg-emerald-100 border border-emerald-300'}`}>Connected</span>
+               
+               {/* Indikator Status WebSocket Real-time */}
+               {wsConnected ? (
+                 <span className={`flex items-center gap-1 text-[10px] font-mono font-bold px-3 py-0.5 rounded-full mt-2 ${isDarkMode ? 'text-emerald-400 bg-emerald-500/20 border border-emerald-500/30' : 'text-emerald-700 bg-emerald-100 border border-emerald-300'}`}>
+                   <Wifi size={10} /> Connected to ROS 2
+                 </span>
+               ) : (
+                 <span className={`flex items-center gap-1 text-[10px] font-mono font-bold px-3 py-0.5 rounded-full mt-2 ${isDarkMode ? 'text-rose-400 bg-rose-500/20 border border-rose-500/30' : 'text-rose-700 bg-rose-100 border border-rose-300'}`}>
+                   <WifiOff size={10} /> Disconnected
+                 </span>
+               )}
             </div>
 
             <div className="p-6 space-y-4">
+              
+              {/* DISPLAY DATA REAL-TIME */}
+              <div className={`p-4 rounded-2xl border flex flex-col items-center justify-center transition-colors duration-300 ${innerBoxBg}`}>
+                <p className={`text-[10px] uppercase font-bold mb-1 transition-colors duration-300 ${labelColor}`}>Distance to Target</p>
+                <p className={`text-4xl font-black font-mono transition-colors duration-300 ${wsConnected ? (isDarkMode ? 'text-emerald-400' : 'text-emerald-600') : (isDarkMode ? 'text-slate-600' : 'text-slate-400')}`}>
+                  {sonarDistance !== null ? `${sonarDistance.toFixed(2)} m` : '--.-- m'}
+                </p>
+              </div>
+
               <div className={`flex justify-between items-center text-[11px] font-bold tracking-widest uppercase transition-colors duration-300 ${labelColor}`}>
-                <span>Bridge</span> <span className={`font-mono ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>UDP 9090</span>
+                <span>Bridge</span> <span className={`font-mono ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>ROS 2 / Port 8003</span>
               </div>
 
               <div className="flex justify-between items-center py-2">
-                <span className={`text-[11px] font-bold tracking-widest uppercase transition-colors duration-300 ${labelColor}`}>MAVLink Distances</span>
+                <span className={`text-[11px] font-bold tracking-widest uppercase transition-colors duration-300 ${labelColor}`}>MAVLink Override</span>
                 <button
                   onClick={() => setMavlinkEnabled(!mavlinkEnabled)}
                   className={`w-12 h-6 rounded-full relative transition-all duration-300 ${mavlinkEnabled ? 'bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.4)]' : (isDarkMode ? 'bg-slate-700' : 'bg-slate-300')}`}
@@ -133,12 +175,12 @@ const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
                   <span className="text-[9px] uppercase font-black tracking-tighter">System Port</span>
                   <span className={`font-mono text-xs font-bold transition-colors duration-300 ${valueColor}`}>/dev/ttyUSB0</span>
                 </div>
-                <Eye className="w-5 h-5 cursor-pointer" />
+                <Eye className="w-5 h-5 cursor-pointer hover:scale-110 transition-transform" />
               </div>
             </div>
           </div>
 
-          {/* CARD PING*/}
+          {/* CARD PING360 */}
           <div className={`border rounded-3xl overflow-hidden transition-all duration-300 group ${cardBg}`}>
             <div className={`p-8 flex flex-col items-center border-b transition-colors duration-300 ${cardHeaderBg}`}>
                <div className={`p-4 rounded-full mb-3 group-hover:scale-110 transition-transform ${isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
