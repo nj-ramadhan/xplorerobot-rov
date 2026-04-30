@@ -19,6 +19,25 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // --- LOGIC JAM REALTIME ---
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer); // Cleanup saat komponen unmount
+  }, []);
+
+  const formattedTime = time.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  // ---------------------------
+
   // Menutup dropdown kalau user klik di luar area navbar kanan
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,7 +77,25 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
 
       {/* --- BAGIAN KANAN: Ikon Interactive (Koneksi & Kontrol) --- */}
       <div className="flex items-center gap-4 md:gap-5 opacity-90" ref={menuRef}>
-        
+      {/* IKON JAM */}
+  <svg 
+    className="w-7 h-7 text-white" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="1.5" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+        <div className="flex flex-col items-end mr-2 select-none border-r border-white/10 pr-4">
+          <span className="font-mono text-lg font-bold tracking-wider leading-none">
+            {formattedTime}
+          </span>
+        </div>
+
         {/* 1. Status Heartbeat */}
         <div className="relative">
           <button onClick={() => toggleMenu('status')} className="focus:outline-none hover:scale-110 transition-transform">
