@@ -11,15 +11,15 @@ try:
     print("1️⃣ Starting Database & Mission API (Port 8000)...")
     processes.append(subprocess.Popen([sys.executable, "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]))
 
-    print("2️⃣ Starting MAVLink Bridge (Port 8001)...")
-    processes.append(subprocess.Popen([sys.executable, "-m", "uvicorn", "mavlink:app", "--host", "0.0.0.0", "--port", "8001"]))
+    # print("2️⃣ Starting MAVLink Bridge (Port 8001)...")
+    # processes.append(subprocess.Popen([sys.executable, "-m", "uvicorn", "mavlink:app", "--host", "0.0.0.0", "--port", "8001"]))
 
     print("3️⃣ Starting Terminal Server (Port 8002)...")
     processes.append(subprocess.Popen([sys.executable, "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8002"]))
 
-    print("4️⃣ Starting ROS 2 Hardware Bridge (Port 8003)...")
-    # ros2_bridge.py dijalankan langsung pakai python, bukan uvicorn
-    processes.append(subprocess.Popen([sys.executable, "ros2_bridge.py"]))
+    # print("4️⃣ Starting ROS 2 Hardware Bridge (Port 8003)...")
+    # # ros2_bridge.py dijalankan langsung pakai python, bukan uvicorn
+    # processes.append(subprocess.Popen([sys.executable, "ros2_bridge.py"]))
 
     print("\n✅ SEMUA SERVER BERHASIL DIJALANKAN BERBARENGAN!")
     print("💡 Biarkan terminal ini terbuka. Tekan Ctrl+C untuk mematikan semuanya sekaligus.\n")
