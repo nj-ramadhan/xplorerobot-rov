@@ -3,6 +3,7 @@ import { TelemetryData } from '../types/telemetry';
 import { Link } from 'react-router-dom';
 
 // Import gambar logo dari folder assets
+// @ts-ignore
 import LogoXplore from '../assets/logo_xplore_robot_simple.png';
 
 interface NavbarProps {
@@ -64,9 +65,10 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
       <div>
         {/* Teks ROV */}
         <div className="flex flex-col border-l-2 pl-3 border-slate-300 dark:border-slate-700 transition-colors">
-          <h1 className="text-sm font-black tracking-tighter uppercase flex items-center gap-2">
+          {/* Mengubah tag h1 menjadi Link agar bisa diklik dan pindah ke halaman utama ('/') */}
+          <Link to="/" className="text-sm font-black tracking-tighter uppercase flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
             XR-ROV<span className="text-blue-500">CONTROL</span>
-          </h1>
+          </Link>
           <p className="text-[9px] font-bold opacity-50 uppercase tracking-widest mt-0.5">
             Industrial Informatics - TRIN
           </p>
