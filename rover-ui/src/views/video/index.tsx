@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
-  Video, Settings, Radio, Plus, X, SlidersHorizontal, Trash2, 
-  FileText, Camera, AlertCircle, Wifi, WifiOff, RefreshCw, Maximize2
+  Video, Settings, Radio, Plus, X, ChevronDown, ChevronUp, 
+  SlidersHorizontal, Edit2, Trash2, FileText, Camera, AlertCircle,
+  Wifi, WifiOff, RefreshCw, Maximize2
 } from 'lucide-react';
 
 // ============================================================
@@ -17,7 +18,7 @@ interface RosMessage {
 }
 
 // ============================================================
-// HOOK: Koneksi ke ROS2 via Rosbridge WebSocket
+// HOOK: Koneksi ke ROS2 via Rosbridge WebSocket (TIDAK DIHAPUS)
 // ============================================================
 function useRosBridge(wsUrl: string, imageTopic: string, enabled: boolean) {
   const [isConnected, setIsConnected] = useState(false);
@@ -120,12 +121,14 @@ function useRosBridge(wsUrl: string, imageTopic: string, enabled: boolean) {
 // ============================================================
 const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
 
-  // ── Mode Sumber Video ──
+  // ── Mode Sumber Video (Diperbarui jadi 4 pilihan) ──
   const [videoMode, setVideoMode] = useState<'gazebo' | 'espcam' | 'laptop' | 'usb'>('gazebo');
 
-  // ── Konfigurasi ROS2 (Gazebo) ──
+  // ── Konfigurasi ROS2 & Gazebo (web_video_server) ──
   const [rosbridgeUrl, setRosbridgeUrl] = useState('ws://localhost:9090');
   const [imageTopic, setImageTopic] = useState('/xr_rov/image/compressed');
+  const [webVideoUrl, setWebVideoUrl] = useState('http://localhost:8080/stream?topic=/xr_rov/image');
+  const [gazeboError, setGazeboError] = useState(false);
 
   // ── Konfigurasi ESP8266-CAM ──
   const [espCamUrl, setEspCamUrl] = useState('http://10.13.65.138/');
@@ -146,9 +149,9 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
   const [expandedSourceId, setExpandedSourceId] = useState<number | null>(null);
   const [showRosConfig, setShowRosConfig] = useState(false);
 
-  // ── Hook ROS2 ──
-  const rosEnabled = videoMode === 'gazebo';
-  const { isConnected, imageSrc, fps, error, reconnect } = useRosBridge(
+  // ── Hook ROS2 (Tetap dipertahankan kalau-kalau butuh rosbridge) ──
+  const rosEnabled = false; // Sengaja dimatikan sementara karena pakai web_video_server
+  const { isConnected, imageSrc, fps, error, reconnect: reconnectRos } = useRosBridge(
     rosbridgeUrl,
     imageTopic,
     rosEnabled
@@ -182,7 +185,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
         })
         .catch(err => {
           console.error("Gagal mengakses webcam:", err);
-          setWebcamError("Gagal mengakses kamera. Pastikan izin kamera diberikan.");
+          setWebcamError("Gagal mengakses kamera. Pastikan izin browser diberikan.");
         });
     } else {
       stopMediaTracks();
@@ -202,12 +205,12 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
   const cameraSources = [
     { 
       id: 1, 
-      name: "Gazebo Simulator (ROS2)", 
-      source: "/xr_rov/image", 
-      format: "Live via Rosbridge", 
+      name: "Gazebo Simulator (web_video_server)", 
+      source: webVideoUrl, 
+      format: "MJPEG Stream", 
       encoding: "JPEG", 
-      endpoint: rosbridgeUrl, 
-      status: videoMode === 'gazebo' ? (isConnected ? "Running" : "Connecting...") : "Standby", 
+      endpoint: webVideoUrl, 
+      status: videoMode === 'gazebo' ? (gazeboError ? "Error" : "Running") : "Standby", 
       isActive: videoMode === 'gazebo',
       modeId: 'gazebo' as const
     },
@@ -259,7 +262,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
   const getHeaderStatus = () => {
     switch(videoMode) {
       case 'espcam': return { connected: espCamLoaded, label: espCamLoaded ? 'ESP-CAM Connected' : 'Connecting...' };
-      case 'gazebo': return { connected: isConnected, label: isConnected ? 'Gazebo Connected' : 'Disconnected' };
+      case 'gazebo': return { connected: !gazeboError, label: !gazeboError ? 'Gazebo Connected' : 'Disconnected' };
       case 'laptop': return { connected: !!localStream, label: localStream ? 'Laptop Cam Active' : 'Connecting...' };
       case 'usb': return { connected: !!localStream, label: localStream ? 'USB Cam Active' : 'Connecting...' };
       default: return { connected: false, label: 'Offline' };
@@ -301,6 +304,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
             {/* ===== VIDEO PLAYER CARD ===== */}
             <div className={`border rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-300 ${cardBg}`}>
               
+              {/* Viewport kamera */}
               <div className={`relative bg-black group ${isFullscreen ? 'fixed inset-0 z-50' : 'aspect-video'}`}>
                 
                 {/* Badge LIVE */}
@@ -309,17 +313,15 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                 </div>
 
                 {/* Badge mode sumber */}
-                <div className={`absolute top-4 left-20 flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-mono z-10 border bg-blue-500/20 border-blue-500/30 text-blue-400`}>
-                  {videoMode === 'espcam' ? '📷 ESP-CAM' : videoMode === 'gazebo' ? '🤖 GAZEBO' : videoMode === 'laptop' ? '💻 LAPTOP' : '🔌 USB CAM'}
+                <div className={`absolute top-4 left-20 flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-mono z-10 border ${
+                  videoMode === 'espcam' 
+                    ? 'bg-orange-500/20 border-orange-500/30 text-orange-400' 
+                    : 'bg-blue-500/20 border-blue-500/30 text-blue-400'
+                }`}>
+                  {videoMode === 'espcam' ? '📷 ESP-CAM' : videoMode === 'gazebo' ? '🤖 GAZEBO' : videoMode === 'laptop' ? '💻 LAPTOP' : '🔌 USB'}
                 </div>
 
-                {/* FPS Badge (hanya untuk mode Gazebo/ROS) */}
-                {videoMode === 'gazebo' && isConnected && (
-                  <div className="absolute top-4 left-44 flex items-center gap-1 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-[10px] font-mono text-green-400 z-10 border border-green-500/20">
-                    {fps} fps
-                  </div>
-                )}
-
+                {/* Fullscreen button */}
                 <button
                   onClick={() => setIsFullscreen(!isFullscreen)}
                   className="absolute top-4 right-16 z-10 p-2 bg-black/40 backdrop-blur hover:bg-black/70 rounded-lg text-white/70 hover:text-white transition-all"
@@ -327,6 +329,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                   <Maximize2 size={16} />
                 </button>
 
+                {/* Reconnect / Refresh button */}
                 <button
                   onClick={() => {
                     if (videoMode === 'espcam') {
@@ -334,12 +337,13 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                       setEspCamLoaded(false);
                       setEspCamUrl(prev => prev);
                     } else if (videoMode === 'gazebo') {
-                      reconnect();
+                      setGazeboError(false);
+                      setWebVideoUrl(prev => prev);
                     } else {
-                      // Trigger re-render webcam
                       setVideoMode(prev => prev);
                     }
                   }}
+                  title="Refresh / Reconnect"
                   className="absolute top-4 right-4 z-10 p-2 bg-black/40 backdrop-blur hover:bg-black/70 rounded-lg text-white/70 hover:text-white transition-all"
                 >
                   <RefreshCw size={16} />
@@ -361,7 +365,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                         autoPlay
                         playsInline
                         muted
-                        className={`w-full h-full object-cover ${videoMode === 'laptop' ? 'scale-x-[-1]' : ''}`} // Mirror jika laptop (kamera depan)
+                        className={`w-full h-full object-cover ${videoMode === 'laptop' ? 'scale-x-[-1]' : ''}`} // Mirror jika laptop
                       />
                     )}
                   </>
@@ -374,42 +378,85 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                         <Camera size={64} className="text-orange-400/40" />
                         <div className="text-center">
-                          <p className="text-white/60 text-sm font-medium">ESP-CAM tidak dapat dijangkau</p>
+                          <p className="text-white/60 text-sm font-medium">ESP8266-CAM tidak dapat dijangkau</p>
+                          <p className="text-white/30 text-xs mt-1 font-mono">{espCamUrl}</p>
                         </div>
+                        <button
+                          onClick={() => { setEspCamError(false); setEspCamLoaded(false); }}
+                          className="mt-2 px-4 py-2 bg-orange-600 hover:bg-orange-500 rounded-xl text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
+                        >
+                          <RefreshCw size={12} /> Coba Lagi
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        {!espCamLoaded && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
+                            <div className="w-10 h-10 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+                            <p className="text-white/40 text-sm">Menghubungkan ke ESP-CAM...</p>
+                          </div>
+                        )}
+                        <img
+                          key={espCamUrl}
+                          src={`${espCamUrl.replace(/\/$/, '')}:81/stream`}
+                          className="w-full h-full object-cover"
+                          onLoad={() => setEspCamLoaded(true)}
+                          onError={() => { setEspCamError(true); setEspCamLoaded(false); }}
+                          alt="ESP8266-CAM Live Stream"
+                        />
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* MODE: GAZEBO (web_video_server) */}
+                {videoMode === 'gazebo' && (
+                  <>
+                    {gazeboError ? (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
+                        <AlertCircle size={64} className="text-blue-400/40" />
+                        <p className="text-white/60 text-sm font-medium">Gagal mengambil stream dari Gazebo</p>
+                        <p className="text-white/40 text-xs font-mono">{webVideoUrl}</p>
                       </div>
                     ) : (
                       <img
-                        key={espCamUrl}
-                        src={`${espCamUrl.replace(/\/$/, '')}:81/stream`}
-                        className="w-full h-full object-cover"
-                        onLoad={() => setEspCamLoaded(true)}
-                        onError={() => { setEspCamError(true); setEspCamLoaded(false); }}
-                        alt="ESP-CAM Live Stream"
+                        key={webVideoUrl}
+                        src={webVideoUrl}
+                        alt="Gazebo Camera"
+                        className="w-full h-full object-contain"
+                        onError={() => setGazeboError(true)}
                       />
                     )}
                   </>
                 )}
 
-                {/* MODE: GAZEBO (ROS2) */}
-                {videoMode === 'gazebo' && (
-                  <>
-                    {imageSrc ? (
-                      <img
-                        src={imageSrc}
-                        alt="ROV Camera Live"
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                        <Camera size={64} className="text-white/20" />
-                        <div className="text-center">
-                          <p className="text-white/40 text-sm font-medium">
-                            {error ?? (isConnected ? 'Menunggu frame dari Gazebo...' : 'Menghubungkan ke ROS2...')}
-                          </p>
-                        </div>
+                {/* OSD Settings overlay */}
+                {isSettingsOpen && (
+                  <div className="absolute top-0 right-0 bottom-0 w-64 bg-black/80 backdrop-blur-md border-l border-white/10 p-4 flex flex-col z-20 animate-in slide-in-from-right-8 duration-300">
+                    <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+                      <span className="font-bold text-white flex items-center gap-2"><Settings size={16} className="text-blue-400" /> Settings</span>
+                      <button onClick={() => setIsSettingsOpen(false)} className="text-[10px] uppercase font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-white transition-colors">Tutup</button>
+                    </div>
+                    <div className="space-y-5 text-sm flex-1">
+                      <div className="space-y-2">
+                        <label className="text-slate-300 text-xs font-medium">Sumber Kamera</label>
+                        <select 
+                          value={videoMode}
+                          onChange={e => setVideoMode(e.target.value as 'gazebo' | 'espcam' | 'laptop' | 'usb')}
+                          className="bg-black/50 border border-white/20 rounded p-1.5 text-xs text-white outline-none w-full"
+                        >
+                          <option value="espcam">📷 ESP8266-CAM</option>
+                          <option value="gazebo">🤖 ROV Camera (Gazebo)</option>
+                          <option value="laptop">💻 Webcam Internal</option>
+                          <option value="usb">🔌 Webcam USB</option>
+                        </select>
                       </div>
-                    )}
-                  </>
+                      <div className="flex justify-between items-center">
+                        <label className="text-slate-300 text-xs font-medium">Grid Lines</label>
+                        <input type="checkbox" className="w-8 h-4 accent-blue-500 rounded cursor-pointer" />
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -421,7 +468,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                       {videoMode === 'espcam' ? 'ESP8266-CAM' : videoMode === 'gazebo' ? 'Gazebo Stream' : videoMode === 'laptop' ? 'Laptop Camera' : 'USB Camera'}
                     </h3>
                     <p className={`text-xs font-mono ${mutedText}`}>
-                      Status: {headerStatus.label}
+                      {videoMode === 'espcam' ? espCamUrl : videoMode === 'gazebo' ? webVideoUrl : 'WebRTC Stream Local'}
                     </p>
                   </div>
                   <button
@@ -442,7 +489,11 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                   </button>
                   <button
                     onClick={() => setShowRosConfig(!showRosConfig)}
-                    className={`flex-1 border py-3 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 ${showRosConfig ? 'bg-blue-600 border-blue-600 text-white' : isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300' : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700 shadow-sm'}`}
+                    className={`flex-1 border py-3 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 ${
+                      showRosConfig
+                        ? 'bg-blue-600 border-blue-600 text-white'
+                        : isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300' : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700 shadow-sm'
+                    }`}
                   >
                     <Wifi size={14} /> Stream Config
                   </button>
@@ -452,7 +503,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                 {showRosConfig && (
                   <div className={`border rounded-2xl p-5 space-y-4 animate-in slide-in-from-top-2 duration-200 ${isDarkMode ? 'bg-[#0b111a] border-white/10' : 'bg-slate-50 border-slate-200'}`}>
                     
-                    {/* Tab pilihan mode (4 Pilihan) */}
+                    {/* Tab pilihan mode */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                       {(['gazebo', 'espcam', 'laptop', 'usb'] as const).map(mode => (
                         <button
@@ -469,49 +520,62 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                       ))}
                     </div>
 
-                    {/* Konfigurasi ESP8266-CAM */}
+                    {/* ── Konfigurasi ESP8266-CAM ── */}
                     {videoMode === 'espcam' && (
                       <div className="space-y-3">
-                        <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>URL ESP8266-CAM</label>
-                        <input
-                          type="text"
-                          value={espCamUrl}
-                          onChange={e => { setEspCamUrl(e.target.value); setEspCamError(false); setEspCamLoaded(false); }}
-                          placeholder="http://10.13.65.138"
-                          className={`w-full rounded-xl p-3 text-sm font-mono outline-none border transition-all ${inputBg}`}
-                        />
+                        <h4 className={`text-xs font-bold uppercase tracking-widest ${mutedText}`}>📷 Konfigurasi ESP8266-CAM</h4>
+                        <div className="space-y-2">
+                          <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>URL ESP8266-CAM</label>
+                          <input
+                            type="text"
+                            value={espCamUrl}
+                            onChange={e => { setEspCamUrl(e.target.value); setEspCamError(false); setEspCamLoaded(false); }}
+                            placeholder="http://10.13.65.138"
+                            className={`w-full rounded-xl p-3 text-sm font-mono outline-none border transition-all ${inputBg}`}
+                          />
+                        </div>
                       </div>
                     )}
 
-                    {/* Konfigurasi Gazebo/ROS2 */}
+                    {/* ── Konfigurasi Gazebo (web_video_server) ── */}
                     {videoMode === 'gazebo' && (
                       <div className="space-y-3">
-                        <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>WebSocket URL Rosbridge</label>
-                        <input
-                          type="text"
-                          value={rosbridgeUrl}
-                          onChange={e => setRosbridgeUrl(e.target.value)}
-                          placeholder="ws://localhost:9090"
-                          className={`w-full rounded-xl p-3 text-sm font-mono outline-none border mb-2 transition-all ${inputBg}`}
-                        />
-                        <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>Topic Gambar</label>
-                        <input
-                          type="text"
-                          value={imageTopic}
-                          onChange={e => setImageTopic(e.target.value)}
-                          placeholder="/xr_rov/image/compressed"
-                          className={`w-full rounded-xl p-3 text-sm font-mono outline-none border transition-all ${inputBg}`}
-                        />
+                        <h4 className={`text-xs font-bold uppercase tracking-widest ${mutedText}`}>🔗 Konfigurasi Gazebo</h4>
+                        <div className="space-y-2">
+                          <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>URL web_video_server</label>
+                          <input
+                            type="text"
+                            value={webVideoUrl}
+                            onChange={e => { setWebVideoUrl(e.target.value); setGazeboError(false); }}
+                            placeholder="http://localhost:8080/stream?topic=/xr_rov/image"
+                            className={`w-full rounded-xl p-3 text-sm font-mono outline-none border transition-all ${inputBg}`}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className={`text-[10px] uppercase font-bold tracking-widest ${mutedText}`}>WebSocket URL (Cadangan)</label>
+                          <input
+                            type="text"
+                            value={rosbridgeUrl}
+                            onChange={e => setRosbridgeUrl(e.target.value)}
+                            className={`w-full rounded-xl p-3 text-sm font-mono outline-none border transition-all ${inputBg}`}
+                          />
+                        </div>
                       </div>
                     )}
 
                     {(videoMode === 'laptop' || videoMode === 'usb') && (
                       <div className={`rounded-xl p-3 text-xs space-y-1 ${isDarkMode ? 'bg-blue-500/10 border border-blue-500/20 text-blue-300' : 'bg-blue-50 border border-blue-200 text-blue-700'}`}>
                         <p className="font-bold">💡 Info WebRTC:</p>
-                        <p>Kamera langsung mengambil video dari device lokal melalui browser. Pastikan izin kamera sudah diberikan di browser.</p>
+                        <p>Kamera mengambil video dari device lokal melalui browser. Pastikan izin kamera sudah diberikan.</p>
                       </div>
                     )}
 
+                    <button
+                      onClick={() => setShowRosConfig(false)}
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white text-sm transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
+                    >
+                      <RefreshCw size={14} /> Terapkan & Tutup
+                    </button>
                   </div>
                 )}
               </div>
@@ -623,19 +687,18 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                 <FileText size={14} /> Panduan Cepat
               </h3>
               <div className={`text-xs space-y-2 font-mono ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                <p className="font-bold text-teal-400">Mode Webcam (Laptop/USB):</p>
-                <p className="pl-3 border-l border-teal-500/30">Pastikan browser mengizinkan askes kamera lokal. USB cam menggunakan prioritas kamera environment (belakang/eksternal).</p>
-                <p className="font-bold text-orange-400 mt-2">Mode ESP8266-CAM:</p>
-                <p className="pl-3 border-l border-orange-500/30">1. Colok ESP8266-CAM → lihat IP di Serial Monitor</p>
-                <p className="pl-3 border-l border-orange-500/30">2. Masukkan IP ke Stream Config</p>
+                <p className="font-bold text-orange-400">Mode ESP8266-CAM:</p>
+                <p className="pl-3 border-l border-orange-500/30">1. Nyalakan hotspot HP</p>
+                <p className="pl-3 border-l border-orange-500/30">2. Colok ESP8266-CAM → lihat IP di Serial Monitor</p>
+                <p className="pl-3 border-l border-orange-500/30">3. Masukkan IP ke Stream Config → klik Terapkan</p>
                 <p className="font-bold text-blue-400 mt-2">Mode Gazebo (ROS2):</p>
-                <p className="pl-3 border-l border-blue-500/30">Jalankan rosbridge_server untuk menangkap frame dari Gazebo simulator.</p>
+                <p className="pl-3 border-l border-blue-500/30">Pastikan <code className="bg-black/30 px-1 rounded">ros2 run web_video_server web_video_server</code> berjalan.</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ===== DRAWER: DEVICE CONTROLS ===== */}
+        {/* ===== DRAWER: DEVICE CONTROLS (TIDAK DIHAPUS) ===== */}
         {isDeviceControlsOpen && (
           <div className={`fixed inset-y-0 right-0 w-full max-w-md border-l shadow-2xl z-50 flex flex-col animate-in slide-in-from-right-8 duration-300 ${drawerBg}`}>
             <div className={`p-6 flex justify-between items-center ${drawerHeaderBg}`}>
