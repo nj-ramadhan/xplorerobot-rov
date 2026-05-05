@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { 
   Search, Save, FileUp, Cpu, 
-  SlidersHorizontal, AlertTriangle
+  SlidersHorizontal, AlertTriangle, RefreshCw 
 } from 'lucide-react';
 
 interface Parameter {
@@ -30,9 +30,9 @@ const INITIAL_PARAMS: Parameter[] = [
 const ParamsView: React.FC<ParamsViewProps> = ({ isDarkMode = true }) => {
   const [params, setParams] = useState<Parameter[]>(INITIAL_PARAMS);
   const [searchTerm, setSearchTerm] = useState('');
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // --- Handlers ---
   const handleLoadClick = () => fileInputRef.current?.click();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,12 +46,10 @@ const ParamsView: React.FC<ParamsViewProps> = ({ isDarkMode = true }) => {
         const parsedParams = JSON.parse(content);
         if (Array.isArray(parsedParams)) {
           setParams(parsedParams);
-          alert("Yeay! Parameter berhasil di-load dari file.");
-        } else {
-          alert("Format file salah. Pastikan isi file berbentuk JSON Array.");
+          alert("Parameters loaded!");
         }
       } catch (error) {
-        alert("Gagal membaca file. Pastikan itu adalah file JSON yang valid.");
+        alert("Invalid JSON file.");
       }
     };
     reader.readAsText(file);
@@ -59,184 +57,132 @@ const ParamsView: React.FC<ParamsViewProps> = ({ isDarkMode = true }) => {
   };
 
   const handleToggle = (id: number) => {
-    setParams(prevParams => prevParams.map(p => p.id === id ? { ...p, value: !p.value } : p));
+    setParams(prev => prev.map(p => p.id === id ? { ...p, value: !p.value } : p));
   };
 
   const handleInputChange = (id: number, newValue: string) => {
-    setParams(prevParams => prevParams.map(p => p.id === id ? { ...p, value: newValue } : p));
+    setParams(prev => prev.map(p => p.id === id ? { ...p, value: newValue } : p));
+  };
+
+  const handleRefresh = () => {
+    if (window.confirm("Reset to default?")) setParams(INITIAL_PARAMS);
   };
 
   const handleSave = () => {
-    alert("Parameters successfully staged for upload!");
+    console.log("Saving params:", params);
+    alert("Changes saved to system!");
   };
 
   const filteredParams = params.filter(param => 
     param.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    param.desc.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    param.category.toLowerCase().includes(searchTerm.toLowerCase())
+    param.desc.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // ==========================================
-  // LOGIKA WARNA KONTRAS TINGGI (PUTIH BERSIH DI LIGHT MODE)
-  // ==========================================
-  const titleText = isDarkMode ? 'text-white' : 'text-slate-900';
-  const subText = isDarkMode ? 'text-slate-400' : 'text-slate-600';
-  const mutedText = isDarkMode ? 'text-slate-500' : 'text-slate-500';
-  
+  // --- Styles ---
+  const titleColor = isDarkMode ? 'text-white' : 'text-slate-900';
+  const labelColor = isDarkMode ? 'text-slate-500' : 'text-slate-400';
   const cardBg = isDarkMode 
-    ? 'bg-[#111827]/70 backdrop-blur-xl border-white/10 shadow-2xl' 
-    : 'bg-white border-slate-200 shadow-xl';
-    
-  const headerBg = isDarkMode ? 'bg-white/5' : 'bg-slate-50 border-b border-slate-200';
-  const borderColor = isDarkMode ? 'border-white/10' : 'border-slate-200';
-  const rowHover = isDarkMode ? 'hover:bg-white/[0.05]' : 'hover:bg-slate-50';
-  const tableTextHover = isDarkMode ? 'group-hover:text-white' : 'group-hover:text-blue-700';
-  
-  const searchBg = isDarkMode 
-    ? 'bg-black/50 border-white/10 text-white placeholder:text-slate-500' 
-    : 'bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 shadow-inner';
-
-  const inputBg = isDarkMode
-    ? 'bg-black/50 border-white/10 text-blue-400'
-    : 'bg-slate-50 border-slate-300 text-blue-700 shadow-inner';
-
-  const badgeBg = isDarkMode 
-    ? 'bg-white/10 text-slate-300 border-white/5' 
-    : 'bg-slate-100 border-slate-300 text-slate-700 font-bold';
-    
-  const iconBoxBg = isDarkMode 
-    ? 'bg-black/30 border-white/10' 
-    : 'bg-slate-50 border-slate-200 shadow-sm';
+    ? 'bg-[#111827] border-white/5 shadow-2xl' 
+    : 'bg-white border-slate-200 shadow-lg';
 
   return (
-    <div className="animate-in fade-in duration-500 pb-10 mt-2 font-['Inter',sans-serif]">
-      {/* Mengubah max-w-7xl menjadi max-w-5xl agar tabel lebih compact */}
+    <div className="animate-in fade-in duration-500 pb-10 mt-2 font-sans">
       <div className="max-w-5xl mx-auto w-full space-y-8">
         
-        {/* ================= HEADER & STATUS DISATUKAN ================= */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-          {/* Bagian Kiri: Icon & Judul */}
-          <div className="flex items-center gap-5">
-            <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 text-white">
-              <Cpu size={32} />
-            </div>
-            <div>
-              <h1 className={`font-heading text-3xl md:text-4xl font-black tracking-tight uppercase drop-shadow-sm transition-colors duration-300 ${titleText}`}>System Parameters</h1>
-              <p className={`font-mono text-xs mt-1 tracking-widest uppercase font-bold drop-shadow-sm transition-colors duration-300 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                Configure vehicle flight controller settings
-              </p>
-            </div>
+        {/* HEADER - DISESUAIKAN DENGAN GAYA LOG BROWSER */}
+        <div className="flex items-center gap-6 px-2">
+          {/* Logo Box - Dibuat sedikit lebih rounded & shadow lembut */}
+          <div className="p-4 bg-blue-600 rounded-[1.25rem] shadow-lg shadow-blue-500/20 text-white flex items-center justify-center">
+            <Cpu size={36} strokeWidth={2.5} />
           </div>
-
-          {/* Bagian Kanan: Status Connected (sekarang sejajar dengan judul) */}
-          <div className={`flex items-center gap-3 px-4 py-2 rounded-full border shadow-sm w-fit ${isDarkMode ? 'bg-black/40 border-emerald-500/20 backdrop-blur-md' : 'bg-emerald-50 border-emerald-200'}`}>
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
-            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest drop-shadow-sm">Connected | SITL</span>
+          
+          <div className="flex flex-col justify-center">
+            {/* Judul Utama: Uppercase, Extra Bold, Tracking Wide */}
+            <h1 className={`text-4xl md:text-4xl font-black uppercase tracking-tight ${titleColor}`}>
+              System Parameters
+            </h1>
+            {/* Sub-judul: Uppercase, Bold, Muted blue, Monospace feel */}
+            <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400 mt-1.5 opacity-90">
+              Manage and configure flight controller parameters
+            </p>
           </div>
         </div>
 
-        {/* ================= MAIN TABLE CARD ================= */}
-        <div className={`border rounded-3xl overflow-hidden flex flex-col transition-all duration-300 ${cardBg}`}>
+        {/* MAIN CARD */}
+        <div className={`border rounded-[2rem] overflow-hidden ${cardBg}`}>
           
           {/* TOOLBAR */}
-          <div className={`p-6 flex flex-col md:flex-row items-center justify-between gap-5 transition-colors duration-300 ${headerBg}`}>
-            <div className="relative w-full md:w-96">
-              <Search size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${mutedText}`} />
+          <div className="p-6 flex items-center justify-between gap-4 border-b border-white/5">
+            <div className="relative flex-1 max-w-sm">
+              <Search size={16} className={`absolute left-4 top-1/2 -translate-y-1/2 ${labelColor}`} />
               <input 
                 type="text" 
                 placeholder="Search parameter..." 
-                className={`w-full rounded-xl py-3 pl-12 pr-4 text-sm font-medium outline-none transition-all border ${searchBg}`}
+                className={`w-full rounded-xl py-2.5 pl-11 pr-4 text-sm font-medium outline-none border transition-all ${isDarkMode ? 'bg-black/40 border-white/10 text-slate-200 focus:border-blue-500/50' : 'bg-slate-50 border-slate-200 focus:border-blue-500'}`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <input type="file" accept=".json" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
-              <button 
-                onClick={handleLoadClick}
-                className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold border uppercase tracking-widest transition-all ${isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300' : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700 shadow-sm'}`}
-              >
-                <FileUp size={16} /> Load File
-              </button>
-
-              <button 
-                onClick={handleSave}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-xs font-black text-white shadow-lg shadow-blue-500/25 transition-all active:scale-95 tracking-widest uppercase"
-              >
-                <Save size={16} /> Save
-              </button>
-            </div>
+            <button 
+              onClick={handleRefresh}
+              className={`p-2.5 rounded-xl border transition-all active:scale-90 ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+            >
+              <RefreshCw size={18} />
+            </button>
           </div>
 
-          {/* TABLE CONTENT */}
-          <div className="overflow-x-auto custom-scrollbar">
-            <table className="w-full text-left border-collapse min-w-[800px]">
+          {/* TABLE */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
               <thead>
-                <tr className={`${borderColor} border-b transition-colors duration-300 ${isDarkMode ? '' : 'bg-slate-50/50'}`}>
-                  <th className={`px-6 py-4 text-[10px] font-bold uppercase tracking-widest w-1/4 ${mutedText}`}>Parameter Name</th>
-                  <th className={`px-6 py-4 text-[10px] font-bold uppercase tracking-widest w-auto ${mutedText}`}>Description & Category</th>
-                  <th className={`px-6 py-4 text-right text-[10px] font-bold uppercase tracking-widest w-1/4 ${mutedText}`}>Assigned Value</th>
+                <tr className="border-b border-white/5">
+                  <th className={`px-8 py-5 text-[10px] font-bold uppercase tracking-[0.2em] ${labelColor}`}>Parameter Name</th>
+                  <th className={`px-8 py-5 text-[10px] font-bold uppercase tracking-[0.2em] ${labelColor}`}>Description</th>
+                  <th className={`px-8 py-5 text-right text-[10px] font-bold uppercase tracking-[0.2em] ${labelColor}`}>Value</th>
                 </tr>
               </thead>
-              <tbody className={`divide-y transition-colors duration-300 ${isDarkMode ? 'divide-white/10' : 'divide-slate-200'}`}>
-                {filteredParams.length > 0 ? (
-                  filteredParams.map((param) => (
-                    <tr key={param.id} className={`group transition-colors duration-200 ${rowHover}`}>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg border transition-colors duration-300 ${iconBoxBg} ${mutedText} group-hover:text-blue-500 group-hover:border-blue-500/30`}>
-                            <SlidersHorizontal size={14} />
-                          </div>
-                          <span className={`text-sm font-mono font-bold transition-colors duration-300 ${isDarkMode ? 'text-slate-200' : 'text-slate-800'} ${tableTextHover}`}>
-                            {param.name}
-                          </span>
+              <tbody className={`divide-y ${isDarkMode ? 'divide-white/5' : 'divide-slate-100'}`}>
+                {filteredParams.length > 0 ? filteredParams.map((param) => (
+                  <tr key={param.id} className="group hover:bg-white/[0.02] transition-colors">
+                    <td className="px-8 py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 rounded-lg bg-slate-800/40 text-slate-500 group-hover:text-blue-400 transition-colors">
+                          <SlidersHorizontal size={14} />
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1.5">
-                          <p className={`text-sm transition-colors duration-300 line-clamp-1 ${subText}`}>
-                            {param.desc}
-                          </p>
-                          <span className={`inline-flex items-center w-fit px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border transition-colors duration-300 ${badgeBg}`}>
-                            {param.category}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex justify-end items-center">
-                          {param.type === 'toggle' ? (
-                            <div className="flex items-center gap-3">
-                              <span className={`text-[10px] font-bold tracking-widest uppercase transition-colors duration-300 ${param.value ? 'text-emerald-600' : mutedText}`}>
-                                {param.value ? 'Enabled' : 'Disabled'}
-                              </span>
-                              <button 
-                                onClick={() => handleToggle(param.id)}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${param.value ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : (isDarkMode ? 'bg-slate-600' : 'bg-slate-300')}`}
-                              >
-                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out shadow-sm ${param.value ? 'translate-x-6' : 'translate-x-1'}`} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="relative group/input">
-                              <input 
-                                type="text" 
-                                value={param.value.toString()} 
-                                onChange={(e) => handleInputChange(param.id, e.target.value)}
-                                className={`w-28 border focus:border-blue-500 rounded-lg py-2 px-3 text-sm font-mono font-bold text-right outline-none transition-all duration-300 ${inputBg}`}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
+                        <span className={`text-sm font-semibold tracking-wide ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                          {param.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-4">
+                      <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {param.desc}
+                      </p>
+                    </td>
+                    <td className="px-8 py-4 text-right">
+                      {param.type === 'toggle' ? (
+                        <button 
+                          onClick={() => handleToggle(param.id)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all shadow-inner ${param.value ? 'bg-blue-500' : 'bg-slate-700'}`}
+                        >
+                          <span className={`h-4 w-4 rounded-full bg-white shadow-md transition-transform ${param.value ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                      ) : (
+                        <input 
+                          type="text" 
+                          value={param.value.toString()} 
+                          onChange={(e) => handleInputChange(param.id, e.target.value)}
+                          className="w-24 bg-black/30 border border-white/10 rounded-lg py-1.5 px-3 text-sm font-mono text-right text-blue-400 outline-none focus:border-blue-500/50 transition-all shadow-inner"
+                        />
+                      )}
+                    </td>
+                  </tr>
+                )) : (
                   <tr>
-                    <td colSpan={3} className="px-6 py-12 text-center">
-                      <div className={`flex flex-col items-center justify-center gap-3 ${mutedText}`}>
-                        <AlertTriangle size={32} className="opacity-50" />
-                        <p className="text-sm font-medium">No parameters match your search criteria.</p>
+                    <td colSpan={3} className="px-8 py-16 text-center">
+                      <div className="flex flex-col items-center opacity-30">
+                        <AlertTriangle size={48} />
+                        <p className="mt-2 text-sm font-bold uppercase tracking-widest">No Results Found</p>
                       </div>
                     </td>
                   </tr>
@@ -245,11 +191,27 @@ const ParamsView: React.FC<ParamsViewProps> = ({ isDarkMode = true }) => {
             </table>
           </div>
           
-          <div className={`p-4 border-t flex justify-between items-center text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'} ${mutedText}`}>
-            <span>Showing {filteredParams.length} parameters</span>
-            <span>Autopilot Version: V4.3.0</span>
+          {/* FOOTER */}
+          <div className="p-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center bg-black/20 gap-6">
+            <span className={`text-[10px] font-bold uppercase tracking-[0.3em] ${labelColor}`}>
+              System Status: Ready
+            </span>
+            <div className="flex gap-4 w-full md:w-auto">
+              <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
+              <button 
+                onClick={handleLoadClick}
+                className="flex-1 md:flex-none flex items-center justify-center gap-3 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest border border-white/10 text-slate-300 hover:bg-white/5 transition-all active:scale-95"
+              >
+                <FileUp size={16} /> Load File
+              </button>
+              <button 
+                onClick={handleSave}
+                className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-500 px-8 py-3 rounded-xl text-[11px] font-black text-white uppercase tracking-[0.15em] shadow-lg shadow-blue-900/40 transition-all active:scale-95"
+              >
+                <Save size={16} /> Save Changes
+              </button>
+            </div>
           </div>
-
         </div>
       </div>
     </div>
