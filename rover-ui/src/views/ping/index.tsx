@@ -1,33 +1,53 @@
 import React, { useState } from 'react';
-import { Radio, Eye, Settings2, Info, Activity } from 'lucide-react';
+import { Radio, Eye, Settings2, Info, Activity, RefreshCw, CheckCircle } from 'lucide-react'; // Tambah RefreshCw & CheckCircle
 
 interface PingSonarProps {
   isDarkMode?: boolean;
+  onRefresh?: () => void; // Tambah prop onRefresh
 }
 
 // PERBAIKAN: Default diubah jadi true agar sinkron saat web pertama dibuka di Dashboad
-const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
+const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true, onRefresh }) => {
   const [mavlinkEnabled, setMavlinkEnabled] = useState(true);
+  
+  // STATE UNTUK NOTIFIKASI SUKSES (KANAN BAWAH)
+  const [showToast, setShowToast] = useState(false);
+
+  // FUNGSI HANDLE REFRESH (NATIVE CONFIRM + CUSTOM TOAST SUKSES)
+  const handleRefresh = () => {
+    // 1. Munculin konfirmasi bawaan browser dari atas
+    const isConfirmed = window.confirm("Apakah Anda yakin ingin me-refresh perangkat Ping Sonar?");
+    
+    // 2. Kalau di-klik "OK"
+    if (isConfirmed) {
+      if (onRefresh) onRefresh();
+      
+      // Munculin notifikasi toast di kanan bawah
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
+  };
 
   // ==========================================
   // LOGIKA TEMA: OTOMATIS MENYESUAIKAN DARK/LIGHT MODE
   // ==========================================
   
   // Warna Teks
-  const titleColor = isDarkMode ? 'text-white' : 'text-slate-950'; // Lebih pekat di Light mode
-  const subTextColor = isDarkMode ? 'text-slate-300' : 'text-slate-700'; // Lebih pekat di Light mode
-  const labelColor = isDarkMode ? 'text-slate-400' : 'text-slate-600'; // Lebih pekat di Light mode
-  const valueColor = isDarkMode ? 'text-white' : 'text-slate-900'; // Lebih pekat di Light mode
+  const titleColor = isDarkMode ? 'text-white' : 'text-slate-950'; 
+  const subTextColor = isDarkMode ? 'text-slate-300' : 'text-slate-700'; 
+  const labelColor = isDarkMode ? 'text-slate-400' : 'text-slate-600'; 
+  const valueColor = isDarkMode ? 'text-white' : 'text-slate-900'; 
 
   // ==========================================
   // LOGIKA LATAR BELAKANG (PERBAIKAN UTAMA)
   // ==========================================
   
   // 1. Kartu Utama (Ping1D & Ping360)
-  // DIUBAH BULK: Saat isDarkMode = false, warnanya murni 'bg-white' (Solid Putih)
   const cardBg = isDarkMode 
     ? 'bg-[#111827]/60 border-white/10 backdrop-blur-xl shadow-2xl' 
-    : 'bg-white border-slate-200 shadow-xl'; // Putih Bersih
+    : 'bg-white border-slate-200 shadow-xl'; 
     
   // 2. Kotak Info Biru di Atas
   const infoBg = isDarkMode 
@@ -37,12 +57,12 @@ const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
   // 3. Bagian Header Kartu (Yang ada logo bulat)
   const cardHeaderBg = isDarkMode 
     ? 'border-white/10 bg-white/5' 
-    : 'border-slate-200 bg-slate-50'; // Sedikit abu-abu untuk memisahkan header
+    : 'border-slate-200 bg-slate-50'; 
     
   // 4. Kotak Data Kecil (FW Version, ID)
   const innerBoxBg = isDarkMode 
     ? 'bg-black/40 border-white/10' 
-    : 'bg-slate-100 border-slate-200 shadow-inner'; // Sedikit lebih gelap dari bg-white
+    : 'bg-slate-100 border-slate-200 shadow-inner'; 
     
   // 5. Kotak Interaktif (System Port)
   const interactiveBoxBg = isDarkMode 
@@ -50,22 +70,39 @@ const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
     : 'bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700 shadow-sm';
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 mt-2 font-['Inter',sans-serif] antialiased">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 mt-2 font-['Inter',sans-serif] antialiased relative">
       <div className="max-w-6xl mx-auto w-full">
 
-        {/* HEADER */}
-        <div className="flex items-center gap-5 mb-8">
-          <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
-            <Radio size={32} className="text-white" />
+        {/* =========================================
+            HEADER (DITAMBAH TOMBOL REFRESH)
+            ========================================= */}
+        <div className="flex items-center justify-between w-full mb-8">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
+              <Radio size={32} className="text-white" />
+            </div>
+            <div>
+              <h1 className={`font-heading text-3xl md:text-4xl font-black tracking-tight uppercase transition-colors duration-300 ${titleColor}`}>
+                Ping Sonar Devices
+              </h1>
+              <p className={`font-mono text-xs mt-1 tracking-widest uppercase font-bold transition-colors duration-300 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                Manage detected Ping family sonar devices
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className={`font-heading text-3xl md:text-4xl font-black tracking-tight uppercase transition-colors duration-300 ${titleColor}`}>
-              Ping Sonar Devices
-            </h1>
-            <p className={`font-mono text-xs mt-1 tracking-widest uppercase font-bold transition-colors duration-300 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-              Manage detected Ping family sonar devices
-            </p>
-          </div>
+
+          {/* Tombol Refresh */}
+          <button 
+            onClick={handleRefresh}
+            className={`p-3 rounded-xl border transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center ${
+              isDarkMode 
+                ? 'bg-[#111827]/70 border-white/10 text-slate-400 hover:text-white hover:border-white/30' 
+                : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300'
+            }`}
+            title="Refresh Sonar Devices"
+          >
+            <RefreshCw size={24} className={`transition-transform duration-500 ${showToast ? 'animate-spin text-blue-500' : 'hover:rotate-180'}`} />
+          </button>
         </div>
 
         {/* INFO SECTION */}
@@ -159,6 +196,20 @@ const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
           </div>
 
         </div>
+
+        {/* ================= TOAST NOTIFIKASI SUKSES (BAWAH KANAN) ================= */}
+        {showToast && (
+          <div className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-bottom-8 fade-in duration-300 ${
+            isDarkMode ? 'bg-[#111827] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-800'
+          }`}>
+            <CheckCircle size={20} className="text-green-500" />
+            <div className="flex flex-col">
+              <span className="text-sm font-bold">Refresh Successful</span>
+              <span className={`text-[10px] uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Sonar devices updated</span>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

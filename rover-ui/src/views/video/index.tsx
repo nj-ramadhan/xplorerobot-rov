@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { 
   Video, Settings, Radio, Plus, X, ChevronDown, ChevronUp, 
-  SlidersHorizontal, Edit2, Trash2, FileText, Camera, AlertCircle 
+  SlidersHorizontal, Edit2, Trash2, FileText, Camera, AlertCircle,
+  RefreshCw, CheckCircle // Tambah CheckCircle
 } from 'lucide-react';
 
 interface VideoStreamProps {
   isDarkMode?: boolean;
+  onRefresh?: () => void;
 }
 
-const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
+const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true, onRefresh }) => {
   const [endpoints, setEndpoints] = useState([
     { id: 1, type: 'UDP', address: 'udp://192.168.2.1:5600' }
   ]);
@@ -16,6 +18,26 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDeviceControlsOpen, setIsDeviceControlsOpen] = useState(false);
   const [expandedSourceId, setExpandedSourceId] = useState<number | null>(null);
+
+  // STATE UNTUK NOTIFIKASI SUKSES (KANAN BAWAH)
+  const [showToast, setShowToast] = useState(false);
+
+  // FUNGSI HANDLE REFRESH (NATIVE CONFIRM + CUSTOM TOAST SUKSES)
+  const handleRefresh = () => {
+    // 1. Munculin konfirmasi bawaan browser dari atas
+    const isConfirmed = window.confirm("Apakah Anda yakin ingin me-refresh sumber video?");
+    
+    // 2. Kalau di-klik "OK"
+    if (isConfirmed) {
+      if (onRefresh) onRefresh();
+      
+      // Munculin notifikasi toast di kanan bawah
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
+  };
 
   const addEndpoint = () => {
     const newId = endpoints.length ? endpoints[endpoints.length - 1].id + 1 : 1;
@@ -49,19 +71,36 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
 
   return (
     <div className="animate-in fade-in duration-500 relative overflow-hidden min-h-screen pb-10 mt-2">
-      <div className="max-w-7xl mx-auto w-full">
+      <div className="max-w-7xl mx-auto w-full relative">
 
-        {/* HEADER */}
-        <div className="flex items-center gap-5 mb-8">
-          <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
-            <Video size={32} className="text-white" />
+        {/* =========================================
+            HEADER 
+            ========================================= */}
+        <div className="flex items-center justify-between w-full mb-8">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
+              <Video size={32} className="text-white" />
+            </div>
+            <div>
+              <h1 className={`text-3xl md:text-4xl font-black tracking-tight uppercase drop-shadow-sm ${titleText}`}>Video Streams</h1>
+              <p className={`font-mono text-xs mt-1 tracking-widest uppercase drop-shadow-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                Manage your video devices and video streams
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className={`text-3xl md:text-4xl font-black tracking-tight uppercase drop-shadow-sm ${titleText}`}>Video Streams</h1>
-            <p className={`font-mono text-xs mt-1 tracking-widest uppercase drop-shadow-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-              Manage your video devices and video streams
-            </p>
-          </div>
+
+          {/* Tombol Refresh */}
+          <button 
+            onClick={handleRefresh}
+            className={`p-3 rounded-xl border transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center ${
+              isDarkMode 
+                ? 'bg-[#111827]/70 border-white/10 text-slate-400 hover:text-white hover:border-white/30' 
+                : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300'
+            }`}
+            title="Refresh Sources"
+          >
+            <RefreshCw size={24} className={`transition-transform duration-500 ${showToast ? 'animate-spin text-blue-500' : 'hover:rotate-180'}`} />
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -314,6 +353,19 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
             <div className={`p-6 border-t flex gap-4 ${drawerHeaderBg}`}>
               <button onClick={() => setIsDeviceControlsOpen(false)} className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all shadow-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10 text-slate-300' : 'bg-slate-200 hover:bg-slate-300 text-slate-800'}`}>Close</button>
               <button className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white text-sm transition-all shadow-lg shadow-blue-600/30">Restore Defaults</button>
+            </div>
+          </div>
+        )}
+
+        {/* ================= TOAST NOTIFIKASI SUKSES (BAWAH KANAN) ================= */}
+        {showToast && (
+          <div className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-bottom-8 fade-in duration-300 ${
+            isDarkMode ? 'bg-[#111827] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-800'
+          }`}>
+            <CheckCircle size={20} className="text-green-500" />
+            <div className="flex flex-col">
+              <span className="text-sm font-bold">Refresh Successful</span>
+              <span className={`text-[10px] uppercase tracking-widest ${mutedText}`}>Video sources updated</span>
             </div>
           </div>
         )}
