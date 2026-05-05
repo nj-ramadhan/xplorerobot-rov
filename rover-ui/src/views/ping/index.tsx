@@ -1,94 +1,108 @@
-import React, { useState, useEffect } from 'react';
-import { Radio, Eye, Settings2, Info, Activity, Wifi, WifiOff } from 'lucide-react';
+import React, { useState } from 'react';
+import { Radio, Eye, Settings2, Info, Activity, RefreshCw, CheckCircle } from 'lucide-react'; // Tambah RefreshCw & CheckCircle
 
 interface PingSonarProps {
   isDarkMode?: boolean;
+  onRefresh?: () => void; // Tambah prop onRefresh
 }
 
-const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
+// PERBAIKAN: Default diubah jadi true agar sinkron saat web pertama dibuka di Dashboad
+const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true, onRefresh }) => {
   const [mavlinkEnabled, setMavlinkEnabled] = useState(true);
   
-  // ==========================================
-  // STATE BARU: LOGIKA WEBSOCKET HARDWARE (ROS 2)
-  // ==========================================
-  const [wsConnected, setWsConnected] = useState(false);
-  const [sonarDistance, setSonarDistance] = useState<number | null>(null);
+  // STATE UNTUK NOTIFIKASI SUKSES (KANAN BAWAH)
+  const [showToast, setShowToast] = useState(false);
 
-  useEffect(() => {
-    // Menghubungkan langsung ke Port 8003 (ros2_bridge.py)
-    const socket = new WebSocket('ws://localhost:8003/ws/hardware');
-
-    socket.onopen = () => {
-      setWsConnected(true);
-    };
-
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "SENSOR_SONAR") {
-          // Mengupdate state dengan jarak asli dari ROS 2
-          setSonarDistance(data.distance_meter);
-        }
-      } catch (error) {
-        console.error("Error parsing sonar data:", error);
-      }
-    };
-
-    socket.onclose = () => {
-      setWsConnected(false);
-    };
-
-    return () => {
-      socket.close();
-    };
-  }, []);
+  // FUNGSI HANDLE REFRESH (NATIVE CONFIRM + CUSTOM TOAST SUKSES)
+  const handleRefresh = () => {
+    // 1. Munculin konfirmasi bawaan browser dari atas
+    const isConfirmed = window.confirm("Apakah Anda yakin ingin me-refresh perangkat Ping Sonar?");
+    
+    // 2. Kalau di-klik "OK"
+    if (isConfirmed) {
+      if (onRefresh) onRefresh();
+      
+      // Munculin notifikasi toast di kanan bawah
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
+  };
 
   // ==========================================
   // LOGIKA TEMA: OTOMATIS MENYESUAIKAN DARK/LIGHT MODE
   // ==========================================
   
-  const titleColor = isDarkMode ? 'text-white' : 'text-slate-950';
-  const subTextColor = isDarkMode ? 'text-slate-300' : 'text-slate-700';
-  const labelColor = isDarkMode ? 'text-slate-400' : 'text-slate-600';
-  const valueColor = isDarkMode ? 'text-white' : 'text-slate-900';
+  // Warna Teks
+  const titleColor = isDarkMode ? 'text-white' : 'text-slate-950'; 
+  const subTextColor = isDarkMode ? 'text-slate-300' : 'text-slate-700'; 
+  const labelColor = isDarkMode ? 'text-slate-400' : 'text-slate-600'; 
+  const valueColor = isDarkMode ? 'text-white' : 'text-slate-900'; 
 
+  // ==========================================
+  // LOGIKA LATAR BELAKANG (PERBAIKAN UTAMA)
+  // ==========================================
+  
+  // 1. Kartu Utama (Ping1D & Ping360)
   const cardBg = isDarkMode 
     ? 'bg-[#111827]/60 border-white/10 backdrop-blur-xl shadow-2xl' 
     : 'bg-white border-slate-200 shadow-xl'; 
     
+  // 2. Kotak Info Biru di Atas
   const infoBg = isDarkMode 
     ? 'bg-[#111827]/40 border-white/5 backdrop-blur-xl shadow-lg' 
     : 'bg-blue-50 border-blue-200 shadow-sm'; 
     
+  // 3. Bagian Header Kartu (Yang ada logo bulat)
   const cardHeaderBg = isDarkMode 
     ? 'border-white/10 bg-white/5' 
-    : 'border-slate-200 bg-slate-50';
+    : 'border-slate-200 bg-slate-50'; 
     
+  // 4. Kotak Data Kecil (FW Version, ID)
   const innerBoxBg = isDarkMode 
     ? 'bg-black/40 border-white/10' 
-    : 'bg-slate-100 border-slate-200 shadow-inner';
+    : 'bg-slate-100 border-slate-200 shadow-inner'; 
     
+  // 5. Kotak Interaktif (System Port)
   const interactiveBoxBg = isDarkMode 
     ? 'bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/30 text-blue-400' 
     : 'bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700 shadow-sm';
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 mt-2 font-['Inter',sans-serif] antialiased">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 mt-2 font-['Inter',sans-serif] antialiased relative">
       <div className="max-w-6xl mx-auto w-full">
 
-        {/* HEADER */}
-        <div className="flex items-center gap-5 mb-8">
-          <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
-            <Radio size={32} className="text-white" />
+        {/* =========================================
+            HEADER (DITAMBAH TOMBOL REFRESH)
+            ========================================= */}
+        <div className="flex items-center justify-between w-full mb-8">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
+              <Radio size={32} className="text-white" />
+            </div>
+            <div>
+              <h1 className={`font-heading text-3xl md:text-4xl font-black tracking-tight uppercase transition-colors duration-300 ${titleColor}`}>
+                Ping Sonar Devices
+              </h1>
+              <p className={`font-mono text-xs mt-1 tracking-widest uppercase font-bold transition-colors duration-300 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                Manage detected Ping family sonar devices
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className={`font-heading text-3xl md:text-4xl font-black tracking-tight uppercase transition-colors duration-300 ${titleColor}`}>
-              Ping Sonar Devices
-            </h1>
-            <p className={`font-mono text-xs mt-1 tracking-widest uppercase font-bold transition-colors duration-300 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-              Manage detected Ping family sonar devices
-            </p>
-          </div>
+
+          {/* Tombol Refresh */}
+          <button 
+            onClick={handleRefresh}
+            className={`p-3 rounded-xl border transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center ${
+              isDarkMode 
+                ? 'bg-[#111827]/70 border-white/10 text-slate-400 hover:text-white hover:border-white/30' 
+                : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300'
+            }`}
+            title="Refresh Sonar Devices"
+          >
+            <RefreshCw size={24} className={`transition-transform duration-500 ${showToast ? 'animate-spin text-blue-500' : 'hover:rotate-180'}`} />
+          </button>
         </div>
 
         {/* INFO SECTION */}
@@ -122,35 +136,16 @@ const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
                   <Radio className={`w-10 h-10 ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`} />
                </div>
                <h2 className={`font-heading text-2xl font-black tracking-tighter uppercase transition-colors duration-300 ${titleColor}`}>Ping1D</h2>
-               
-               {/* Indikator Status WebSocket Real-time */}
-               {wsConnected ? (
-                 <span className={`flex items-center gap-1 text-[10px] font-mono font-bold px-3 py-0.5 rounded-full mt-2 ${isDarkMode ? 'text-emerald-400 bg-emerald-500/20 border border-emerald-500/30' : 'text-emerald-700 bg-emerald-100 border border-emerald-300'}`}>
-                   <Wifi size={10} /> Connected to ROS 2
-                 </span>
-               ) : (
-                 <span className={`flex items-center gap-1 text-[10px] font-mono font-bold px-3 py-0.5 rounded-full mt-2 ${isDarkMode ? 'text-rose-400 bg-rose-500/20 border border-rose-500/30' : 'text-rose-700 bg-rose-100 border border-rose-300'}`}>
-                   <WifiOff size={10} /> Disconnected
-                 </span>
-               )}
+               <span className={`text-[10px] font-mono font-bold px-3 py-0.5 rounded-full mt-2 animate-pulse ${isDarkMode ? 'text-emerald-400 bg-emerald-500/20 border border-emerald-500/30' : 'text-emerald-900 bg-emerald-100 border border-emerald-300'}`}>Connected</span>
             </div>
 
             <div className="p-6 space-y-4">
-              
-              {/* DISPLAY DATA REAL-TIME */}
-              <div className={`p-4 rounded-2xl border flex flex-col items-center justify-center transition-colors duration-300 ${innerBoxBg}`}>
-                <p className={`text-[10px] uppercase font-bold mb-1 transition-colors duration-300 ${labelColor}`}>Distance to Target</p>
-                <p className={`text-4xl font-black font-mono transition-colors duration-300 ${wsConnected ? (isDarkMode ? 'text-emerald-400' : 'text-emerald-600') : (isDarkMode ? 'text-slate-600' : 'text-slate-400')}`}>
-                  {sonarDistance !== null ? `${sonarDistance.toFixed(2)} m` : '--.-- m'}
-                </p>
-              </div>
-
               <div className={`flex justify-between items-center text-[11px] font-bold tracking-widest uppercase transition-colors duration-300 ${labelColor}`}>
-                <span>Bridge</span> <span className={`font-mono ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>ROS 2 / Port 8003</span>
+                <span>Bridge</span> <span className={`font-mono ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>UDP 9090</span>
               </div>
 
               <div className="flex justify-between items-center py-2">
-                <span className={`text-[11px] font-bold tracking-widest uppercase transition-colors duration-300 ${labelColor}`}>MAVLink Override</span>
+                <span className={`text-[11px] font-bold tracking-widest uppercase transition-colors duration-300 ${labelColor}`}>MAVLink Distances</span>
                 <button
                   onClick={() => setMavlinkEnabled(!mavlinkEnabled)}
                   className={`w-12 h-6 rounded-full relative transition-all duration-300 ${mavlinkEnabled ? 'bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.4)]' : (isDarkMode ? 'bg-slate-700' : 'bg-slate-300')}`}
@@ -175,12 +170,12 @@ const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
                   <span className="text-[9px] uppercase font-black tracking-tighter">System Port</span>
                   <span className={`font-mono text-xs font-bold transition-colors duration-300 ${valueColor}`}>/dev/ttyUSB0</span>
                 </div>
-                <Eye className="w-5 h-5 cursor-pointer hover:scale-110 transition-transform" />
+                <Eye className="w-5 h-5 cursor-pointer" />
               </div>
             </div>
           </div>
 
-          {/* CARD PING360 */}
+          {/* CARD PING*/}
           <div className={`border rounded-3xl overflow-hidden transition-all duration-300 group ${cardBg}`}>
             <div className={`p-8 flex flex-col items-center border-b transition-colors duration-300 ${cardHeaderBg}`}>
                <div className={`p-4 rounded-full mb-3 group-hover:scale-110 transition-transform ${isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
@@ -201,6 +196,20 @@ const PingSonarView: React.FC<PingSonarProps> = ({ isDarkMode = true }) => {
           </div>
 
         </div>
+
+        {/* ================= TOAST NOTIFIKASI SUKSES (BAWAH KANAN) ================= */}
+        {showToast && (
+          <div className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-bottom-8 fade-in duration-300 ${
+            isDarkMode ? 'bg-[#111827] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-800'
+          }`}>
+            <CheckCircle size={20} className="text-green-500" />
+            <div className="flex flex-col">
+              <span className="text-sm font-bold">Refresh Successful</span>
+              <span className={`text-[10px] uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Sonar devices updated</span>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

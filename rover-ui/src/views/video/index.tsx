@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Video, Settings, Radio, Plus, X, ChevronDown, ChevronUp, 
   SlidersHorizontal, Edit2, Trash2, FileText, Camera, AlertCircle,
-  Wifi, WifiOff, RefreshCw, Maximize2
+  Wifi, WifiOff, RefreshCw, Maximize2, CheckCircle
 } from 'lucide-react';
 
 // ============================================================
@@ -10,6 +10,7 @@ import {
 // ============================================================
 interface VideoStreamProps {
   isDarkMode?: boolean;
+  onRefresh?: () => void;
 }
 
 interface RosMessage {
@@ -18,7 +19,7 @@ interface RosMessage {
 }
 
 // ============================================================
-// HOOK: Koneksi ke ROS2 via Rosbridge WebSocket (TIDAK DIHAPUS)
+// HOOK: Koneksi ke ROS2 via Rosbridge WebSocket
 // ============================================================
 function useRosBridge(wsUrl: string, imageTopic: string, enabled: boolean) {
   const [isConnected, setIsConnected] = useState(false);
@@ -119,9 +120,9 @@ function useRosBridge(wsUrl: string, imageTopic: string, enabled: boolean) {
 // ============================================================
 // KOMPONEN UTAMA
 // ============================================================
-const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
+const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true, onRefresh }) => {
 
-  // ── Mode Sumber Video (Diperbarui jadi 4 pilihan) ──
+  // ── Mode Sumber Video ──
   const [videoMode, setVideoMode] = useState<'gazebo' | 'espcam' | 'laptop' | 'usb'>('gazebo');
 
   // ── Konfigurasi ROS2 & Gazebo (web_video_server) ──
@@ -141,6 +142,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
   const [webcamError, setWebcamError] = useState<string | null>(null);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+
   const [endpoints, setEndpoints] = useState([
     { id: 1, type: 'UDP', address: 'udp://192.168.2.1:5600' }
   ]);
@@ -193,6 +195,23 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
 
     return stopMediaTracks;
   }, [videoMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // STATE UNTUK NOTIFIKASI SUKSES (KANAN BAWAH)
+  const [showToast, setShowToast] = useState(false);
+
+  // FUNGSI HANDLE REFRESH (NATIVE CONFIRM + CUSTOM TOAST SUKSES)
+  const handleRefresh = () => {
+    const isConfirmed = window.confirm("Apakah Anda yakin ingin me-refresh sumber video?");
+    
+    if (isConfirmed) {
+      if (onRefresh) onRefresh();
+      
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
+  };
 
   const addEndpoint = () => {
     const newId = endpoints.length ? endpoints[endpoints.length - 1].id + 1 : 1;
@@ -272,27 +291,47 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
 
   return (
     <div className="animate-in fade-in duration-500 relative overflow-hidden min-h-screen pb-10 mt-2">
-      <div className="max-w-7xl mx-auto w-full">
+      <div className="max-w-7xl mx-auto w-full relative">
 
-        {/* HEADER */}
-        <div className="flex items-center gap-5 mb-8">
-          <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
-            <Video size={32} className="text-white" />
+        {/* =========================================
+            HEADER (Merged)
+            ========================================= */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between w-full mb-8 gap-4">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
+              <Video size={32} className="text-white" />
+            </div>
+            <div>
+              <h1 className={`text-3xl md:text-4xl font-black tracking-tight uppercase drop-shadow-sm ${titleText}`}>Video Streams</h1>
+              <p className={`font-mono text-xs mt-1 tracking-widest uppercase drop-shadow-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                ROV Live Camera • {videoMode.toUpperCase()}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className={`text-3xl md:text-4xl font-black tracking-tight uppercase drop-shadow-sm ${titleText}`}>Video Streams</h1>
-            <p className={`font-mono text-xs mt-1 tracking-widest uppercase drop-shadow-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-              ROV Live Camera • {videoMode.toUpperCase()}
-            </p>
-          </div>
-          {/* Status badge */}
-          <div className={`ml-auto flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border ${
-            headerStatus.connected
-              ? 'bg-green-500/10 border-green-500/30 text-green-400' 
-              : 'bg-red-500/10 border-red-500/30 text-red-400'
-          }`}>
-            {headerStatus.connected ? <Wifi size={14} /> : <WifiOff size={14} />}
-            {headerStatus.label}
+          
+          <div className="flex items-center gap-4 ml-auto">
+            {/* Status badge */}
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border ${
+              headerStatus.connected
+                ? 'bg-green-500/10 border-green-500/30 text-green-400' 
+                : 'bg-red-500/10 border-red-500/30 text-red-400'
+            }`}>
+              {headerStatus.connected ? <Wifi size={14} /> : <WifiOff size={14} />}
+              {headerStatus.label}
+            </div>
+
+            {/* Tombol Refresh Global */}
+            <button 
+              onClick={handleRefresh}
+              className={`p-3 rounded-xl border transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center ${
+                isDarkMode 
+                  ? 'bg-[#111827]/70 border-white/10 text-slate-400 hover:text-white hover:border-white/30' 
+                  : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300'
+              }`}
+              title="Refresh Sources"
+            >
+              <RefreshCw size={24} className={`transition-transform duration-500 ${showToast ? 'animate-spin text-blue-500' : 'hover:rotate-180'}`} />
+            </button>
           </div>
         </div>
 
@@ -329,7 +368,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
                   <Maximize2 size={16} />
                 </button>
 
-                {/* Reconnect / Refresh button */}
+                {/* Local Reconnect / Refresh button */}
                 <button
                   onClick={() => {
                     if (videoMode === 'espcam') {
@@ -750,6 +789,19 @@ const VideoStream: React.FC<VideoStreamProps> = ({ isDarkMode = true }) => {
             <div className={`p-6 border-t flex gap-4 ${drawerHeaderBg}`}>
               <button onClick={() => setIsDeviceControlsOpen(false)} className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${isDarkMode ? 'bg-white/5 hover:bg-white/10 text-slate-300' : 'bg-slate-200 hover:bg-slate-300 text-slate-800'}`}>Tutup</button>
               <button className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white text-sm transition-all shadow-lg shadow-blue-600/30">Restore Defaults</button>
+            </div>
+          </div>
+        )}
+
+        {/* ================= TOAST NOTIFIKASI SUKSES (BAWAH KANAN) ================= */}
+        {showToast && (
+          <div className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-bottom-8 fade-in duration-300 ${
+            isDarkMode ? 'bg-[#111827] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-800'
+          }`}>
+            <CheckCircle size={20} className="text-green-500" />
+            <div className="flex flex-col">
+              <span className="text-sm font-bold">Refresh Successful</span>
+              <span className={`text-[10px] uppercase tracking-widest ${mutedText}`}>Video sources updated</span>
             </div>
           </div>
         )}

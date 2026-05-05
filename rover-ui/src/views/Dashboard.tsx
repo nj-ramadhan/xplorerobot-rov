@@ -1,16 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Compass } from '../components/widgets/Compass';
 import { AttitudeIndicator } from '../components/widgets/AttitudeIndicator';
 import { TelemetryData } from '../types/telemetry';
-import { Activity } from 'lucide-react'; // Tambahkan import ikon ini!
+import { Activity, RefreshCw, CheckCircle } from 'lucide-react'; // Tambah CheckCircle
 
 interface DashboardProps {
   telemetry: TelemetryData;
   isDarkMode?: boolean;
+  onRefresh?: () => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ telemetry, isDarkMode = true }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ telemetry, isDarkMode = true, onRefresh }) => {
   
+  // STATE UNTUK NOTIFIKASI SUKSES (KANAN BAWAH)
+  const [showToast, setShowToast] = useState(false);
+
+  // FUNGSI HANDLE REFRESH (NATIVE CONFIRM + CUSTOM TOAST SUKSES)
+  const handleRefresh = () => {
+    // 1. Munculin konfirmasi bawaan browser dari atas
+    const isConfirmed = window.confirm("Apakah Anda yakin ingin me-refresh data telemetri?");
+    
+    // 2. Kalau di-klik "OK"
+    if (isConfirmed) {
+      if (onRefresh) onRefresh();
+      
+      // Munculin notifikasi toast di kanan bawah
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
+  };
+
   // ==========================================
   // LOGIKA TEMA 
   // ==========================================
@@ -19,58 +40,67 @@ export const Dashboard: React.FC<DashboardProps> = ({ telemetry, isDarkMode = tr
   const labelColor = isDarkMode ? 'text-slate-400' : 'text-slate-500';
   const valueColor = isDarkMode ? 'text-blue-400' : 'text-blue-700';
 
-  // Card Instrumen (Bawah)
   const cardClasses = isDarkMode 
     ? 'bg-[#111827]/70 backdrop-blur-xl border-white/10 shadow-2xl' 
     : 'bg-white border-slate-200 shadow-xl';
 
-  // Layar Video (Atas)
   const videoClasses = isDarkMode
     ? 'bg-black/40 backdrop-blur-xl border-white/10 shadow-inner'
     : 'bg-slate-50 border-slate-200 shadow-inner';
 
   const textLoading = isDarkMode ? 'text-slate-500' : 'text-slate-400 font-bold';
   const hudCorner = isDarkMode ? 'border-blue-400/40' : 'border-blue-500/40';
+  const mutedText = isDarkMode ? 'text-slate-500' : 'text-slate-500';
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-700 pb-10 mt-2 min-h-screen w-full font-['Inter',sans-serif]">
+    <div className="flex flex-col gap-6 animate-in fade-in duration-700 pb-10 mt-2 min-h-screen w-full font-['Inter',sans-serif] relative">
       
       {/* =========================================
-          HEADER YANG SUDAH DISELARASKAN
+          HEADER 
           ========================================= */}
-      <div className="flex items-center gap-5 w-full">
-        {/* Kotak Ikon Biru */}
-        <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 shrink-0">
-          <Activity size={32} className="text-white" />
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-5">
+          <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 shrink-0">
+            <Activity size={32} className="text-white" />
+          </div>
+          <div>
+            <h2 className={`font-heading text-3xl md:text-4xl font-black uppercase tracking-tight transition-colors duration-300 ${titleColor}`}>
+              Live Telemetry
+            </h2>
+            <p className={`font-mono text-[11px] md:text-xs tracking-widest uppercase mt-1 font-bold transition-colors duration-300 ${subtitleColor}`}>
+              Real-time ROV Monitoring & Sensor Data
+            </p>
+          </div>
         </div>
-        
-        {/* Teks Judul & Subtitle */}
-        <div>
-          <h2 className={`font-heading text-3xl md:text-4xl font-black uppercase tracking-tight transition-colors duration-300 ${titleColor}`}>
-            Live Telemetry
-          </h2>
-          <p className={`font-mono text-[11px] md:text-xs tracking-widest uppercase mt-1 font-bold transition-colors duration-300 ${subtitleColor}`}>
-            Real-time ROV Monitoring & Sensor Data
-          </p>
-        </div>
+
+        {/* Tombol Refresh */}
+        <button 
+          onClick={handleRefresh}
+          className={`p-3 rounded-xl border transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center ${
+            isDarkMode 
+              ? 'bg-[#111827]/70 border-white/10 text-slate-400 hover:text-white hover:border-white/30' 
+              : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300'
+          }`}
+          title="Refresh Data"
+        >
+          <RefreshCw size={24} className={`transition-transform duration-500 ${showToast ? 'animate-spin text-blue-500' : 'hover:rotate-180'}`} />
+        </button>
       </div>
 
       {/* =========================================
-          1. LAYAR VIDEO STREAM (FULL ATAS)
+          1. LAYAR VIDEO STREAM 
           ========================================= */}
       <div className={`w-full rounded-3xl aspect-video lg:aspect-[21/9] flex items-center justify-center relative overflow-hidden group border transition-all duration-500 mt-2 ${videoClasses}`}>
-        {/* Teks Loading */}
         <p className={`italic font-mono text-[11px] md:text-xs uppercase tracking-[0.2em] z-10 animate-pulse transition-colors duration-300 ${textLoading}`}>
           Waiting for Gazebo Stream...
         </p>
         
-        {/* HUD Corners */}
         <div className={`absolute top-6 left-6 w-10 h-10 border-t-2 border-l-2 rounded-tl-xl transition-all duration-500 ${hudCorner} group-hover:border-blue-500`}></div>
         <div className={`absolute bottom-6 right-6 w-10 h-10 border-b-2 border-r-2 rounded-br-xl transition-all duration-500 ${hudCorner} group-hover:border-blue-500`}></div>
       </div>
 
       {/* =========================================
-          2. PANEL INSTRUMEN (3 KOLOM DI BAWAH)
+          2. PANEL INSTRUMEN 
           ========================================= */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full items-stretch">
         
@@ -87,7 +117,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ telemetry, isDarkMode = tr
           </div>
         </div>
 
-        {/* PANEL HEADING (COMPASS) */}
+        {/* PANEL HEADING */}
         <div className={`p-6 rounded-3xl border transition-all duration-500 relative flex flex-col min-h-[220px] ${cardClasses}`}>
           <div className="w-full flex justify-between items-center mb-4 relative z-10">
             <h3 className={`text-[11px] font-bold uppercase tracking-widest transition-colors duration-300 ${labelColor}`}>
@@ -127,6 +157,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ telemetry, isDarkMode = tr
         </div>
 
       </div>
+
+      {/* ================= TOAST NOTIFIKASI SUKSES (BAWAH KANAN) ================= */}
+      {showToast && (
+        <div className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-bottom-8 fade-in duration-300 ${
+          isDarkMode ? 'bg-[#111827] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-800'
+        }`}>
+          <CheckCircle size={20} className="text-green-500" />
+          <div className="flex flex-col">
+            <span className="text-sm font-bold">Refresh Successful</span>
+            <span className={`text-[10px] uppercase tracking-widest ${mutedText}`}>Telemetry data updated</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
