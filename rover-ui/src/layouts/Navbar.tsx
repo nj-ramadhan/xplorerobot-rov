@@ -19,15 +19,12 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // --- LOGIC JAM REALTIME ---
+  // --- LOGIC JAM REALTIME (SISTEM LOOK) ---
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer); // Cleanup saat komponen unmount
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const formattedTime = time.toLocaleTimeString('en-GB', {
@@ -36,7 +33,12 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
     second: '2-digit',
     hour12: false
   });
-  // ---------------------------
+
+  const formattedDate = time.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
 
   // Menutup dropdown kalau user klik di luar area navbar kanan
   useEffect(() => {
@@ -65,7 +67,6 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
       <div>
         {/* Teks ROV */}
         <div className="flex flex-col border-l-2 pl-3 border-slate-300 dark:border-slate-700 transition-colors">
-          {/* Mengubah tag h1 menjadi Link agar bisa diklik dan pindah ke halaman utama ('/') */}
           <Link to="/" className="text-sm font-black tracking-tighter uppercase flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
             XR-ROV<span className="text-blue-500">CONTROL</span>
           </Link>
@@ -77,22 +78,14 @@ export const Navbar: React.FC<NavbarProps> = ({ telemetry, isDarkMode, toggleMod
 
       {/* --- BAGIAN KANAN: Ikon Interactive (Koneksi & Kontrol) --- */}
       <div className="flex items-center gap-4 md:gap-5 opacity-90" ref={menuRef}>
-      {/* IKON JAM */}
-  <svg 
-    className="w-7 h-7 text-white" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="1.5" 
-    strokeLinecap="round" 
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-        <div className="flex flex-col items-end mr-2 select-none border-r border-white/10 pr-4">
-          <span className="font-mono text-lg font-bold tracking-wider leading-none">
+        
+        {/* JAM GAYA SISTEM (Clean & Minimalist) */}
+        <div className="flex flex-col items-end px-4 border-r border-white/10 select-none cursor-default">
+          <span className="text-[14px] font-semibold leading-none tracking-tight">
             {formattedTime}
+          </span>
+          <span className="text-[9px] opacity-40 font-medium mt-1 uppercase tracking-tighter">
+            {formattedDate}
           </span>
         </div>
 
