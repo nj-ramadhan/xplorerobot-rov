@@ -1,13 +1,74 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { menuGroups } from '../types/menu'; 
-import { Power, Settings as SettingsIcon, Bug, Github, MessageSquare, Users, Download, Trash2, RotateCcw, Rocket, AlertCircle, RefreshCw, HardDriveDownload, LogOut } from 'lucide-react';
+// 🔥 Import SEMUA Icon yang dibutuhkan untuk Menu & Modal
+import { 
+  Home, Cpu, Activity, Navigation, Target, Wifi, Video, Waves, 
+  Settings, SlidersHorizontal, FileSearch, Info, ShieldCheck, Users, Terminal,
+  Power, Settings as SettingsIcon, Bug, Github, MessageSquare, 
+  Download, Trash2, RotateCcw, Rocket, AlertCircle, RefreshCw
+} from 'lucide-react';
 
-// 🔥 Import Logo
+// 🔥 PERBAIKAN 1: Path gambar dikembalikan ke ../assets/ (naik 1 folder dari layouts)
 // @ts-ignore
 import LogoXploreSimple from '../assets/logo_xplore_robot_simple.png';
 // @ts-ignore
 import LogoXploreFull from '../assets/logo_xplore_robot_full.png';
+
+// ==========================================
+// DEFINISI MENU SIDEBAR
+// ==========================================
+const menuGroups = [
+  {
+    title: 'Vehicle & Control',
+    items: [
+      { title: 'Home Menu', path: '/home', icon: Home },
+      { title: 'Live Telemetry', path: '/live', icon: Wifi },
+      { title: 'Manual Simulation', path: '/manual', icon: Cpu },
+      { title: 'ROS 2 Simulation', path: '/manualros2', icon: Activity },
+      { title: 'Autonomous Mode', path: '/autonomous', icon: Navigation },
+      { title: 'Mission Control', path: '/mission', icon: Target },
+    ]
+  },
+  {
+    title: 'Configuration',
+    items: [
+      { title: 'Vehicle Setup', path: '/setup', icon: Settings },
+      { title: 'Autopilot Params', path: '/params', icon: SlidersHorizontal },
+      { title: 'Autopilot Firmware', path: '/firmware', icon: Cpu },
+    ]
+  },
+  {
+    title: 'System & Tools',
+    items: [
+      { title: 'Terminal', path: '/terminal', icon: Terminal },
+      { title: 'Video Streams', path: '/video', icon: Video },
+      { title: 'Ping Sonar', path: '/ping', icon: Waves },
+      { title: 'Log Browser', path: '/browser', icon: FileSearch },
+      { title: 'System Info', path: '/system-info', icon: Info },
+      { title: 'Xplore Robot Version', path: '/blueos', icon: ShieldCheck },
+      { title: 'Dokumentasi Team', path: '/kami', icon: Users },
+    ]
+  }
+];
+
+// 🔥 PERBAIKAN 2: Pindah ModalButton ke luar komponen Sidebar agar React tidak crash
+const ModalButton = ({ children, icon: Icon, onClick, disabled = false, iconColor = "", isDarkMode }: any) => (
+  <button 
+    onClick={onClick}
+    disabled={disabled}
+    className={`
+      flex items-center justify-center gap-3 w-full py-3 px-4 rounded shadow-sm transition-all duration-150
+      uppercase text-[11px] font-bold tracking-widest
+      ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:scale-[1.01] active:scale-[0.98]'}
+      ${isDarkMode 
+        ? 'bg-slate-800 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] border-slate-700' 
+        : 'bg-white text-slate-800 border border-gray-100 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]'}
+    `}
+  >
+    {Icon && <Icon size={16} className={iconColor} />}
+    {children}
+  </button>
+);
 
 interface SidebarProps {
   isDarkMode: boolean;
@@ -19,29 +80,10 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
   const [isHovered, setIsHovered] = useState(false);
   const [isBugModalOpen, setIsBugModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [isPowerModalOpen, setIsPowerModalOpen] = useState(false); // 🔥 Tambah state Power
+  const [isPowerModalOpen, setIsPowerModalOpen] = useState(false);
 
   const isHidden = isDetailMode && !isHovered;
   const isWide = isHovered;
-
-  // Reusable Component untuk tombol di dalam modal agar rapi
-  const ModalButton = ({ children, icon: Icon, onClick, disabled = false, iconColor = "" }: any) => (
-    <button 
-      onClick={onClick}
-      disabled={disabled}
-      className={`
-        flex items-center justify-center gap-3 w-full py-3 px-4 rounded shadow-sm transition-all duration-150
-        uppercase text-[11px] font-bold tracking-widest
-        ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:scale-[1.01] active:scale-[0.98]'}
-        ${isDarkMode 
-          ? 'bg-slate-800 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] border-slate-700' 
-          : 'bg-white text-slate-800 border border-gray-100 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]'}
-      `}
-    >
-      {Icon && <Icon size={16} className={iconColor} />}
-      {children}
-    </button>
-  );
 
   return (
     <>
@@ -66,7 +108,7 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
       >
         {/* HEADER */}
         <div
-          className={`p-4 flex items-center justify-center border-b cursor-pointer transition-colors h-[72px] ${
+          className={`p-4 flex items-center justify-center border-b cursor-pointer transition-colors h-[72px] shrink-0 ${
             isDarkMode ? 'bg-[#16181a] border-gray-800 hover:bg-gray-800/50' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
           }`}
           onClick={() => setIsDetailMode(!isDetailMode)}
@@ -125,9 +167,8 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
         </div>
 
         {/* FOOTER */}
-        <div className={`border-t p-4 ${isDarkMode ? 'bg-[#141517] border-gray-800' : 'bg-slate-50 border-slate-200'}`}>
+        <div className={`border-t p-4 shrink-0 ${isDarkMode ? 'bg-[#141517] border-gray-800' : 'bg-slate-50 border-slate-200'}`}>
           <div className="flex flex-row justify-center items-center gap-4">
-            {/* 🔥 Trigger Power Modal */}
             <Power 
               size={18} 
               onClick={() => setIsPowerModalOpen(true)}
@@ -147,7 +188,7 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
         </div>
       </aside>
 
-      {/* MODAL POWER (Ref: image_28d0a1.png) */}
+      {/* MODAL POWER */}
       {isPowerModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className={`rounded-lg shadow-2xl w-[380px] overflow-hidden ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-white text-slate-800'}`}>
@@ -155,10 +196,11 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
               <h2 className="text-xl font-medium">Power</h2>
             </div>
             <div className="p-6 flex flex-col gap-4">
-              <ModalButton icon={RotateCcw} iconColor="text-orange-500">Restart Autopilot</ModalButton>
-              <ModalButton icon={RefreshCw} iconColor="text-orange-500">Soft Restart</ModalButton>
-              <ModalButton icon={RotateCcw} iconColor="text-orange-500">Reboot</ModalButton>
-              <ModalButton icon={Power} iconColor="text-red-500">Power Off</ModalButton>
+              {/* Tambahkan prop isDarkMode ke ModalButton */}
+              <ModalButton isDarkMode={isDarkMode} icon={RotateCcw} iconColor="text-orange-500">Restart Autopilot</ModalButton>
+              <ModalButton isDarkMode={isDarkMode} icon={RefreshCw} iconColor="text-orange-500">Soft Restart</ModalButton>
+              <ModalButton isDarkMode={isDarkMode} icon={RotateCcw} iconColor="text-orange-500">Reboot</ModalButton>
+              <ModalButton isDarkMode={isDarkMode} icon={Power} iconColor="text-red-500">Power Off</ModalButton>
             </div>
             <div onClick={() => setIsPowerModalOpen(false)} className={`py-4 text-center cursor-pointer text-sm font-medium border-t ${isDarkMode ? 'bg-slate-800/50 border-slate-800 hover:bg-slate-800' : 'bg-gray-50 border-gray-100 hover:bg-gray-100'}`}>
               Close
@@ -168,7 +210,7 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
         </div>
       )}
 
-      {/* MODAL BUG REPORT (Ref: image_448a77.png) */}
+      {/* MODAL BUG REPORT */}
       {isBugModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className={`rounded-lg shadow-2xl w-[400px] overflow-hidden ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-white text-slate-800'}`}>
@@ -176,9 +218,9 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
               <h2 className="text-xl font-medium">Bug report / Feature request</h2>
             </div>
             <div className="p-6 flex flex-col gap-4">
-              <ModalButton icon={Github}>With GitHub</ModalButton>
-              <ModalButton icon={MessageSquare}>With Simple Report</ModalButton>
-              <ModalButton icon={Users}>On Blue Robotics Forum</ModalButton>
+              <ModalButton isDarkMode={isDarkMode} icon={Github}>With GitHub</ModalButton>
+              <ModalButton isDarkMode={isDarkMode} icon={MessageSquare}>With Simple Report</ModalButton>
+              <ModalButton isDarkMode={isDarkMode} icon={Users}>On Blue Robotics Forum</ModalButton>
             </div>
             <div onClick={() => setIsBugModalOpen(false)} className={`py-4 text-center cursor-pointer text-sm font-medium border-t ${isDarkMode ? 'bg-slate-800/50 border-slate-800 hover:bg-slate-800' : 'bg-gray-50 border-gray-100 hover:bg-gray-100'}`}>
               Close
@@ -188,7 +230,7 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
         </div>
       )}
 
-      {/* MODAL SETTINGS (Ref: image_1de099.png) */}
+      {/* MODAL SETTINGS */}
       {isSettingsModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className={`rounded-lg shadow-2xl w-[450px] max-w-[95%] overflow-hidden ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-white text-slate-800'}`}>
@@ -199,25 +241,25 @@ const Sidebar = ({ isDarkMode, isDetailMode, setIsDetailMode }: SidebarProps) =>
             <div className="max-h-[60vh] overflow-y-auto">
               <div className={`p-6 border-b ${isDarkMode ? 'border-slate-800' : 'border-gray-100'}`}>
                 <h3 className="text-lg font-normal mb-4 text-inherit opacity-90">Settings</h3>
-                <div className="w-48"><ModalButton icon={RotateCcw}>Reset Settings</ModalButton></div>
+                <div className="w-48"><ModalButton isDarkMode={isDarkMode} icon={RotateCcw}>Reset Settings</ModalButton></div>
               </div>
               <div className={`p-6 border-b ${isDarkMode ? 'border-slate-800' : 'border-gray-100'}`}>
                 <h3 className="text-lg font-normal mb-4 text-inherit opacity-90">System Log Files ()</h3>
                 <div className="flex gap-3">
-                  <ModalButton icon={Download}>Download</ModalButton>
-                  <ModalButton icon={Trash2} disabled>Remove</ModalButton>
+                  <ModalButton isDarkMode={isDarkMode} icon={Download}>Download</ModalButton>
+                  <ModalButton isDarkMode={isDarkMode} icon={Trash2} disabled>Remove</ModalButton>
                 </div>
               </div>
               <div className={`p-6 border-b ${isDarkMode ? 'border-slate-800' : 'border-gray-100'}`}>
                 <h3 className="text-lg font-normal mb-4 text-inherit opacity-90">MAVLink Log Files ()</h3>
                 <div className="flex gap-3">
-                  <ModalButton icon={Download}>Download</ModalButton>
-                  <ModalButton icon={Trash2} disabled>Remove</ModalButton>
+                  <ModalButton isDarkMode={isDarkMode} icon={Download}>Download</ModalButton>
+                  <ModalButton isDarkMode={isDarkMode} icon={Trash2} disabled>Remove</ModalButton>
                 </div>
               </div>
               <div className="p-6">
                 <h3 className="text-lg font-normal mb-4 text-inherit opacity-90">Run Vehicle Configuration Wizard</h3>
-                <div className="w-40"><ModalButton icon={Rocket}>Enable</ModalButton></div>
+                <div className="w-40"><ModalButton isDarkMode={isDarkMode} icon={Rocket}>Enable</ModalButton></div>
               </div>
             </div>
             <div onClick={() => setIsSettingsModalOpen(false)} className={`py-4 text-center cursor-pointer text-sm font-medium border-t ${isDarkMode ? 'bg-slate-800/50 border-slate-800 hover:bg-slate-800' : 'bg-gray-50 border-gray-100 hover:bg-gray-100'}`}>
