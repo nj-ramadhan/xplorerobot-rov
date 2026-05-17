@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCSRHmhjnosCJwzHl-AxeIuhW7zxLG3LOg",
+  apiKey: "YOUR_API_KEY",
   authDomain: "automationmobilerobot.firebaseapp.com",
   projectId: "automationmobilerobot",
   storageBucket: "automationmobilerobot.firebasestorage.app",
